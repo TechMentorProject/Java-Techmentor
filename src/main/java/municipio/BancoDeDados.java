@@ -42,7 +42,7 @@ public class BancoDeDados {
         PreparedStatement preparedStatement = conexao.prepareStatement(query);
 
         // Pular a primeira linha (cabeçalho)
-        for (int i = 1; i < dadosExcel.size(); i++) {  // Começar em 1 para pular o cabeçalho
+        for (int i = 1; i < dadosExcel.size(); i++) {
             List<Object> row = dadosExcel.get(i);
 
             // Converter linha para String e aplicar split
@@ -51,46 +51,59 @@ public class BancoDeDados {
             // Fazer o split da linha para dividir os campos
             String[] valores = linha.split(";");
 
-
-
-            // Verifica se o número de campos corresponde ao esperado
+            // Verifica se o número de campos corresponde ao esperado (mínimo 13 colunas, ajustado conforme seus índices usados)
             if (valores.length < 13) {
                 System.err.println("Linha com menos colunas do que o esperado. Ignorando: " + linha);
-                continue;  // Pular se a linha não tiver a quantidade esperada de colunas
+                continue;  // Ignorar a linha se não tiver as colunas esperadas
             }
 
-            // Inserindo os dados splitados no banco
-            preparedStatement.setString(1, getSafeValue(valores, 0)); // ano
-            preparedStatement.setString(2, getSafeValue(valores, 5));  // cidade
-            preparedStatement.setString(3, getSafeValue(valores, 2)); // operadora
+            // Agora, o acesso aos índices é seguro:
+            BigDecimal domiciliosCobertosPercent = convertToBigDecimal(getSafeValue(valores, 11));  // % domicílios cobertos
+            BigDecimal areaCobertaPercent = convertToBigDecimal(getSafeValue(valores, 12));  // % área coberta
 
-            preparedStatement.setBigDecimal(4, convertToBigDecimal(getSafeValue(valores, 11)));  // % domicílios cobertos
-            preparedStatement.setBigDecimal(5, convertToBigDecimal(getSafeValue(valores, 12)));  // % área coberta
-            System.out.println(valores[i]);
-
-
+            // Verificar se algum deles é 0
+            if (domiciliosCobertosPercent.equals(BigDecimal.ZERO) || areaCobertaPercent.equals(BigDecimal.ZERO)) {
+                System.out.println("Linha ignorada por ter 0% em domicílios cobertos ou área coberta: " + linha);
+                continue;  // Ignorar essa linha se qualquer um dos valores for 0
+            }
 
             // Obtenha o valor da tecnologia e aplique a formatação dinâmica
             String tecnologiaFormatada = formatarTecnologia(getSafeValue(valores, 3));
+
+            // Verificar se o campo de tecnologia está vazio
+            if (tecnologiaFormatada == null || tecnologiaFormatada.isEmpty()) {
+                System.out.println("Linha ignorada por não ter tecnologia válida: " + linha);
+                continue;  // Ignorar a linha se a tecnologia estiver vazia
+            }
+
+            // Inserindo os dados splitados no banco
+            preparedStatement.setString(1, getSafeValue(valores, 0));  // ano
+            preparedStatement.setString(2, getSafeValue(valores, 5));  // cidade
+            preparedStatement.setString(3, getSafeValue(valores, 2));  // operadora
+            preparedStatement.setBigDecimal(4, domiciliosCobertosPercent);  // % domicílios cobertos
+            preparedStatement.setBigDecimal(5, areaCobertaPercent);  // % área coberta
             preparedStatement.setString(6, tecnologiaFormatada);  // tecnologia
 
-
-            // Executar a query para a linha atual
+            // Adicionar ao batch
             preparedStatement.addBatch();
-            conexao.commit();
 
-            if(i % 5000 == 0) {
-            preparedStatement.executeBatch();
+            // Executar o batch a cada 5000 linhas
+            if (i % 5000 == 0) {
+                preparedStatement.executeBatch();
             }
         }
+
+// Executar qualquer batch restante
+        preparedStatement.executeBatch();
+        conexao.commit();
 
         System.out.println("Dados Inseridos");
         preparedStatement.close();
     }
 
-    /**
-     * Converte uma lista de objetos para uma string, unindo com separador ';'.
-     */
+        /**
+         * Converte uma lista de objetos para uma string, unindo com separador ';'.
+         */
     private String convertRowToString(List<Object> row) {
         StringBuilder linha = new StringBuilder();
 
