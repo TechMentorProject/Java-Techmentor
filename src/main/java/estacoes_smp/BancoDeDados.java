@@ -11,6 +11,7 @@ public class BancoDeDados {
         System.out.println("Conectando no banco");
         Class.forName("com.mysql.cj.jdbc.Driver");
         conexao = DriverManager.getConnection("jdbc:mysql://localhost:3306/techmentor", "root", "root");
+        conexao.setAutoCommit(false);
         System.out.println("Banco conectado");
     }
 
@@ -32,6 +33,11 @@ public class BancoDeDados {
         String query = "INSERT INTO estacoesSMP (cidade, operadora, latitude, longitude, " +
                 "codigoIBGE, tecnologia) " +
                 "VALUES (?, ?, ?, ?, ?, ?)";
+        System.out.println("Truncando a tabela estacoesSMP...");
+        String truncateQuery = "TRUNCATE TABLE estacoesSMP";
+        Statement statement = conexao.createStatement();
+        statement.executeUpdate(truncateQuery);
+        System.out.println("Tabela Truncada com sucesso!");
 
         PreparedStatement preparedStatement = conexao.prepareStatement(query);
 
@@ -51,22 +57,40 @@ public class BancoDeDados {
                 continue;  // Pular se a linha não tiver a quantidade esperada de colunas
             }
 
-            // Inserindo os dados splitados no banco
-            preparedStatement.setString(1, getSafeValue(valores, 28)); // Nome_da_UF
-            preparedStatement.setString(2, getSafeValue(valores, 4));  // Empresa_Fistel
-            preparedStatement.setString(3, getSafeValue(valores, 11)); // Latitude
-            preparedStatement.setString(4, getSafeValue(valores, 12)); // Longitude
-            preparedStatement.setString(5, getSafeValue(valores, 25)); // Codigo_IBGE
-            preparedStatement.setString(6, getSafeValue(valores, 9));  // Tecnologia
 
+            String nomeDaUF = getSafeValue(valores, 28);  // Nome_da_UF
+            String empresaFistel = getSafeValue(valores, 4);  // Empresa_Fistel
+            String latitude = getSafeValue(valores, 11);  // Latitude
+            String longitude = getSafeValue(valores, 12);  // Longitude
+            String codigoIBGE = getSafeValue(valores, 25);  // Codigo_IBGE
+            String tecnologia = getSafeValue(valores, 9);  // Tecnologia
 
+            // Verificar se algum dos campos é null
+            if (nomeDaUF == null || empresaFistel == null || latitude == null || longitude == null || codigoIBGE == null || tecnologia == null) {
+                continue;  // Pular a linha se algum campo essencial for null
+            }
+
+            // Inserir os dados no PreparedStatement se todos os campos estiverem válidos
+            preparedStatement.setString(1, nomeDaUF);
+            preparedStatement.setString(2, empresaFistel);
+            preparedStatement.setString(3, latitude);
+            preparedStatement.setString(4, longitude);
+            preparedStatement.setString(5, codigoIBGE);
+            preparedStatement.setString(6, tecnologia);
+
+            // Executar o batch a cada 5000 linhas
+            if (i % 5000 == 0) {
+                preparedStatement.executeBatch();
+                conexao.commit();
+            }
 
 
             // Executar a query para a linha atual
-            preparedStatement.executeUpdate();
+            preparedStatement.addBatch();
         }
 
         System.out.println("Dados Inseridos");
+        preparedStatement.executeBatch();
         preparedStatement.close();
     }
 
