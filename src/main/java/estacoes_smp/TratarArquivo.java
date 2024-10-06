@@ -12,6 +12,7 @@ import org.xml.sax.XMLReader;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +29,7 @@ public class TratarArquivo {
             XSSFSheetXMLHandler sheetHandler = new XSSFSheetXMLHandler(
                     reader.getStylesTable(),
                     new ReadOnlySharedStringsTable(opcPackage),
-                    new SheetContentsHandlerImpl(dadosExcel), false);
+                    new municipio.TratarArquivo.SheetContentsHandlerImpl(dadosExcel), false);
 
             // Lê a planilha e processa com stream
             try (InputStream sheetStream = reader.getSheetsData().next()) {
@@ -63,7 +64,14 @@ public class TratarArquivo {
 
             // Preenche as células vazias, se houver
             while (currentRow.size() < currentCol) currentRow.add(null);
+
+            // Garantir que o valor da célula seja convertido para UTF-8 corretamente
+            if (formattedValue != null) {
+                formattedValue = new String(formattedValue.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+            }
+
             currentRow.add(formattedValue);  // Adiciona a célula atual
         }
     }
 }
+
