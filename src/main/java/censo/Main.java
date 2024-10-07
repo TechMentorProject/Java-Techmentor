@@ -1,45 +1,32 @@
 package censo;
 
 import org.apache.poi.openxml4j.util.ZipSecureFile;
-import org.apache.poi.util.IOUtils;
-
-import java.sql.SQLException;
-import java.util.List;
 
 public class Main {
 
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) {
+        // Aumentar o limite de bytes para leitura de registros ZIP grandes (Excel)
+        ZipSecureFile.setMinInflateRatio(0);
 
-        censo.BancoDeDados banco = new BancoDeDados();
-        censo.TratarArquivo tratarArquivo = new TratarArquivo();
+        // Instanciar as classes necessárias
+        TratarArquivo tratarArquivo = new TratarArquivo();
+        BancoDeDados bancoDeDados = new BancoDeDados();
+
+        // Definir o diretório base onde os arquivos estão localizados
+        String diretorioBase = "C:\\Users\\mathe\\Documents\\Techmentor\\Java - Techmentor\\Java-Techmentor\\base de dados";
 
         try {
-
-            IOUtils.setByteArrayMaxOverride(250_000_000); // Defina um limite maior conforme necessário
-            // Ajustando o limite da razão de descompressão
-            ZipSecureFile.setMinInflateRatio(0.000001); // Diminui o valor padrão para permitir arquivos mais comprimidos
-            // Conectar ao banco
-
-            // Caminho do arquivo .xlsx
-            String caminhoArquivoOriginal = "C:\\Users\\mathe\\Documents\\Faculdade\\Linguagem de Programação\\tratamento-de-dados-brutos - Copia (2)\\base de dados\\Censo 2022 - Crescimento Populacional - Brasil.xlsx";
-
-
-            // Remover as colunas e inserir os dados no banco
-            List<List<Object>> dados = tratarArquivo.LerArquivo(caminhoArquivoOriginal);
-            banco.conectar();
-            banco.inserirDados(dados);
-
-        } catch (SQLException | ClassNotFoundException e) {
-            System.out.println("Erro: " + e.getMessage());
+            // Processar arquivos e inserir dados no banco
+            tratarArquivo.processarArquivosEDados(diretorioBase, bancoDeDados);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         } finally {
-            // Fechar a conexão
-            banco.fecharConexao();
+            try {
+                // Fechar a conexão ao banco de dados ao final
+                bancoDeDados.fecharConexao();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 }
-
-// Aumentar o limite de bytes para leitura de registros
-
-

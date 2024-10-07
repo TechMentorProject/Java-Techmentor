@@ -10,6 +10,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -17,29 +18,79 @@ import java.util.List;
 
 public class TratarArquivo {
 
+        // Método para buscar os arquivos no diretório
+        public List<String> buscarArquivos(String diretorioBase) {
+            File pasta = new File(diretorioBase);
+            List<String> arquivos = new ArrayList<>();
+
+            // Filtrar arquivos que contenham o nome 'Crescimento Populacional' e terminem com '.xlsx'
+            File[] arquivosListados = pasta.listFiles((dir, nome) -> nome.contains("Crescimento Populacional") && nome.endsWith(".xlsx"));
+
+            if (arquivosListados != null) {
+                for (File arquivo : arquivosListados) {
+                    arquivos.add(arquivo.getAbsolutePath());
+                }
+            }
+            return arquivos;
+        }
+
+        // Método para processar os arquivos e inserir dados no banco de dados
+        public void processarArquivosEDados(String diretorioBase, BancoDeDados bancoDeDados) throws Exception {
+            // Buscar todos os arquivos no diretório base
+            List<String> arquivos = buscarArquivos(diretorioBase);
+
+            if (arquivos.isEmpty()) {
+                System.out.println("Nenhum arquivo encontrado no diretório: " + diretorioBase);
+                return;
+            }
+
+            // Conectar ao banco de dados
+            bancoDeDados.conectar();
+
+            // Processar cada arquivo encontrado
+            for (String caminhoArquivo : arquivos) {
+                System.out.println("Lendo arquivo: " + caminhoArquivo);
+
+                try {
+                    // Ler o arquivo Excel e obter os dados
+                    List<List<Object>> dadosExcel = LerArquivo(caminhoArquivo);
+
+                    // Inserir os dados no banco de dados
+                    bancoDeDados.inserirDados(dadosExcel);
+
+                } catch (Exception e) {
+                    System.err.println("Erro ao processar o arquivo: " + caminhoArquivo);
+                    e.printStackTrace();
+                }
+            }
+        }
+
+    // Método para ler todas as planilhas de um arquivo Excel
     public List<List<Object>> LerArquivo(String caminhoArquivo) throws Exception {
         List<List<Object>> dadosExcel = new ArrayList<>();
 
-        // Usando BufferedInputStream para melhorar a performance de leitura de arquivo
+        // Abrir o arquivo Excel usando OPCPackage
         try (OPCPackage opcPackage = OPCPackage.open(new BufferedInputStream(new FileInputStream(caminhoArquivo)))) {
-
             XSSFReader reader = new XSSFReader(opcPackage);
             XMLReader xmlReader = org.apache.poi.util.XMLHelper.newXMLReader();
-            XSSFSheetXMLHandler sheetHandler = new XSSFSheetXMLHandler(
-                    reader.getStylesTable(),
-                    new ReadOnlySharedStringsTable(opcPackage),
-                    new estacoes_smp.TratarArquivo.SheetContentsHandlerImpl(dadosExcel), false);
+            ReadOnlySharedStringsTable strings = new ReadOnlySharedStringsTable(opcPackage);
+            XSSFSheetXMLHandler.SheetContentsHandler handler = new SheetContentsHandlerImpl(dadosExcel);
 
-            // Lê a planilha e processa com stream
-            try (InputStream sheetStream = reader.getSheetsData().next()) {
-                xmlReader.setContentHandler(sheetHandler);
-                xmlReader.parse(new InputSource(sheetStream));
+            // Iterar por todas as planilhas
+            XSSFReader.SheetIterator iter = (XSSFReader.SheetIterator) reader.getSheetsData();
+            while (iter.hasNext()) {
+                try (InputStream sheetStream = iter.next()) {
+                    // Definir o conteúdo do handler e processar a planilha
+                    xmlReader.setContentHandler(new XSSFSheetXMLHandler(reader.getStylesTable(), strings, handler, false));
+                    xmlReader.parse(new InputSource(sheetStream));
+                }
             }
         }
         return dadosExcel;
     }
 
-    private static class SheetContentsHandlerImpl implements XSSFSheetXMLHandler.SheetContentsHandler {
+    // Implementação do handler para processar células de cada planilha
+    public static class SheetContentsHandlerImpl implements XSSFSheetXMLHandler.SheetContentsHandler {
         private final List<List<Object>> dadosExcel;
         private List<Object> currentRow;
 
@@ -49,22 +100,23 @@ public class TratarArquivo {
 
         @Override
         public void startRow(int rowNum) {
-            currentRow = new ArrayList<>();  // Inicia uma nova linha
+            currentRow = new ArrayList<>();
         }
 
         @Override
         public void endRow(int rowNum) {
-            if (!currentRow.isEmpty()) dadosExcel.add(currentRow);  // Evitar cópia desnecessária da lista
+            if (!currentRow.isEmpty()) {
+                dadosExcel.add(currentRow);
+            }
         }
 
         @Override
         public void cell(String cellReference, String formattedValue, XSSFComment comment) {
             int currentCol = new CellReference(cellReference).getCol();
-
-            // Preenche as células vazias, se houver
-            while (currentRow.size() < currentCol) currentRow.add(null);
-            currentRow.add(formattedValue);  // Adiciona a célula atual
+            while (currentRow.size() < currentCol) {
+                currentRow.add(null);
+            }
+            currentRow.add(formattedValue);
         }
     }
 }
-
