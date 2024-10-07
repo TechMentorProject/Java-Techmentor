@@ -2,6 +2,7 @@ package municipio;
 
 import java.sql.*;
 import java.util.List;
+import java.util.Arrays;
 
 public class BancoDeDados {
 
@@ -48,6 +49,12 @@ public class BancoDeDados {
         for (int i = 1; i < dadosExcel.size(); i++) {  // Ignora o cabeçalho (linha 1)
             List<Object> row = dadosExcel.get(i);
             String linha = convertRowToString(row);
+
+            // Verificar se a linha contém palavras proibidas
+            if (containsProhibitedWords(linha)) {
+                continue;  // Ignora essa linha
+            }
+
             String[] valores = linha.split(";");
 
             if (valores.length < 13) {
@@ -99,6 +106,18 @@ public class BancoDeDados {
         preparedStatement.close();
     }
 
+    // Função que verifica se a linha contém palavras proibidas
+    private boolean containsProhibitedWords(String linha) {
+        // Lista de palavras proibidas
+        String[] palavrasProibidas = {
+                "mulheres", "homens", "brasil",
+                "Centro-Oeste", "Nordeste", "Norte", "Sul", "Sudeste"
+        };
+
+        // Verifica se qualquer uma das palavras proibidas está presente na linha
+        return Arrays.stream(palavrasProibidas).anyMatch(linha.toLowerCase()::contains);
+    }
+
     // Converte uma linha do Excel para String com separadores ";"
     private String convertRowToString(List<Object> row) {
         StringBuilder linha = new StringBuilder();
@@ -136,5 +155,5 @@ public class BancoDeDados {
 
         return tecnologiasFormatadas.toString().isEmpty() ? null : tecnologiasFormatadas.toString();
     }
-
 }
+

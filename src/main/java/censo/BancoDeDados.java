@@ -1,6 +1,9 @@
 package censo;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.List;
 
 public class BancoDeDados {
@@ -18,8 +21,6 @@ public class BancoDeDados {
         if (conexao != null && !conexao.isClosed()) {
             conexao.close();
             System.out.println("Conexão fechada.");
-        } else {
-            System.out.println("A conexão já está fechada ou é nula.");
         }
     }
 
@@ -27,69 +28,27 @@ public class BancoDeDados {
         if (conexao == null) {
             throw new SQLException("Conexão com o banco de dados não foi estabelecida.");
         }
+
         System.out.println("Preparando para inserir dados");
 
-    String query = "INSERT INTO estacoesSMP (estado, ano, idade, projecao)," +
-                "VALUES (?, ?, ?, ?)";
+        // Query atualizada, mantendo todos os campos como strings
+        String query = "INSERT INTO censoIBGE (cidade, crescimentoPopulacional, densidadeDemografica) VALUES (?, ?, ?)";
 
-        PreparedStatement preparedStatement = conexao.prepareStatement(query);
+        try (PreparedStatement preparedStatement = conexao.prepareStatement(query)) {
+            // Pular a primeira linha (cabeçalho)
+            for (int i = 1; i < dadosExcel.size(); i++) {
+                List<Object> row = dadosExcel.get(i);
 
-        // Pular a primeira linha (cabeçalho)
-        for (int i = 1; i < dadosExcel.size(); i++) {  // Começar em 1 para pular o cabeçalho
-            List<Object> row = dadosExcel.get(i);
+                // Insere os valores como string
+                preparedStatement.setString(1, row.get(1) != null ? row.get(1).toString() : ""); // Verifica se a área é null
+                preparedStatement.setString(2, row.get(2) != null ? row.get(2).toString() : ""); // Verifica se a densidade é null
+                preparedStatement.setString(3, row.get(3) != null ? row.get(3).toString() : ""); // Verifica se a UF é null
 
-            // Converter linha para String e aplicar split
-            String linha = convertRowToString(row);
 
-            // Fazer o split da linha para dividir os campos
-            String[] valores = linha.split(";");
-
-            // Verifica se o número de campos corresponde ao esperado
-            if (valores.length < 29) {
-                System.err.println("Linha com menos colunas do que o esperado. Ignorando: " + linha);
-                continue;  // Pular se a linha não tiver a quantidade esperada de colunas
+                // Executar a query
+                preparedStatement.executeUpdate();
             }
-
-            // Inserindo os dados splitados no banco
-            preparedStatement.setString(1, getSafeValue(valores, 5)); // estado
-            preparedStatement.setString(2, getSafeValue(valores, 7));  // ano
-            preparedStatement.setString(3, getSafeValue(valores, 1)); // idade
-            preparedStatement.setString(4, getSafeValue(valores, 12)); // projecao
-
-
-
-
-
-            // Executar a query para a linha atual
-            preparedStatement.executeUpdate();
         }
-
         System.out.println("Dados Inseridos");
-        preparedStatement.close();
-    }
-
-    /**
-     * Converte uma lista de objetos para uma string, unindo com separador ';'.
-     */
-    private String convertRowToString(List<Object> row) {
-        StringBuilder linha = new StringBuilder();
-
-        for (Object celula : row) {
-            if (linha.length() > 0) {
-                linha.append(";");  // Adicionar separador entre os valores
-            }
-            linha.append(celula != null ? celula.toString() : "");  // Converte o Object para String
-        }
-
-        return linha.toString();
-    }
-
-    /**
-     * Método auxiliar para obter um valor de forma segura a partir de um array.
-     * Retorna null se o índice estiver fora dos limites ou o valor for vazio.
-     */
-    private String getSafeValue(String[] valores, int index) {
-        return (index < valores.length && !valores[index].isEmpty()) ? valores[index] : null;
     }
 }
-
