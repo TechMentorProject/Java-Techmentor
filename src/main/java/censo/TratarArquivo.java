@@ -49,8 +49,6 @@ public class TratarArquivo {
 
             // Processar cada arquivo encontrado
             for (String caminhoArquivo : arquivos) {
-                System.out.println("Lendo arquivo: " + caminhoArquivo);
-
                 try {
                     // Ler o arquivo Excel e obter os dados
                     List<List<Object>> dadosExcel = LerArquivo(caminhoArquivo);
