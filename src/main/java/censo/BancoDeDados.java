@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class BancoDeDados {
@@ -29,24 +31,21 @@ public class BancoDeDados {
             throw new SQLException("Conexão com o banco de dados não foi estabelecida.");
         }
 
-        System.out.println("Preparando para inserir dados");
-
-        // Query atualizada, mantendo todos os campos como strings
         String query = "INSERT INTO censoIBGE (cidade, crescimentoPopulacional, densidadeDemografica) VALUES (?, ?, ?)";
 
-        try (PreparedStatement preparedStatement = conexao.prepareStatement(query)) {
-            // Pular a primeira linha (cabeçalho)
+        try (PreparedStatement guardarValor = conexao.prepareStatement(query)) {
+
+            System.out.println("Inserindo dados");
+
             for (int i = 1; i < dadosExcel.size(); i++) {
-                List<Object> row = dadosExcel.get(i);
-
-                // Insere os valores como string
-                preparedStatement.setString(1, row.get(1) != null ? row.get(1).toString() : ""); // Verifica se a área é null
-                preparedStatement.setString(2, row.get(2) != null ? row.get(2).toString() : ""); // Verifica se a densidade é null
-                preparedStatement.setString(3, row.get(3) != null ? row.get(3).toString() : ""); // Verifica se a UF é null
-
-
-                // Executar a query
-                preparedStatement.executeUpdate();
+                String dados = dadosExcel.get(i).toString();
+                String [] dadosSeparados = dados.split(",");
+                if(dadosSeparados[i] != null || dadosSeparados[i].isEmpty()) {
+                    guardarValor.setString(1, dadosSeparados[3]); // Verifica se a área é null
+                    guardarValor.setString(2, dadosSeparados[1]); // Verifica se a densidade é null
+                    guardarValor.setString(3, dadosSeparados[2]); // Verifica se a UF é null
+                }
+                guardarValor.executeUpdate();
             }
         }
         System.out.println("Dados Inseridos");
