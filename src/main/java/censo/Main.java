@@ -1,32 +1,42 @@
 package censo;
 
-import org.apache.poi.openxml4j.util.ZipSecureFile;
+import geral.ManipularArquivo;
+import org.apache.poi.util.IOUtils;
+
+import java.io.File;
+import java.sql.SQLException;
+import java.util.List;
 
 public class Main {
 
-    public static void main(String[] args) {
-        // Aumentar o limite de bytes para leitura de registros ZIP grandes (Excel)
-        ZipSecureFile.setMinInflateRatio(0);
+    public static void main(String[] args) throws SQLException {
 
-        // Instanciar as classes necessárias
-        TratarArquivo tratarArquivo = new TratarArquivo();
-        BancoDeDados bancoDeDados = new BancoDeDados();
-
-        // Definir o diretório base onde os arquivos estão localizados
-        String diretorioBase = "C:\\Users\\mathe\\Documents\\Techmentor\\Java - Techmentor\\Java-Techmentor\\base de dados";
+        BancoDeDados banco = new BancoDeDados();
+        ManipularArquivo manipularArquivo = new ManipularArquivo();
 
         try {
-            // Processar arquivos e inserir dados no banco
-            tratarArquivo.processarArquivosEDados(diretorioBase, bancoDeDados);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                // Fechar a conexão ao banco de dados ao final
-                bancoDeDados.fecharConexao();
-            } catch (Exception e) {
-                e.printStackTrace();
+            // Aumentando limite de capacidade do apache poi
+            IOUtils.setByteArrayMaxOverride(250_000_000);
+
+            String diretorioBase = "./base de dados";
+            File pasta = new File(diretorioBase);
+            File[] arquivos = pasta.listFiles((dir, nome) -> nome.contains("Território -") && nome.endsWith(".xlsx"));
+
+            if(arquivos != null) {
+                for (File arquivo : arquivos) {
+                    List<List<Object>> dados = manipularArquivo.lerPlanilha(arquivo.toString());
+                    System.out.println("Inserindo dados de novo");
+                    banco.conectar();
+                    banco.inserirDados(dados);
+                }
             }
+
+        } catch (SQLException | ClassNotFoundException e) {
+            System.out.println("Erro: " + e.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            banco.fecharConexao();
         }
     }
 }
