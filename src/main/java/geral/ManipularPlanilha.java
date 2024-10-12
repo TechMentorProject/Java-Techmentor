@@ -30,10 +30,6 @@ public class ManipularPlanilha implements XSSFSheetXMLHandler.SheetContentsHandl
         while (linhaAtual.size() < indiceColuna) {
             linhaAtual.add(null);
         }
-        // Converte o valor da célula para UTF-8 se necessário
-        if (valorFormatado != null) {
-            valorFormatado = new String(valorFormatado.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
-        }
         linhaAtual.add(valorFormatado);
     }
 
