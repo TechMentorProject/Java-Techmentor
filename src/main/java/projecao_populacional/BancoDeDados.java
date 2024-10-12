@@ -148,11 +148,14 @@ public class BancoDeDados {
         }
     }
 
-    // Verificar se algum campo é inválido (igual ao `algumCampoInvalido`)
-    private boolean algumCampoInvalido(String... campos) {
-        for (String campo : campos) {
-            if (campo == null || campo.isEmpty()) {
-                return true;
+    // Método auxiliar para verificar campos inválidos
+    private boolean algumCampoInvalido(Object... campos) {
+        for (Object campo : campos) {
+            if (campo == null) {
+                return true; // Se o campo for null, é inválido
+            }
+            if (campo instanceof String && ((String) campo).isEmpty()) {
+                return true; // Se for uma String vazia, é inválido
             }
         }
         return false;
