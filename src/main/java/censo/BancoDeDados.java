@@ -27,7 +27,7 @@ public class BancoDeDados {
         }
     }
 
-    private void truncarTabela( ) throws SQLException {
+    public void truncarTabela( ) throws SQLException {
         System.out.println("Truncando a tabela " + "censoIBGE" + "...");
         try (Statement statement = conexao.createStatement()) {
             String truncateQuery = "TRUNCATE TABLE " + "censoIBGE";
@@ -38,7 +38,6 @@ public class BancoDeDados {
 
     public void inserirDados(List<List<Object>> dadosExcel) throws SQLException {
 
-        truncarTabela();
         if (conexao == null) {
             throw new SQLException("Conexão com o banco de dados não foi estabelecida.");
         }
@@ -52,10 +51,17 @@ public class BancoDeDados {
             for (int i = 1; i < dadosExcel.size(); i++) {
                 String dados = dadosExcel.get(i).toString();
                 String [] dadosSeparados = dados.split(",");
+                if(dadosSeparados[1] == null || dadosSeparados[2] == null || dadosSeparados[3] == null) {
+                continue;
+                }
+                Double crescimentoPopulacional = Double.parseDouble(dadosSeparados[1]);
+                Double densidadeDemografica = Double.parseDouble(dadosSeparados[2]);
+                System.out.println(crescimentoPopulacional);
+                System.out.println(densidadeDemografica);
                 if(dadosSeparados[i] != null || dadosSeparados[i].isEmpty()) {
                     guardarValor.setString(1, dadosSeparados[3]); // Cidade
-                    guardarValor.setString(2, dadosSeparados[1]); // crescimentoPopulacional
-                    guardarValor.setString(3, dadosSeparados[2]); // densidadeDemografica
+                    guardarValor.setDouble(2, crescimentoPopulacional); // crescimentoPopulacional
+                    guardarValor.setDouble(3, densidadeDemografica); // densidadeDemografica
                 }
                 guardarValor.executeUpdate();
             }

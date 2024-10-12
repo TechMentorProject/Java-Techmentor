@@ -23,6 +23,9 @@ public class Main {
             File[] arquivos = pasta.listFiles((dir, nome) -> nome.contains("Território -") && nome.endsWith(".xlsx"));
 
             if(arquivos != null) {
+                banco.conectar();
+                banco.truncarTabela();
+                banco.fecharConexao();
                 for (File arquivo : arquivos) {
                     List<List<Object>> dados = manipularArquivo.lerPlanilha(arquivo.toString());
                     System.out.println("Inserindo dados de novo");
