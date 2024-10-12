@@ -93,10 +93,10 @@ public class BancoDeDados {
         Double areaCoberta = Double.parseDouble(areaCobertaFormatada);
         String tecnologiaFormatada = formatarTecnologia(buscarValorValido(valores, 3));
 
-        // Verifica se algum campo essencial é inválido
-//        if (algumCampoInvalido(ano, cidade, operadora, domiciliosCobertosPercent, areaCobertaPercent, tecnologiaFormatada)) {
-//            return false;
-//        }
+//         Verifica se algum campo essencial é inválido
+        if (algumCampoInvalido(ano, cidade, operadora, domiciliosCobertosPercent, areaCobertaPercent, tecnologiaFormatada)) {
+            return false;
+        }
 
         // Ignora se % coberto é zero
         if ("0".equals(areaCobertaPercent)) {
@@ -135,11 +135,14 @@ public class BancoDeDados {
         preparedStatement.addBatch();
     }
 
-    // Método auxiliar para verificar campos inválidos (igual ao `algumCampoInvalido`)
-    private boolean algumCampoInvalido(String... campos) {
-        for (String campo : campos) {
-            if (campo == null || campo.isEmpty()) {
-                return true;
+    // Método auxiliar para verificar campos inválidos
+    private boolean algumCampoInvalido(Object... campos) {
+        for (Object campo : campos) {
+            if (campo == null) {
+                return true; // Se o campo for null, é inválido
+            }
+            if (campo instanceof String && ((String) campo).isEmpty()) {
+                return true; // Se for uma String vazia, é inválido
             }
         }
         return false;
