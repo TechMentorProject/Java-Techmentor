@@ -1,9 +1,6 @@
 package censo;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -30,7 +27,18 @@ public class BancoDeDados {
         }
     }
 
+    private void truncarTabela( ) throws SQLException {
+        System.out.println("Truncando a tabela " + "censoIBGE" + "...");
+        try (Statement statement = conexao.createStatement()) {
+            String truncateQuery = "TRUNCATE TABLE " + "censoIBGE";
+            statement.executeUpdate(truncateQuery);
+            System.out.println("Tabela truncada com sucesso!");
+        }
+    }
+
     public void inserirDados(List<List<Object>> dadosExcel) throws SQLException {
+
+        truncarTabela();
         if (conexao == null) {
             throw new SQLException("Conexão com o banco de dados não foi estabelecida.");
         }
@@ -45,9 +53,9 @@ public class BancoDeDados {
                 String dados = dadosExcel.get(i).toString();
                 String [] dadosSeparados = dados.split(",");
                 if(dadosSeparados[i] != null || dadosSeparados[i].isEmpty()) {
-                    guardarValor.setString(1, dadosSeparados[3]); // Verifica se a área é null
-                    guardarValor.setString(2, dadosSeparados[1]); // Verifica se a densidade é null
-                    guardarValor.setString(3, dadosSeparados[2]); // Verifica se a UF é null
+                    guardarValor.setString(1, dadosSeparados[3]); // Cidade
+                    guardarValor.setString(2, dadosSeparados[1]); // crescimentoPopulacional
+                    guardarValor.setString(3, dadosSeparados[2]); // densidadeDemografica
                 }
                 guardarValor.executeUpdate();
             }
