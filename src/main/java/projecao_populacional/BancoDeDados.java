@@ -84,14 +84,13 @@ public class BancoDeDados {
             System.out.println("Linha inválida, ignorando: " + linha);
             return false;
         }
-
-        String estado = buscarValorValido(valores, 4);
-        String idade = buscarValorValido(valores, 0);
-        String ano_2024 = buscarValorValido(valores, 29);
-        String ano_2025 = buscarValorValido(valores, 30);
-        String ano_2026 = buscarValorValido(valores, 31);
-        String ano_2027 = buscarValorValido(valores, 32);
-        String ano_2028 = buscarValorValido(valores, 33);
+        String estado = buscarValorValido(valores, 4).replace(".", "");
+        String idade = buscarValorValido(valores, 0).replace(".", "");
+        String ano_2024 = buscarValorValido(valores, 29).replace(".", "");
+        String ano_2025 = buscarValorValido(valores, 30).replace(".", "");
+        String ano_2026 = buscarValorValido(valores, 31).replace(".", "");
+        String ano_2027 = buscarValorValido(valores, 32).replace(".", "");
+        String ano_2028 = buscarValorValido(valores, 33).replace(".", "");
 
         // Ignorar linhas com palavras proibidas
         if (contémPalavrasProibidas(estado, idade, linha)) {
@@ -161,13 +160,20 @@ public class BancoDeDados {
 
     // Preencher o PreparedStatement (igual ao `guardarValorProBanco`)
     private void guardarValorProBanco(PreparedStatement preparedStatement, String estado, String idade, String ano_2024, String ano_2025, String ano_2026, String ano_2027, String ano_2028) throws SQLException {
+        Integer idadeFormatada = Integer.parseInt(idade);
+        Integer _ano_2024 = Integer.parseInt(ano_2024);
+        Integer _ano_2025 = Integer.parseInt(ano_2025);
+        Integer _ano_2026 = Integer.parseInt(ano_2026);
+        Integer _ano_2027 = Integer.parseInt(ano_2027);
+        Integer _ano_2028 = Integer.parseInt(ano_2028);
+
         preparedStatement.setString(1, estado);
-        preparedStatement.setString(2, idade);
-        preparedStatement.setString(3, ano_2024);
-        preparedStatement.setString(4, ano_2025);
-        preparedStatement.setString(5, ano_2026);
-        preparedStatement.setString(6, ano_2027);
-        preparedStatement.setString(7, ano_2028);
+        preparedStatement.setInt(2,idadeFormatada);
+        preparedStatement.setInt(3, _ano_2024);
+        preparedStatement.setInt(4, _ano_2025);
+        preparedStatement.setInt(5, _ano_2026);
+        preparedStatement.setInt(6, _ano_2027);
+        preparedStatement.setInt(7, _ano_2028);
     }
 
     // Processar a linha e convertê-la para String (igual ao `processarLinha`)

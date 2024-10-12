@@ -73,16 +73,20 @@ public class BancoDeDados {
         // Agrupando a extração e validação dos valores
         String nomeDaUF = buscarValorValido(valores, 28);
         String empresaFistel = buscarValorValido(valores, 4);
-        String latitude = buscarValorValido(valores, 11);
-        String longitude = buscarValorValido(valores, 12);
+        String _latitude = buscarValorValido(valores, 11);
+        String _longitude = buscarValorValido(valores, 12);
         String codigoIBGE = buscarValorValido(valores, 25);
         String tecnologia = buscarValorValido(valores, 9);
 
-        // Verifica se algum campo é inválido antes de inserir no banco
-        if (algumCampoInvalido(nomeDaUF, empresaFistel, latitude, longitude, codigoIBGE, tecnologia)) {
+//         Verifica se algum campo é inválido antes de inserir no banco
+        if (algumCampoInvalido(nomeDaUF, empresaFistel, _latitude, _longitude, codigoIBGE, tecnologia)) {
 //            System.err.println("Dados inválidos na linha, ignorando: " + linha);
             return false;
         }
+
+        Long longitude = Long.parseLong(_longitude.replace(".", ""));
+        Long latitude = Long.parseLong(_latitude.replace(".", ""));
+
         guardarValorProBanco(preparedStatement, nomeDaUF, empresaFistel, latitude, longitude, codigoIBGE, tecnologia);
         return true;
     }
@@ -121,11 +125,11 @@ public class BancoDeDados {
     }
 
     // Preenche o PreparedStatement com os valores corretos
-    private void guardarValorProBanco(PreparedStatement guardarValor, String nomeDaUF, String empresaFistel, String latitude, String longitude, String codigoIBGE, String tecnologia) throws SQLException {
+    private void guardarValorProBanco(PreparedStatement guardarValor, String nomeDaUF, String empresaFistel, Long latitude, Long longitude, String codigoIBGE, String tecnologia) throws SQLException {
         guardarValor.setString(1, nomeDaUF);
         guardarValor.setString(2, empresaFistel);
-        guardarValor.setString(3, latitude);
-        guardarValor.setString(4, longitude);
+        guardarValor.setDouble(3, latitude);
+        guardarValor.setDouble(4, longitude);
         guardarValor.setString(5, codigoIBGE);
         guardarValor.setString(6, tecnologia);
     }

@@ -81,25 +81,30 @@ public class BancoDeDados {
         String ano = buscarValorValido(valores, 0);
         String cidade = buscarValorValido(valores, 5);
         String operadora = buscarValorValido(valores, 2);
-        String domiciliosCobertosPercent = buscarValorValido(valores, 10);
+        String domiciliosCobertosPercentBruto = buscarValorValido(valores, 10);
+
+
+            Double domiciliosCobertosPercent = Double.parseDouble(domiciliosCobertosPercentBruto);
+
         String areaCobertaPercent = buscarValorValido(valores, 11);
 
         // Formatações específicas
         String areaCobertaFormatada = formatarAreaCoberta(areaCobertaPercent);
+        Double areaCoberta = Double.parseDouble(areaCobertaFormatada);
         String tecnologiaFormatada = formatarTecnologia(buscarValorValido(valores, 3));
 
         // Verifica se algum campo essencial é inválido
-        if (algumCampoInvalido(ano, cidade, operadora, domiciliosCobertosPercent, areaCobertaPercent, tecnologiaFormatada)) {
-            return false;
-        }
+//        if (algumCampoInvalido(ano, cidade, operadora, domiciliosCobertosPercent, areaCobertaPercent, tecnologiaFormatada)) {
+//            return false;
+//        }
 
         // Ignora se % coberto é zero
-        if ("0".equals(domiciliosCobertosPercent) || "0".equals(areaCobertaPercent)) {
+        if ("0".equals(areaCobertaPercent)) {
             return false;
         }
 
         // Preencher o `PreparedStatement`
-        guardarValorProBanco(preparedStatement, ano, cidade, operadora, domiciliosCobertosPercent, areaCobertaFormatada, tecnologiaFormatada);
+        guardarValorProBanco(preparedStatement, ano, cidade, operadora, domiciliosCobertosPercent, areaCoberta, tecnologiaFormatada);
         return true;
     }
 
@@ -141,12 +146,12 @@ public class BancoDeDados {
     }
 
     // Método auxiliar para preencher o `PreparedStatement` (igual ao `guardarValorProBanco`)
-    private void guardarValorProBanco(PreparedStatement guardarValor, String ano, String cidade, String operadora, String domiciliosCobertosPercent, String areaCobertaFormatada, String tecnologiaFormatada) throws SQLException {
+    private void guardarValorProBanco(PreparedStatement guardarValor, String ano, String cidade, String operadora, Double domiciliosCobertosPercent, Double areaCobertaFormatada, String tecnologiaFormatada) throws SQLException {
         guardarValor.setString(1, ano);
         guardarValor.setString(2, cidade);
         guardarValor.setString(3, operadora);
-        guardarValor.setString(4, domiciliosCobertosPercent);
-        guardarValor.setString(5, areaCobertaFormatada);
+        guardarValor.setDouble(4, domiciliosCobertosPercent);
+        guardarValor.setDouble(5, areaCobertaFormatada);
         guardarValor.setString(6, tecnologiaFormatada);
     }
 
