@@ -12,7 +12,11 @@ public class BancoDeDados {
     public void conectar() throws ClassNotFoundException, SQLException {
         System.out.println("Conectando no banco...");
         Class.forName("com.mysql.cj.jdbc.Driver");
-        conexao = DriverManager.getConnection("jdbc:mysql://localhost:3306/techmentor?useUnicode=true&characterEncoding=UTF-8", "root", "root");
+        conexao = DriverManager.getConnection(
+                "jdbc:mysql://localhost:3306/techmentor?useUnicode=true&characterEncoding=utf8&characterSetResults=utf8",
+                "root",
+                "root"
+        );
         conexao.setAutoCommit(false);  // Controle de transação manual
         System.out.println("Banco conectado.");
     }
