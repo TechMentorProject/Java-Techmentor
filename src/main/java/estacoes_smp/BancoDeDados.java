@@ -11,7 +11,7 @@ public class BancoDeDados {
     public void conectar() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         conexao = DriverManager.getConnection(
-                "jdbc:mysql://localhost:3306/techmentor?useUnicode=true&characterEncoding=utf8&characterSetResults=utf8",
+                "jdbc:mysql://localhost:3306/techmentor",
                 "root",
                 "root"
         );
