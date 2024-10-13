@@ -209,12 +209,12 @@ public class BancoDeDados {
 
     // Processar a linha e convertê-la para String (igual ao `processarLinha`)
     private String[] processarLinha(List<Object> linha) {
-        String linhaConvertida = buscarValorValido(linha);
+        String linhaConvertida = formatarLinha (linha);
         return linhaConvertida.split(";");
     }
 
     // Converte uma lista de objetos para uma string com separador ";"
-    private String buscarValorValido(List<Object> row) {
+    private String formatarLinha(List<Object> row) {
         StringBuilder linha = new StringBuilder();
         for (Object celula : row) {
             if (!linha.isEmpty()) {
