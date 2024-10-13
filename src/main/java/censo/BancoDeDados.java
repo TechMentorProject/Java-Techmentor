@@ -1,8 +1,6 @@
 package censo;
 
 import java.sql.*;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class BancoDeDados {
@@ -58,7 +56,7 @@ public class BancoDeDados {
                 Double densidadeDemografica = Double.parseDouble(dadosSeparados[2]);
                 System.out.println(crescimentoPopulacional);
                 System.out.println(densidadeDemografica);
-                if(dadosSeparados[i] != null || dadosSeparados[i].isEmpty()) {
+                if(dadosSeparados[i] != null && !dadosSeparados[i].isEmpty()) {
                     guardarValor.setString(1, dadosSeparados[3]); // Cidade
                     guardarValor.setDouble(2, crescimentoPopulacional); // crescimentoPopulacional
                     guardarValor.setDouble(3, densidadeDemografica); // densidadeDemografica

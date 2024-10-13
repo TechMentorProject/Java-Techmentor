@@ -2,7 +2,6 @@ package municipio;
 
 import java.sql.*;
 import java.util.List;
-import java.util.Arrays;
 
 public class BancoDeDados {
 
@@ -84,13 +83,19 @@ public class BancoDeDados {
         String domiciliosCobertosPercentBruto = buscarValorValido(valores, 10);
 
 
-            Double domiciliosCobertosPercent = Double.parseDouble(domiciliosCobertosPercentBruto);
+        Double domiciliosCobertosPercent = null;
+        if (domiciliosCobertosPercentBruto != null) {
+            domiciliosCobertosPercent = Double.parseDouble(domiciliosCobertosPercentBruto);
+        }
 
         String areaCobertaPercent = buscarValorValido(valores, 11);
 
         // Formatações específicas
         String areaCobertaFormatada = formatarAreaCoberta(areaCobertaPercent);
-        Double areaCoberta = Double.parseDouble(areaCobertaFormatada);
+        Double areaCoberta = null;
+        if (areaCobertaFormatada != null) {
+            areaCoberta = Double.parseDouble(areaCobertaFormatada);
+        }
         String tecnologiaFormatada = formatarTecnologia(buscarValorValido(valores, 3));
 
 //         Verifica se algum campo essencial é inválido

@@ -84,16 +84,44 @@ public class BancoDeDados {
             System.out.println("Linha inválida, ignorando: " + linha);
             return false;
         }
-        String estado = buscarValorValido(valores, 4).replace(".", "");
-        String idade = buscarValorValido(valores, 0).replace(".", "");
-        String ano_2024 = buscarValorValido(valores, 29).replace(".", "");
-        String ano_2025 = buscarValorValido(valores, 30).replace(".", "");
-        String ano_2026 = buscarValorValido(valores, 31).replace(".", "");
-        String ano_2027 = buscarValorValido(valores, 32).replace(".", "");
-        String ano_2028 = buscarValorValido(valores, 33).replace(".", "");
+        String estado = buscarValorValido(valores, 4);
+        if (estado != null) {
+            estado = estado.replace(".", "");
+        }
+
+        String idade = buscarValorValido(valores, 0);
+        if (idade != null) {
+            idade = idade.replace(".", "");
+        }
+
+        String ano_2024 = buscarValorValido(valores, 29);
+        if (ano_2024 != null) {
+            ano_2024 = ano_2024.replace(".", "");
+        }
+
+        String ano_2025 = buscarValorValido(valores, 30);
+        if (ano_2025 != null) {
+            ano_2025 = ano_2025.replace(".", "");
+        }
+
+        String ano_2026 = buscarValorValido(valores, 31);
+        if (ano_2026 != null) {
+            ano_2026 = ano_2026.replace(".", "");
+        }
+
+        String ano_2027 = buscarValorValido(valores, 32);
+        if (ano_2027 != null) {
+            ano_2027 = ano_2027.replace(".", "");
+        }
+
+        String ano_2028 = buscarValorValido(valores, 33);
+        if (ano_2028 != null) {
+            ano_2028 = ano_2028.replace(".", "");
+        }
+
 
         // Ignorar linhas com palavras proibidas
-        if (contémPalavrasProibidas(estado, idade, linha)) {
+        if (estado != null && contemPalavrasProibidas(estado, linha)) {
             return false;
         }
 
@@ -109,7 +137,7 @@ public class BancoDeDados {
     }
 
     // Método para verificar se há palavras proibidas (similar ao `containsProhibitedWords`)
-    private boolean contémPalavrasProibidas(String estado, String idade, List<Object> linha) {
+    private boolean contemPalavrasProibidas(String estado, List<Object> linha) {
         // Converte a linha para String e aplica o filtro
         String linhaLowerCase = linha.stream()
                 .map(celula -> celula != null ? celula.toString() : "")  // Converte cada célula para String
@@ -163,12 +191,12 @@ public class BancoDeDados {
 
     // Preencher o PreparedStatement (igual ao `guardarValorProBanco`)
     private void guardarValorProBanco(PreparedStatement preparedStatement, String estado, String idade, String ano_2024, String ano_2025, String ano_2026, String ano_2027, String ano_2028) throws SQLException {
-        Integer idadeFormatada = Integer.parseInt(idade);
-        Integer _ano_2024 = Integer.parseInt(ano_2024);
-        Integer _ano_2025 = Integer.parseInt(ano_2025);
-        Integer _ano_2026 = Integer.parseInt(ano_2026);
-        Integer _ano_2027 = Integer.parseInt(ano_2027);
-        Integer _ano_2028 = Integer.parseInt(ano_2028);
+        int idadeFormatada = Integer.parseInt(idade);
+        int _ano_2024 = Integer.parseInt(ano_2024);
+        int _ano_2025 = Integer.parseInt(ano_2025);
+        int _ano_2026 = Integer.parseInt(ano_2026);
+        int _ano_2027 = Integer.parseInt(ano_2027);
+        int _ano_2028 = Integer.parseInt(ano_2028);
 
         preparedStatement.setString(1, estado);
         preparedStatement.setInt(2,idadeFormatada);
@@ -189,7 +217,7 @@ public class BancoDeDados {
     private String buscarValorValido(List<Object> row) {
         StringBuilder linha = new StringBuilder();
         for (Object celula : row) {
-            if (linha.length() > 0) {
+            if (!linha.isEmpty()) {
                 linha.append(";");
             }
             linha.append(celula != null ? celula.toString() : "");

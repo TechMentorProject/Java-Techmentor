@@ -1,7 +1,6 @@
 package estacoes_smp;
 
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
 
 public class BancoDeDados {
@@ -83,9 +82,13 @@ public class BancoDeDados {
 //            System.err.println("Dados inválidos na linha, ignorando: " + linha);
             return false;
         }
+        Long longitude = null;
+        Long latitude = null;
 
-        Long longitude = Long.parseLong(_longitude.replace(".", ""));
-        Long latitude = Long.parseLong(_latitude.replace(".", ""));
+        if (_longitude != null && _latitude != null) {
+            longitude = Long.parseLong(_longitude.replace(".", ""));
+            latitude = Long.parseLong(_latitude.replace(".", ""));
+        }
 
         guardarValorProBanco(preparedStatement, nomeDaUF, empresaFistel, latitude, longitude, codigoIBGE, tecnologia);
         return true;
