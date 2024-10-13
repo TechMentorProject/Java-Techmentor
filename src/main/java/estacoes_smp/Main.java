@@ -1,5 +1,6 @@
 package estacoes_smp;
 
+import geral.BancoOperacoes;
 import geral.ManipularArquivo;
 import org.apache.poi.util.IOUtils;
 
@@ -10,7 +11,8 @@ public class Main {
 
     public static void main(String[] args) throws SQLException {
 
-        BancoDeDados banco = new BancoDeDados();
+        InserirDados banco = new InserirDados();
+        BancoOperacoes bancoDeDados = new BancoOperacoes();
         ManipularArquivo manipularArquivo = new ManipularArquivo();
 
         try {
@@ -21,15 +23,15 @@ public class Main {
 
             List<List<Object>> dados = manipularArquivo.lerPlanilha(caminhoArquivo);
 
-            banco.conectar();
-            banco.inserirDadosComTratamento(dados);
+            bancoDeDados.conectar();
+            banco.inserirDadosComTratamento(dados, bancoDeDados.getConexao(), bancoDeDados);
 
         } catch (SQLException | ClassNotFoundException e) {
             System.out.println("Erro: " + e.getMessage());
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
-            banco.fecharConexao();
+            bancoDeDados.fecharConexao();
         }
     }
 }

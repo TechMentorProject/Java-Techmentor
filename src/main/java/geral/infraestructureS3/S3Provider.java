@@ -1,4 +1,4 @@
-package geral;
+package geral.infraestructureS3;
 import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
