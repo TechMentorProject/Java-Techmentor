@@ -1,7 +1,7 @@
-package municipio;
+package usecases.municipio;
 
-import geral.BancoOperacoes;
-import geral.ManipularArquivo;
+import infraestructure.database.BancoOperacoes;
+import infraestructure.workbook.ManipularArquivo;
 import org.apache.poi.util.IOUtils;
 
 import java.sql.SQLException;
@@ -19,7 +19,7 @@ public class Main {
             // Aumentando limite de capacidade do apache poi
             IOUtils.setByteArrayMaxOverride(250_000_000);
 
-            String caminhoArquivo = "./base de dados/Meu_Municipio_Cobertura.xlsx";
+            String caminhoArquivo = "src/main/java/resources/Meu_Municipio_Cobertura.xlsx";
 
             List<List<Object>> dados = manipularArquivo.lerPlanilha(caminhoArquivo);
 

@@ -1,4 +1,4 @@
-package censo;
+package usecases.censo;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

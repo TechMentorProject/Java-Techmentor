@@ -1,4 +1,4 @@
-package geral;
+package infraestructure.workbook;
 
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;

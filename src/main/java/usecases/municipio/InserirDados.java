@@ -1,7 +1,7 @@
-package municipio;
+package usecases.municipio;
 
-import geral.BancoOperacoes;
-import geral.ValidacoesLinha;
+import infraestructure.database.BancoOperacoes;
+import infraestructure.ValidacoesLinha;
 
 import java.sql.*;
 import java.util.List;

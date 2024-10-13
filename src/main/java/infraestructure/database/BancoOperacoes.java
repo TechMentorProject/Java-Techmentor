@@ -1,4 +1,4 @@
-package geral;
+package infraestructure.database;
 
 import java.sql.*;
 

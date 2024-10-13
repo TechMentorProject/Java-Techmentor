@@ -1,4 +1,4 @@
-package geral;
+package infraestructure;
 
 import java.util.List;
 

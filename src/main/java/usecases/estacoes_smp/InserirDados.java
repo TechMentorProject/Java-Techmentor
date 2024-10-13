@@ -1,7 +1,7 @@
-package estacoes_smp;
+package usecases.estacoes_smp;
 
-import geral.BancoOperacoes;
-import geral.ValidacoesLinha;
+import infraestructure.database.BancoOperacoes;
+import infraestructure.ValidacoesLinha;
 
 import java.sql.*;
 import java.util.List;

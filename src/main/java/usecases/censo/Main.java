@@ -1,7 +1,7 @@
-package censo;
+package usecases.censo;
 
-import geral.BancoOperacoes;
-import geral.ManipularArquivo;
+import infraestructure.database.BancoOperacoes;
+import infraestructure.workbook.ManipularArquivo;
 import org.apache.poi.util.IOUtils;
 
 import java.io.File;
@@ -20,7 +20,7 @@ public class Main {
             // Aumentando limite de capacidade do Apache POI
             IOUtils.setByteArrayMaxOverride(250_000_000);
 
-            String diretorioBase = "./base de dados";
+            String diretorioBase = "src/main/java/resources";
             File pasta = new File(diretorioBase);
             File[] arquivos = pasta.listFiles((dir, nome) -> nome.contains("Território -") && nome.endsWith(".xlsx"));
 

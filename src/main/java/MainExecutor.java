@@ -1,4 +1,3 @@
-package geral;
 import java.sql.SQLException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -18,7 +17,7 @@ public class MainExecutor {
 
         executor.submit(() -> {
             try {
-                censo.Main.main(args);
+                usecases.censo.Main.main(args);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -26,7 +25,7 @@ public class MainExecutor {
 
         executor.submit(() -> {
             try {
-                estacoes_smp.Main.main(args);
+                usecases.estacoes_smp.Main.main(args);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -34,14 +33,14 @@ public class MainExecutor {
 
         executor.submit(() -> {
             try {
-                municipio.Main.main(args);
+                usecases.municipio.Main.main(args);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         });
         executor.submit(() -> {
             try {
-                projecao_populacional.Main.main(args);
+                usecases.projecao_populacional.Main.main(args);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
