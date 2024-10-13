@@ -8,7 +8,6 @@ import java.util.List;
 
 public class InserirDados {
 
-//    BancoOperacoes bancoDeDados = new BancoOperacoes();
     ValidacoesLinha validadacoesLinha = new ValidacoesLinha();
 
      void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException {
@@ -36,7 +35,6 @@ public class InserirDados {
             if (!extraindoValoresDoApache(preparedStatement, valores, linha)) {
                 continue;
             }
-
             bancoDeDados.adicionarBatch(preparedStatement, i);
         }
     }
@@ -55,9 +53,8 @@ public class InserirDados {
         String codigoIBGE = validadacoesLinha.buscarValorValido(valores, 25);
         String tecnologia = validadacoesLinha.buscarValorValido(valores, 9);
 
-//         Verifica se algum campo é inválido antes de inserir no banco
+        // Verifica se algum campo é inválido antes de inserir no banco
         if (validadacoesLinha.algumCampoInvalido(nomeDaUF, empresaFistel, _latitude, _longitude, codigoIBGE, tecnologia)) {
-//            System.err.println("Dados inválidos na linha, ignorando: " + linha);
             return false;
         }
         Long longitude = null;
@@ -67,11 +64,9 @@ public class InserirDados {
             longitude = Long.parseLong(_longitude.replace(".", ""));
             latitude = Long.parseLong(_latitude.replace(".", ""));
         }
-
         guardarValorProBanco(preparedStatement, nomeDaUF, empresaFistel, latitude, longitude, codigoIBGE, tecnologia);
         return true;
     }
-
 
     // Método auxiliar para processar cada linha e retornar os valores como array de String
     private String[] processarLinha(List<Object> linha) {

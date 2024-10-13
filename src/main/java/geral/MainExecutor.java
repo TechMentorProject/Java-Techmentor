@@ -18,36 +18,32 @@ public class MainExecutor {
 
         executor.submit(() -> {
             try {
-                censo.Main.main(args); // Executa a primeira main
+                censo.Main.main(args);
             } catch (SQLException e) {
-                // Aqui você pode tratar a exceção, como logar o erro
-                e.printStackTrace(); // Para imprimir o stack trace
+                e.printStackTrace();
             }
         });
 
         executor.submit(() -> {
             try {
-                estacoes_smp.Main.main(args); // Executa a primeira main
+                estacoes_smp.Main.main(args);
             } catch (SQLException e) {
-                // Aqui você pode tratar a exceção, como logar o erro
-                e.printStackTrace(); // Para imprimir o stack trace
+                e.printStackTrace();
             }
         });
 
         executor.submit(() -> {
             try {
-                municipio.Main.main(args); // Executa a primeira main
+                municipio.Main.main(args);
             } catch (SQLException e) {
-                // Aqui você pode tratar a exceção, como logar o erro
-                e.printStackTrace(); // Para imprimir o stack trace
+                e.printStackTrace();
             }
         });
         executor.submit(() -> {
             try {
-                projecao_populacional.Main.main(args); // Executa a primeira main
+                projecao_populacional.Main.main(args);
             } catch (SQLException e) {
-                // Aqui você pode tratar a exceção, como logar o erro
-                e.printStackTrace(); // Para imprimir o stack trace
+                e.printStackTrace();
             }
         });
 

@@ -29,8 +29,6 @@ public class InserirDados {
 
     // Processar e inserir os dados no banco (semelhante ao `processarEInserirDados`)
     private void processarEInserirDados(List<List<Object>> dadosExcel, PreparedStatement preparedStatement, BancoOperacoes bancoDeDados) throws SQLException {
-        int linhasIgnoradas = 0;
-        int linhasInseridas = 0;
 
         for (int i = 0; i < dadosExcel.size(); i++) {
             List<Object> linha = dadosExcel.get(i);
@@ -38,22 +36,16 @@ public class InserirDados {
 
             // Verifica a validade dos dados e processa
             if (!extraindoValoresDaProjecao(preparedStatement, valores, linha)) {
-                linhasIgnoradas++;
                 continue;
             }
 
             bancoDeDados.adicionarBatch(preparedStatement, i);
-            linhasInseridas++;
         }
-
-        System.out.println("Linhas inseridas: " + linhasInseridas);
-        System.out.println("Linhas ignoradas: " + linhasIgnoradas);
     }
 
     // Extrair e validar valores da projeção (semelhante ao `extraindoValoresDoApache`)
     private boolean extraindoValoresDaProjecao(PreparedStatement preparedStatement, String[] valores, List<Object> linha) throws SQLException {
         if (valores.length < 34) {
-            System.out.println("Linha inválida, ignorando: " + linha);
             return false;
         }
         String estado = validacoesLinha.buscarValorValido(valores, 4);
@@ -91,7 +83,6 @@ public class InserirDados {
             ano_2028 = ano_2028.replace(".", "");
         }
 
-
         // Ignorar linhas com palavras proibidas
         if (estado != null && contemPalavrasProibidas(estado, linha)) {
             return false;
@@ -99,7 +90,6 @@ public class InserirDados {
 
         // Se algum campo é inválido, ignorar a linha
         if (validacoesLinha.algumCampoInvalido(estado, idade, ano_2024, ano_2025, ano_2026, ano_2027, ano_2028)) {
-            System.out.println("Linha ignorada por conter campos inválidos: " + linha);
             return false;
         }
 
@@ -117,13 +107,11 @@ public class InserirDados {
                 .toLowerCase();
 
         if (estado.equalsIgnoreCase("sul") || estado.equalsIgnoreCase("norte") || estado.equalsIgnoreCase("local")) {
-            System.out.println("Linha ignorada por ter regiões proibidas: " + linha);
             return true;
         }
 
         if (linhaLowerCase.contains("brasil") || linhaLowerCase.contains("homens") || linhaLowerCase.contains("mulheres")
                 || linhaLowerCase.contains("centro-oeste") || linhaLowerCase.contains("sudeste") || linhaLowerCase.contains("nordeste")) {
-            System.out.println("Linha ignorada devido ao filtro de palavras proibidas: " + linha);
             return true;
         }
         return false;

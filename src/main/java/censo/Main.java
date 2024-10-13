@@ -25,16 +25,16 @@ public class Main {
             File[] arquivos = pasta.listFiles((dir, nome) -> nome.contains("Território -") && nome.endsWith(".xlsx"));
 
             if (arquivos != null) {
-                bancoDeDados.conectar();  // Conecta uma vez
-                bancoDeDados.truncarTabela("censoIBGE");  // Trunca a tabela
+                bancoDeDados.conectar();
+                bancoDeDados.truncarTabela("censoIBGE");
 
                 for (File arquivo : arquivos) {
                     List<List<Object>> dados = manipularArquivo.lerPlanilha(arquivo.toString());
                     System.out.println("Inserindo dados do arquivo: " + arquivo.getName());
-                    banco.inserirDados(dados, bancoDeDados.getConexao());  // Reutiliza a conexão
+                    banco.inserirDados(dados, bancoDeDados.getConexao());
                 }
 
-                bancoDeDados.fecharConexao();  // Fecha a conexão no final
+                bancoDeDados.fecharConexao();
             }
 
         } catch (SQLException | ClassNotFoundException e) {

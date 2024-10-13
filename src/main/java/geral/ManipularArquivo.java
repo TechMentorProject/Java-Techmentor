@@ -31,6 +31,4 @@ public class ManipularArquivo {
         }
         return linhasPlanilha;
     }
-
-
 }

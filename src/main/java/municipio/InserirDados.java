@@ -44,7 +44,6 @@ public class InserirDados {
     // Método para extrair e validar os valores de cada linha (similar a `extraindoValoresDoApache`)
     private boolean extraindoValoresDoMunicipio(PreparedStatement preparedStatement, String[] valores, List<Object> linha) throws SQLException {
         if (valores.length < 13) {
-            System.err.println("Linha inválida, ignorando: " + linha);
             return false;
         }
 
@@ -53,7 +52,6 @@ public class InserirDados {
         String cidade = validadacoesLinha.buscarValorValido(valores, 5);
         String operadora = validadacoesLinha.buscarValorValido(valores, 2);
         String domiciliosCobertosPercentBruto = validadacoesLinha.buscarValorValido(valores, 10);
-
 
         Double domiciliosCobertosPercent = null;
         if (domiciliosCobertosPercentBruto != null) {
@@ -70,7 +68,7 @@ public class InserirDados {
         }
         String tecnologiaFormatada = formatarTecnologia(validadacoesLinha.buscarValorValido(valores, 3));
 
-//         Verifica se algum campo essencial é inválido
+        // Verifica se algum campo essencial é inválido
         if (validadacoesLinha.algumCampoInvalido(ano, cidade, operadora, domiciliosCobertosPercent, areaCobertaPercent, tecnologiaFormatada)) {
             return false;
         }
