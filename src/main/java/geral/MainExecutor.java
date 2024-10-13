@@ -1,5 +1,4 @@
 package geral;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -10,7 +9,7 @@ public class MainExecutor {
 
 //        executor.submit(() -> {
 //            try {
-//                geral.BaixarArquivoS3.main(args); // Executa a primeira main
+//                geral.infraestructureS3.BaixarArquivoS3.main(args); // Executa a primeira main
 //            } catch (IOException e) { // Trata ambas as exceções
 //                // Aqui você pode tratar a exceção, como logar o erro
 //                e.printStackTrace(); // Para imprimir o stack trace

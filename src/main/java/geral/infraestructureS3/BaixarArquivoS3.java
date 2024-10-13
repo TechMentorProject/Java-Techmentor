@@ -1,4 +1,4 @@
-package geral;
+package geral.infraestructureS3;
 
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -18,7 +18,6 @@ public class BaixarArquivoS3 {
         S3Client s3Client = new S3Provider().getS3Client();
         String caminhoArquivo = "./base de dados";
         String nomeObjeto;
-        Path caminho = Paths.get(caminhoArquivo);
         Path caminhoObjeto;
 
         List<Bucket> buckets =  s3Client.listBuckets().buckets();

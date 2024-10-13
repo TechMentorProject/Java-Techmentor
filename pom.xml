@@ -69,12 +69,5 @@
             <version>8.0.32</version>
         </dependency>
 
-        <!-- Lombok para anotações de código -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.18.28</version>
-            <scope>provided</scope>
-        </dependency>
     </dependencies>
 </project>
