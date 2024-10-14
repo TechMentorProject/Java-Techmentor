@@ -1,7 +1,8 @@
 package usecases.municipio;
 
-import infraestructure.database.BancoOperacoes;
-import infraestructure.ValidacoesLinha;
+import domain.Municipio;
+import infrastructure.database.BancoOperacoes;
+import infrastructure.utils.ValidacoesLinha;
 
 import java.sql.*;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.List;
 public class InserirDados {
 
     ValidacoesLinha validadacoesLinha = new ValidacoesLinha();
+    Municipio municipio = new Municipio();
 
     // Método para inserir dados com tratamento (semelhante ao `inserirDadosComTratamento`)
     public void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException {
@@ -48,40 +50,48 @@ public class InserirDados {
         }
 
         // Extração e validação de valores
-        String ano = validadacoesLinha.buscarValorValido(valores, 0);
-        String cidade = validadacoesLinha.buscarValorValido(valores, 5);
-        String operadora = validadacoesLinha.buscarValorValido(valores, 2);
+
+
+        municipio.setAno(validadacoesLinha.buscarValorValido(valores, 0));
+        municipio.setCidade(validadacoesLinha.buscarValorValido(valores, 5));
+        municipio.setOperadora(validadacoesLinha.buscarValorValido(valores, 2));
+
         String domiciliosCobertosPercentBruto = validadacoesLinha.buscarValorValido(valores, 10);
 
-        Double domiciliosCobertosPercent = null;
         if (domiciliosCobertosPercentBruto != null) {
-            domiciliosCobertosPercent = Double.parseDouble(domiciliosCobertosPercentBruto);
+            municipio.setDomiciliosCobertosPorcentagem(Integer.parseInt(domiciliosCobertosPercentBruto));
         }
 
         String areaCobertaPercent = validadacoesLinha.buscarValorValido(valores, 11);
 
         // Formatações específicas
         String areaCobertaFormatada = formatarAreaCoberta(areaCobertaPercent);
-        Double areaCoberta = null;
+
         if (areaCobertaFormatada != null) {
-            areaCoberta = Double.parseDouble(areaCobertaFormatada);
+            municipio.setAreaCobertaPorcentagem(Integer.parseInt(areaCobertaFormatada));
         }
+
         String tecnologiaFormatada = formatarTecnologia(validadacoesLinha.buscarValorValido(valores, 3));
+        municipio.setTecnologia(tecnologiaFormatada);
 
         // Verifica se algum campo essencial é inválido
-        if (validadacoesLinha.algumCampoInvalido(ano, cidade, operadora, domiciliosCobertosPercent, areaCobertaPercent, tecnologiaFormatada)) {
+        if (validadacoesLinha.algumCampoInvalido(municipio.getAno(), municipio.getCidade(), municipio.getOperadora(), municipio.getDomiciliosCobertosPorcentagem(), municipio.getAreaCobertaPorcentagem(), municipio.getTecnologia())) {
             return false;
         }
 
         // Ignora se % coberto é zero
-        if ("0".equals(areaCobertaPercent)) {
+        if (municipio.getAreaCobertaPorcentagem() == 0 || municipio.getDomiciliosCobertosPorcentagem() == 0) {
             return false;
         }
 
         // Preencher o `PreparedStatement`
-        guardarValorProBanco(preparedStatement, ano, cidade, operadora, domiciliosCobertosPercent, areaCoberta, tecnologiaFormatada);
+        guardarValorProBanco(preparedStatement, municipio.getAno(), municipio.getCidade(), municipio.getOperadora(),
+                municipio.getDomiciliosCobertosPorcentagem(), municipio.getAreaCobertaPorcentagem(),
+                municipio.getTecnologia());
+
         return true;
     }
+
 
     // Método auxiliar para formatar a área coberta
     private String formatarAreaCoberta(String areaCobertaPercent) {
@@ -92,12 +102,12 @@ public class InserirDados {
     }
 
     // Método auxiliar para preencher o `PreparedStatement` (igual ao `guardarValorProBanco`)
-    private void guardarValorProBanco(PreparedStatement guardarValor, String ano, String cidade, String operadora, Double domiciliosCobertosPercent, Double areaCobertaFormatada, String tecnologiaFormatada) throws SQLException {
+    private void guardarValorProBanco(PreparedStatement guardarValor, String ano, String cidade, String operadora, Integer domiciliosCobertosPercent, Integer areaCobertaFormatada, String tecnologiaFormatada) throws SQLException {
         guardarValor.setString(1, ano);
         guardarValor.setString(2, cidade);
         guardarValor.setString(3, operadora);
-        guardarValor.setDouble(4, domiciliosCobertosPercent);
-        guardarValor.setDouble(5, areaCobertaFormatada);
+        guardarValor.setInt(4, domiciliosCobertosPercent);
+        guardarValor.setInt(5, areaCobertaFormatada);
         guardarValor.setString(6, tecnologiaFormatada);
     }
 

@@ -1,7 +1,7 @@
 package usecases.projecao_populacional;
 
-import infraestructure.database.BancoOperacoes;
-import infraestructure.workbook.ManipularArquivo;
+import infrastructure.database.BancoOperacoes;
+import infrastructure.processing.workbook.ManipularArquivo;
 import org.apache.poi.util.IOUtils;
 
 import java.sql.SQLException;

@@ -1,5 +1,8 @@
 package usecases.censo;
 
+import domain.CensoIBGE;
+import domain.Municipio;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -7,7 +10,11 @@ import java.util.List;
 
 public class InserirDados {
 
+    CensoIBGE censo = new CensoIBGE();
+
     public void inserirDados(List<List<Object>> dadosExcel, Connection conexao) throws SQLException {
+
+
 
         if (conexao == null) {
             throw new SQLException("Conexão com o banco de dados não foi estabelecida.");
@@ -26,9 +33,14 @@ public class InserirDados {
                 // Certifique-se de que a linha tem ao menos 3 colunas
                 if (linha.size() >= 3 && linha.get(0) != null && linha.get(1) != null && linha.get(2) != null) {
                     // Definindo os valores no PreparedStatement
-                    guardarValor.setString(1, linha.get(0).toString());  // Cidade
-                    guardarValor.setDouble(2, Double.parseDouble(linha.get(1).toString()));  // Crescimento populacional
-                    guardarValor.setDouble(3, Double.parseDouble(linha.get(2).toString()));  // Densidade demográfica
+
+                    censo.setCidade(linha.get(0).toString());
+                    censo.setCrescimentoPopulacional(Double.parseDouble(linha.get(1).toString()));
+                    censo.setDensidadeDemografica(Double.parseDouble(linha.get(2).toString()));
+
+                    guardarValor.setString(1, censo.getCidade());  // Cidade
+                    guardarValor.setDouble(2, censo.getCrescimentoPopulacional());  // Crescimento populacional
+                    guardarValor.setDouble(3, censo.getDensidadeDemografica());  // Densidade demográfica
 
                     guardarValor.addBatch();  // Adicionando ao batch
 

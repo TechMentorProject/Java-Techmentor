@@ -1,7 +1,7 @@
 package usecases.estacoes_smp;
 
-import infraestructure.database.BancoOperacoes;
-import infraestructure.workbook.ManipularArquivo;
+import infrastructure.database.BancoOperacoes;
+import infrastructure.processing.workbook.ManipularArquivo;
 import org.apache.poi.util.IOUtils;
 
 import java.sql.SQLException;

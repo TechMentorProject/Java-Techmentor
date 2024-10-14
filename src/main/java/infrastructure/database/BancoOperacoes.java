@@ -1,4 +1,4 @@
-package infraestructure.database;
+package infrastructure.database;
 
 import java.sql.*;
 
