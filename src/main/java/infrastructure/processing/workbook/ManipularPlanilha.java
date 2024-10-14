@@ -1,4 +1,4 @@
-package geral;
+package infrastructure.processing.workbook;
 
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.eventusermodel.XSSFSheetXMLHandler;
@@ -27,15 +27,14 @@ public class ManipularPlanilha implements XSSFSheetXMLHandler.SheetContentsHandl
     public void cell(String referenciaCelula, String valorFormatado, XSSFComment comentario) {
         int indiceColuna = new CellReference(referenciaCelula).getCol();
         String _valorFormatado = "";
-        // Verifica e converte o valor lido da célula para UTF-8
+
         if (valorFormatado != null) {
-            // Corrige possíveis problemas de encoding com substituição de caracteres inválidos
             _valorFormatado = corrigirEncoding(valorFormatado);
+
             if(_valorFormatado.contains("�")) {
                 _valorFormatado = valorFormatado;
             }
         }
-        // Preenche a lista até a coluna desejada
         while (linhaAtual.size() < indiceColuna) {
             linhaAtual.add(null);
         }
@@ -48,11 +47,10 @@ public class ManipularPlanilha implements XSSFSheetXMLHandler.SheetContentsHandl
         return new String(bytes, StandardCharsets.UTF_8);
     }
 
-
     // Finaliza a leitura da linha atual, adicionando-a aos dados da planilha se não estiver vazia
     @Override
     public void endRow(int numeroLinha) {
-        if (!linhaAtual.isEmpty()) {  // Adiciona a linha ao conjunto de dados, se não estiver vazia
+        if (!linhaAtual.isEmpty()) {
             dadosPlanilha.add(linhaAtual);
         }
     }

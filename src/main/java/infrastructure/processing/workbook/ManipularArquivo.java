@@ -1,4 +1,4 @@
-package geral;
+package infrastructure.processing.workbook;
 
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
@@ -31,6 +31,4 @@ public class ManipularArquivo {
         }
         return linhasPlanilha;
     }
-
-
 }

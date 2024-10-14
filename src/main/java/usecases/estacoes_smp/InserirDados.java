@@ -1,19 +1,19 @@
-package estacoes_smp;
+package usecases.estacoes_smp;
 
-import geral.BancoOperacoes;
-import geral.ValidacoesLinha;
+import domain.EstacoesSMP;
+import infrastructure.database.BancoOperacoes;
+import infrastructure.utils.ValidacoesLinha;
 
 import java.sql.*;
 import java.util.List;
 
 public class InserirDados {
 
-//    BancoOperacoes bancoDeDados = new BancoOperacoes();
     ValidacoesLinha validadacoesLinha = new ValidacoesLinha();
+    EstacoesSMP estacoes = new EstacoesSMP();
 
-     void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException {
+    void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException {
         bancoDeDados.validarConexao();
-
         bancoDeDados.truncarTabela("estacoesSMP");
 
         System.out.println("Inserindo dados...");
@@ -31,12 +31,10 @@ public class InserirDados {
         for (int i = 1; i < dadosExcel.size(); i++) {
             List<Object> linha = dadosExcel.get(i);
             String[] valores = processarLinha(linha);
-
-            // Se a linha não é válida, pula para a próxima
+            
             if (!extraindoValoresDoApache(preparedStatement, valores, linha)) {
                 continue;
             }
-
             bancoDeDados.adicionarBatch(preparedStatement, i);
         }
     }
@@ -47,42 +45,46 @@ public class InserirDados {
             return false;
         }
 
-        // Agrupando a extração e validação dos valores
-        String nomeDaUF = validadacoesLinha.buscarValorValido(valores, 28);
-        String empresaFistel = validadacoesLinha.buscarValorValido(valores, 4);
-        String _latitude = validadacoesLinha.buscarValorValido(valores, 11);
-        String _longitude = validadacoesLinha.buscarValorValido(valores, 12);
-        String codigoIBGE = validadacoesLinha.buscarValorValido(valores, 25);
-        String tecnologia = validadacoesLinha.buscarValorValido(valores, 9);
+        String _longitude = validadacoesLinha.buscarValorValido(valores, 11);
+        String _latitude = validadacoesLinha.buscarValorValido(valores, 12);
 
-//         Verifica se algum campo é inválido antes de inserir no banco
-        if (validadacoesLinha.algumCampoInvalido(nomeDaUF, empresaFistel, _latitude, _longitude, codigoIBGE, tecnologia)) {
-//            System.err.println("Dados inválidos na linha, ignorando: " + linha);
+        if (_longitude == null || _latitude == null) {
             return false;
         }
-        Long longitude = null;
-        Long latitude = null;
 
-        if (_longitude != null && _latitude != null) {
-            longitude = Long.parseLong(_longitude.replace(".", ""));
-            latitude = Long.parseLong(_latitude.replace(".", ""));
+        Long longitude = Long.parseLong(_longitude.replace(".", ""));
+        Long latitude = Long.parseLong(_latitude.replace(".", ""));
+
+        estacoes.setCidade(validadacoesLinha.buscarValorValido(valores, 28));
+        estacoes.setOperadora(validadacoesLinha.buscarValorValido(valores, 4));
+        estacoes.setLatitude(latitude);
+        estacoes.setLongitude(longitude);
+        estacoes.setCodigoIBGE(validadacoesLinha.buscarValorValido(valores, 25));
+        estacoes.setTecnologia(validadacoesLinha.buscarValorValido(valores, 9));
+
+        if (validadacoesLinha.algumCampoInvalido(
+                estacoes.getCidade(),
+                estacoes.getOperadora(),
+                estacoes.getLatitude(),
+                estacoes.getLongitude(),
+                estacoes.getCodigoIBGE(),
+                estacoes.getTecnologia()
+        )) {
+            return false;
         }
 
-        guardarValorProBanco(preparedStatement, nomeDaUF, empresaFistel, latitude, longitude, codigoIBGE, tecnologia);
+        guardarValorProBanco(preparedStatement, estacoes.getCidade(), estacoes.getOperadora(), estacoes.getLatitude(), estacoes.getLongitude(), estacoes.getCodigoIBGE(), estacoes.getTecnologia());
         return true;
     }
 
-
-    // Método auxiliar para processar cada linha e retornar os valores como array de String
     private String[] processarLinha(List<Object> linha) {
         String linhaConvertida = validadacoesLinha.buscarValorValido(linha);
         return linhaConvertida.split(";");
     }
 
-    // Preenche o PreparedStatement com os valores corretos
-    private void guardarValorProBanco(PreparedStatement guardarValor, String nomeDaUF, String empresaFistel, Long latitude, Long longitude, String codigoIBGE, String tecnologia) throws SQLException {
-        guardarValor.setString(1, nomeDaUF);
-        guardarValor.setString(2, empresaFistel);
+    private void guardarValorProBanco(PreparedStatement guardarValor, String cidade, String operadora, Long latitude, Long longitude, String codigoIBGE, String tecnologia) throws SQLException {
+        guardarValor.setString(1, cidade);
+        guardarValor.setString(2, operadora);
         guardarValor.setDouble(3, latitude);
         guardarValor.setDouble(4, longitude);
         guardarValor.setString(5, codigoIBGE);

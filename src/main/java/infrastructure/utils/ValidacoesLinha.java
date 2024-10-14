@@ -1,4 +1,4 @@
-package geral;
+package infrastructure.utils;
 
 import java.util.List;
 

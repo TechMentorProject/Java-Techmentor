@@ -1,4 +1,3 @@
-package geral;
 import java.sql.SQLException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -18,36 +17,32 @@ public class MainExecutor {
 
         executor.submit(() -> {
             try {
-                censo.Main.main(args); // Executa a primeira main
+                usecases.censo.Main.main(args);
             } catch (SQLException e) {
-                // Aqui você pode tratar a exceção, como logar o erro
-                e.printStackTrace(); // Para imprimir o stack trace
+                e.printStackTrace();
             }
         });
 
         executor.submit(() -> {
             try {
-                estacoes_smp.Main.main(args); // Executa a primeira main
+                usecases.estacoes_smp.Main.main(args);
             } catch (SQLException e) {
-                // Aqui você pode tratar a exceção, como logar o erro
-                e.printStackTrace(); // Para imprimir o stack trace
+                e.printStackTrace();
             }
         });
 
         executor.submit(() -> {
             try {
-                municipio.Main.main(args); // Executa a primeira main
+                usecases.municipio.Main.main(args);
             } catch (SQLException e) {
-                // Aqui você pode tratar a exceção, como logar o erro
-                e.printStackTrace(); // Para imprimir o stack trace
+                e.printStackTrace();
             }
         });
         executor.submit(() -> {
             try {
-                projecao_populacional.Main.main(args); // Executa a primeira main
+                usecases.projecao_populacional.Main.main(args);
             } catch (SQLException e) {
-                // Aqui você pode tratar a exceção, como logar o erro
-                e.printStackTrace(); // Para imprimir o stack trace
+                e.printStackTrace();
             }
         });
 

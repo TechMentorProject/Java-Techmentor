@@ -1,8 +1,10 @@
-package projecao_populacional;
+package usecases.projecao_populacional;
 
-import geral.BancoOperacoes;
-import geral.ValidacoesLinha;
+import domain.ProjecaoPopulacional;
+import infrastructure.database.BancoOperacoes;
+import infrastructure.utils.ValidacoesLinha;
 
+import java.awt.*;
 import java.sql.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -10,6 +12,8 @@ import java.util.stream.Collectors;
 public class InserirDados {
 
     ValidacoesLinha validacoesLinha = new ValidacoesLinha();
+    ProjecaoPopulacional projecao = new ProjecaoPopulacional();
+
     // Inserir dados com tratamento (similar ao `inserirDadosComTratamento`)
     public void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException {
         bancoDeDados.validarConexao();
@@ -29,8 +33,6 @@ public class InserirDados {
 
     // Processar e inserir os dados no banco (semelhante ao `processarEInserirDados`)
     private void processarEInserirDados(List<List<Object>> dadosExcel, PreparedStatement preparedStatement, BancoOperacoes bancoDeDados) throws SQLException {
-        int linhasIgnoradas = 0;
-        int linhasInseridas = 0;
 
         for (int i = 0; i < dadosExcel.size(); i++) {
             List<Object> linha = dadosExcel.get(i);
@@ -38,22 +40,16 @@ public class InserirDados {
 
             // Verifica a validade dos dados e processa
             if (!extraindoValoresDaProjecao(preparedStatement, valores, linha)) {
-                linhasIgnoradas++;
                 continue;
             }
 
             bancoDeDados.adicionarBatch(preparedStatement, i);
-            linhasInseridas++;
         }
-
-        System.out.println("Linhas inseridas: " + linhasInseridas);
-        System.out.println("Linhas ignoradas: " + linhasIgnoradas);
     }
 
     // Extrair e validar valores da projeção (semelhante ao `extraindoValoresDoApache`)
     private boolean extraindoValoresDaProjecao(PreparedStatement preparedStatement, String[] valores, List<Object> linha) throws SQLException {
         if (valores.length < 34) {
-            System.out.println("Linha inválida, ignorando: " + linha);
             return false;
         }
         String estado = validacoesLinha.buscarValorValido(valores, 4);
@@ -91,7 +87,6 @@ public class InserirDados {
             ano_2028 = ano_2028.replace(".", "");
         }
 
-
         // Ignorar linhas com palavras proibidas
         if (estado != null && contemPalavrasProibidas(estado, linha)) {
             return false;
@@ -99,7 +94,6 @@ public class InserirDados {
 
         // Se algum campo é inválido, ignorar a linha
         if (validacoesLinha.algumCampoInvalido(estado, idade, ano_2024, ano_2025, ano_2026, ano_2027, ano_2028)) {
-            System.out.println("Linha ignorada por conter campos inválidos: " + linha);
             return false;
         }
 
@@ -117,13 +111,11 @@ public class InserirDados {
                 .toLowerCase();
 
         if (estado.equalsIgnoreCase("sul") || estado.equalsIgnoreCase("norte") || estado.equalsIgnoreCase("local")) {
-            System.out.println("Linha ignorada por ter regiões proibidas: " + linha);
             return true;
         }
 
         if (linhaLowerCase.contains("brasil") || linhaLowerCase.contains("homens") || linhaLowerCase.contains("mulheres")
                 || linhaLowerCase.contains("centro-oeste") || linhaLowerCase.contains("sudeste") || linhaLowerCase.contains("nordeste")) {
-            System.out.println("Linha ignorada devido ao filtro de palavras proibidas: " + linha);
             return true;
         }
         return false;
@@ -131,19 +123,20 @@ public class InserirDados {
 
     // Preencher o PreparedStatement (igual ao `guardarValorProBanco`)
     private void guardarValorProBanco(PreparedStatement preparedStatement, String estado, String idade, String ano_2024, String ano_2025, String ano_2026, String ano_2027, String ano_2028) throws SQLException {
-        int idadeFormatada = Integer.parseInt(idade);
-        int _ano_2024 = Integer.parseInt(ano_2024);
-        int _ano_2025 = Integer.parseInt(ano_2025);
-        int _ano_2026 = Integer.parseInt(ano_2026);
-        int _ano_2027 = Integer.parseInt(ano_2027);
-        int _ano_2028 = Integer.parseInt(ano_2028);
+        projecao.setEstado(estado);
+        projecao.setIdade(Integer.parseInt(idade));
+        projecao.setProjecao2024(Integer.parseInt(ano_2024));
+        projecao.setProjecao2025(Integer.parseInt(ano_2025));
+        projecao.setProjecao2026(Integer.parseInt(ano_2026));
+        projecao.setProjecao2027(Integer.parseInt(ano_2027));
+        projecao.setProjecao2028(Integer.parseInt(ano_2028));
 
-        preparedStatement.setString(1, estado);
-        preparedStatement.setInt(2, idadeFormatada);
-        preparedStatement.setInt(3, _ano_2024);
-        preparedStatement.setInt(4, _ano_2025);
-        preparedStatement.setInt(5, _ano_2026);
-        preparedStatement.setInt(6, _ano_2027);
-        preparedStatement.setInt(7, _ano_2028);
+        preparedStatement.setString(1, projecao.getEstado());
+        preparedStatement.setInt(2, projecao.getIdade());
+        preparedStatement.setInt(3, projecao.getProjecao2024());
+        preparedStatement.setInt(4, projecao.getProjecao2025());
+        preparedStatement.setInt(5, projecao.getProjecao2026());
+        preparedStatement.setInt(6, projecao.getProjecao2027());
+        preparedStatement.setInt(7, projecao.getProjecao2028());
     }
 }

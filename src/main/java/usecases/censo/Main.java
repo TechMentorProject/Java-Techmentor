@@ -1,7 +1,7 @@
-package censo;
+package usecases.censo;
 
-import geral.BancoOperacoes;
-import geral.ManipularArquivo;
+import infrastructure.database.BancoOperacoes;
+import infrastructure.processing.workbook.ManipularArquivo;
 import org.apache.poi.util.IOUtils;
 
 import java.io.File;
@@ -20,21 +20,21 @@ public class Main {
             // Aumentando limite de capacidade do Apache POI
             IOUtils.setByteArrayMaxOverride(250_000_000);
 
-            String diretorioBase = "./base de dados";
+            String diretorioBase = "src/main/java/resources";
             File pasta = new File(diretorioBase);
             File[] arquivos = pasta.listFiles((dir, nome) -> nome.contains("Território -") && nome.endsWith(".xlsx"));
 
             if (arquivos != null) {
-                bancoDeDados.conectar();  // Conecta uma vez
-                bancoDeDados.truncarTabela("censoIBGE");  // Trunca a tabela
+                bancoDeDados.conectar();
+                bancoDeDados.truncarTabela("censoIBGE");
 
                 for (File arquivo : arquivos) {
                     List<List<Object>> dados = manipularArquivo.lerPlanilha(arquivo.toString());
                     System.out.println("Inserindo dados do arquivo: " + arquivo.getName());
-                    banco.inserirDados(dados, bancoDeDados.getConexao());  // Reutiliza a conexão
+                    banco.inserirDados(dados, bancoDeDados.getConexao());
                 }
 
-                bancoDeDados.fecharConexao();  // Fecha a conexão no final
+                bancoDeDados.fecharConexao();
             }
 
         } catch (SQLException | ClassNotFoundException e) {

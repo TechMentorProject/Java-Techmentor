@@ -1,7 +1,7 @@
-package projecao_populacional;
+package usecases.estacoes_smp;
 
-import geral.BancoOperacoes;
-import geral.ManipularArquivo;
+import infrastructure.database.BancoOperacoes;
+import infrastructure.processing.workbook.ManipularArquivo;
 import org.apache.poi.util.IOUtils;
 
 import java.sql.SQLException;
@@ -19,7 +19,7 @@ public class Main {
             // Aumentando limite de capacidade do apache poi
             IOUtils.setByteArrayMaxOverride(250_000_000);
 
-            String caminhoArquivo = "./base de dados/projecoes_2024_tab1_idade_simples (1).xlsx";
+            String caminhoArquivo = "src/main/java/resources/Estacoes_SMP.xlsx";
 
             List<List<Object>> dados = manipularArquivo.lerPlanilha(caminhoArquivo);
 
