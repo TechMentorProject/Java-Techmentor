@@ -21,7 +21,7 @@ public class Main {
 
             String caminhoArquivo = "src/main/java/resources/projecoes_2024_tab1_idade_simples.xlsx";
 
-            List<List<Object>> dados = manipularArquivo.lerPlanilha(caminhoArquivo);
+            List<List<Object>> dados = manipularArquivo.lerPlanilha(caminhoArquivo, true);
 
             bancoDeDados.conectar();
             banco.inserirDadosComTratamento(dados, bancoDeDados.getConexao(), bancoDeDados);

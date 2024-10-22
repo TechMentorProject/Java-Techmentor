@@ -27,6 +27,7 @@ public class MainExecutor {
 
         executor.submit(() -> {
             try {
+                System.out.println("Entrando nas estações");
                 usecases.estacoes_smp.Main.main(args);
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -35,6 +36,7 @@ public class MainExecutor {
 
         executor.submit(() -> {
             try {
+                System.out.println("Entrando no município");
                 usecases.municipio.Main.main(args);
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -43,6 +45,7 @@ public class MainExecutor {
 
         executor.submit(() -> {
             try {
+                System.out.println("Entrando na projeção populacional");
                 usecases.projecao_populacional.Main.main(args);
             } catch (SQLException e) {
                 e.printStackTrace();
