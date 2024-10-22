@@ -19,7 +19,7 @@ public class Main {
             // Aumentando limite de capacidade do apache poi
             IOUtils.setByteArrayMaxOverride(250_000_000);
 
-            String caminhoArquivo = "src/main/java/resources/projecoes_2024_tab1_idade_simples (1).xlsx";
+            String caminhoArquivo = "src/main/java/resources/projecoes_2024_tab1_idade_simples.xlsx";
 
             List<List<Object>> dados = manipularArquivo.lerPlanilha(caminhoArquivo);
 

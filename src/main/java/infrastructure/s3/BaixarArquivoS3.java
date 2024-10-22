@@ -4,7 +4,6 @@ import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -12,11 +11,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import java.nio.file.StandardCopyOption; // Para substituir arquivos ao copiar, se necessário
+
 public class BaixarArquivoS3 {
     public static void main(String[] args) throws IOException {
 
         S3Client s3Client = new S3Provider().getS3Client();
-        String caminhoArquivo = "./base de dados";
+        String caminhoArquivo = "C:\\Users\\mathe\\Documents\\Techmentor\\Java-Techmentor\\Java-Techmentor\\src\\main\\java\\resources";
         String nomeObjeto;
         Path caminhoObjeto;
 
@@ -35,7 +36,8 @@ public class BaixarArquivoS3 {
                     .build();
 
             nomeObjeto = object.key();
-            caminhoObjeto = Paths.get(caminhoArquivo + nomeObjeto);
+            // Concatene corretamente o caminho e o nome do objeto
+            caminhoObjeto = Paths.get(caminhoArquivo, nomeObjeto);
             System.out.println(object.key());
 
             InputStream objectContent = s3Client.getObject(getObjectRequest, ResponseTransformer.toInputStream());
@@ -47,8 +49,13 @@ public class BaixarArquivoS3 {
                 Files.delete(caminhoObjeto);
                 System.out.println("Arquivo existente removido: " + caminhoObjeto);
             }
-            Files.copy(objectContent, new File(caminhoArquivo + object.key()).toPath());
+
+            // Garanta que os diretórios existam antes de salvar o arquivo
+            Files.createDirectories(caminhoObjeto.getParent());
+
+            // Copie o arquivo, substituindo caso já exista
+            Files.copy(objectContent, caminhoObjeto, StandardCopyOption.REPLACE_EXISTING);
+            System.out.println("Arquivo baixado: " + caminhoObjeto);
         }
     }
 }
-
