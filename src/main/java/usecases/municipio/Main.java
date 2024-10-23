@@ -2,6 +2,7 @@ package usecases.municipio;
 
 import infrastructure.database.BancoOperacoes;
 import infrastructure.processing.workbook.ManipularArquivo;
+import io.github.cdimascio.dotenv.Dotenv;
 import org.apache.poi.util.IOUtils;
 
 import java.sql.SQLException;
@@ -10,7 +11,7 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) throws SQLException {
-
+        Dotenv dotenv = Dotenv.load();
         InserirDados banco = new InserirDados();
         BancoOperacoes bancoDeDados = new BancoOperacoes();
         ManipularArquivo manipularArquivo = new ManipularArquivo();
@@ -19,7 +20,8 @@ public class Main {
             // Aumentando limite de capacidade do apache poi
             IOUtils.setByteArrayMaxOverride(250_000_000);
 
-            String caminhoArquivo = "src/main/java/resources/Meu_Municipio_Cobertura.xlsx";
+            String nomeArquivo = "Meu_Municipio_Cobertura.xlsx";
+            String caminhoArquivo = dotenv.get("CAMINHO_BASE") + "/" + nomeArquivo;
 
             List<List<Object>> dados = manipularArquivo.lerPlanilha(caminhoArquivo, false);
 
