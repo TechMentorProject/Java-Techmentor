@@ -1,5 +1,5 @@
 package infrastructure.s3;
-
+import io.github.cdimascio.dotenv.Dotenv;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
@@ -16,6 +16,11 @@ import java.nio.file.StandardCopyOption; // Para substituir arquivos ao copiar, 
 public class BaixarArquivoS3 {
     public static void main(String[] args) throws IOException {
 
+        Dotenv dotenv = Dotenv.load();
+
+        // Obtém o valor da variável de ambiente S3_BUCKET
+        String nomeBucket = dotenv.get("S3_BUCKET_NAME");
+
         S3Client s3Client = new S3Provider().getS3Client();
         String caminhoArquivo = "C:\\Users\\mathe\\Documents\\Techmentor\\Java-Techmentor\\Java-Techmentor\\src\\main\\java\\resources";
         String nomeObjeto;
@@ -26,12 +31,12 @@ public class BaixarArquivoS3 {
         for (Bucket bucket : buckets) {
             System.out.println("Bucket: " + bucket.name());
         }
-        ListObjectsRequest listObjects = ListObjectsRequest.builder().bucket("s3-bucket-atividade").build();
+        ListObjectsRequest listObjects = ListObjectsRequest.builder().bucket(nomeBucket).build();
 
         List<S3Object> objects = s3Client.listObjects(listObjects).contents();
         for (S3Object object : objects) {
             GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-                    .bucket("s3-bucket-atividade")
+                    .bucket(nomeBucket)
                     .key(object.key())
                     .build();
 
