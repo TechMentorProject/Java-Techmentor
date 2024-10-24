@@ -20,9 +20,8 @@ public class BaixarArquivoS3 {
 
         // Obtém o valor da variável de ambiente S3_BUCKET
         String nomeBucket = dotenv.get("S3_BUCKET_NAME");
-
         S3Client s3Client = new S3Provider().getS3Client();
-        String caminhoArquivo = "C:\\Users\\mathe\\Documents\\Techmentor\\Java-Techmentor\\Java-Techmentor\\src\\main\\java\\resources";
+        String caminhoArquivo = dotenv.get("CAMINHO_BASE");
         String nomeObjeto;
         Path caminhoObjeto;
 
