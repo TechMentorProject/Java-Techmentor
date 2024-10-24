@@ -14,7 +14,6 @@ public class InserirDados {
     ValidacoesLinha validacoesLinha = new ValidacoesLinha();
     ProjecaoPopulacional projecao = new ProjecaoPopulacional();
 
-    // Inserir dados com tratamento (similar ao `inserirDadosComTratamento`)
     public void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException {
         bancoDeDados.validarConexao();
 
@@ -31,6 +30,31 @@ public class InserirDados {
         }
     }
 
+    private int obterIndiceColuna(List<List<Object>> dadosExcel, String nomeColuna) {
+
+        String cabecalho = dadosExcel.get(4).toString(); // Obter a string do cabeçalho
+
+        cabecalho = cabecalho.replace("[", "").replace("]", "");
+
+        // Remover o BOM (Byte Order Mark) da primeira célula do cabeçalho
+        if (cabecalho.length() > 0 && cabecalho.charAt(0) == '\uFEFF') {
+            cabecalho = cabecalho.substring(1); // Remove o Byte Order Mark
+        }
+
+        // Fazer o split da string com base no delimitador ";"
+        String[] colunas = cabecalho.split(",");
+        // Itera sobre as colunas buscando o nome correspondente
+        for (int i = 0; i < colunas.length; i++) {
+            String nomeAtual = colunas[i].trim(); // Remover espaços em branco ao redor
+
+            if (nomeAtual.equalsIgnoreCase(nomeColuna)) {
+                return i; // Retorna o índice correspondente ao nome da coluna
+            }
+        }
+
+        throw new IllegalArgumentException("Coluna '" + nomeColuna + "' não encontrada no cabeçalho.");
+    }
+
     // Processar e inserir os dados no banco (semelhante ao `processarEInserirDados`)
     private void processarEInserirDados(List<List<Object>> dadosExcel, PreparedStatement preparedStatement, BancoOperacoes bancoDeDados) throws SQLException {
 
@@ -39,7 +63,7 @@ public class InserirDados {
             String[] valores = validacoesLinha.processarLinha(linha);
 
             // Verifica a validade dos dados e processa
-            if (!extraindoValoresDaProjecao(preparedStatement, valores, linha)) {
+            if (!extraindoValoresDaProjecao(preparedStatement, valores, linha, dadosExcel)) {
                 continue;
             }
 
@@ -48,41 +72,50 @@ public class InserirDados {
     }
 
     // Extrair e validar valores da projeção (semelhante ao `extraindoValoresDoApache`)
-    private boolean extraindoValoresDaProjecao(PreparedStatement preparedStatement, String[] valores, List<Object> linha) throws SQLException {
+    private boolean extraindoValoresDaProjecao(PreparedStatement preparedStatement, String[] valores, List<Object> linha, List<List<Object>> dadosExcel) throws SQLException {
+
+        int indiceIdade = obterIndiceColuna(dadosExcel, "idade");
+        int indiceEstado = obterIndiceColuna(dadosExcel, "local");
+        int indiceProj2024 = obterIndiceColuna(dadosExcel, "2024");
+        int indiceProj2025 = obterIndiceColuna(dadosExcel, "2025");
+        int indiceProj2026 = obterIndiceColuna(dadosExcel, "2026");
+        int indiceProj2027 = obterIndiceColuna(dadosExcel, "2027");
+        int indiceProj2028 = obterIndiceColuna(dadosExcel, "2028");
+
         if (valores.length < 34) {
             return false;
         }
-        String estado = validacoesLinha.buscarValorValido(valores, 4);
+        String estado = validacoesLinha.buscarValorValido(valores, indiceEstado);
         if (estado != null) {
             estado = estado.replace(".", "");
         }
 
-        String idade = validacoesLinha.buscarValorValido(valores, 0);
+        String idade = validacoesLinha.buscarValorValido(valores, indiceIdade);
         if (idade != null) {
             idade = idade.replace(".", "");
         }
 
-        String ano_2024 = validacoesLinha.buscarValorValido(valores, 29);
+        String ano_2024 = validacoesLinha.buscarValorValido(valores, indiceProj2024);
         if (ano_2024 != null) {
             ano_2024 = ano_2024.replace(".", "");
         }
 
-        String ano_2025 = validacoesLinha.buscarValorValido(valores, 30);
+        String ano_2025 = validacoesLinha.buscarValorValido(valores, indiceProj2025);
         if (ano_2025 != null) {
             ano_2025 = ano_2025.replace(".", "");
         }
 
-        String ano_2026 = validacoesLinha.buscarValorValido(valores, 31);
+        String ano_2026 = validacoesLinha.buscarValorValido(valores, indiceProj2026);
         if (ano_2026 != null) {
             ano_2026 = ano_2026.replace(".", "");
         }
 
-        String ano_2027 = validacoesLinha.buscarValorValido(valores, 32);
+        String ano_2027 = validacoesLinha.buscarValorValido(valores, indiceProj2027);
         if (ano_2027 != null) {
             ano_2027 = ano_2027.replace(".", "");
         }
 
-        String ano_2028 = validacoesLinha.buscarValorValido(valores, 33);
+        String ano_2028 = validacoesLinha.buscarValorValido(valores, indiceProj2028);
         if (ano_2028 != null) {
             ano_2028 = ano_2028.replace(".", "");
         }

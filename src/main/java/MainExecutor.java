@@ -6,12 +6,12 @@ import java.util.concurrent.Executors;
 public class MainExecutor {
     public static void main(String[] args) {
 
-        try {
-            System.out.println("Baixando arquivos do S3...");
-            infrastructure.s3.BaixarArquivoS3.main(args);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            System.out.println("Baixando arquivos do S3...");
+//            infrastructure.s3.BaixarArquivoS3.main(args);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
         ExecutorService executor = Executors.newFixedThreadPool(1);
 

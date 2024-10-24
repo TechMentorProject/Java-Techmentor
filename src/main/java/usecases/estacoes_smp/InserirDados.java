@@ -32,21 +32,53 @@ public class InserirDados {
             List<Object> linha = dadosExcel.get(i);
             String[] valores = processarLinha(linha);
             
-            if (!extraindoValoresDoApache(preparedStatement, valores, linha)) {
+            if (!extraindoValoresDoApache(preparedStatement, valores, linha, dadosExcel)) {
                 continue;
             }
             bancoDeDados.adicionarBatch(preparedStatement, i);
         }
     }
 
-    private boolean extraindoValoresDoApache(PreparedStatement preparedStatement, String[] valores, List<Object> linha) throws SQLException {
+    private int obterIndiceColuna(List<List<Object>> dadosExcel, String nomeColuna) {
+        if (dadosExcel == null || dadosExcel.isEmpty() || dadosExcel.get(0).isEmpty()) {
+            throw new IllegalArgumentException("O cabeçalho está vazio ou mal formado.");
+        }
+
+        String cabecalho = dadosExcel.get(0).toString();
+
+        // Remover o BOM (Byte Order Mark) da primeira célula do cabeçalho, se presente
+        if (cabecalho.length() > 0 && cabecalho.charAt(0) == '\uFEFF') {
+            cabecalho = cabecalho.substring(1); // Remove o Byte Order Mark
+        }
+
+        String[] colunas = cabecalho.split(";");
+
+        // Procurar a coluna pelo nome e retornar o índice correspondente
+        for (int i = 0; i < colunas.length; i++) {
+            String nomeAtual = colunas[i].trim(); // Remover espaços ao redor
+            if (nomeAtual.equalsIgnoreCase(nomeColuna)) {
+                return i;
+            }
+        }
+        throw new IllegalArgumentException("Coluna '" + nomeColuna + "' não encontrada no cabeçalho.");
+    }
+
+
+    private boolean extraindoValoresDoApache(PreparedStatement preparedStatement, String[] valores, List<Object> linha, List<List<Object>> dadosExcel) throws SQLException {
         if (valores.length < 29) {
             System.err.println("Linha inválida, ignorando: " + linha);
             return false;
         }
 
-        String _longitude = validadacoesLinha.buscarValorValido(valores, 11);
-        String _latitude = validadacoesLinha.buscarValorValido(valores, 12);
+        int indiceMunicipio = obterIndiceColuna(dadosExcel, "Município-UF");
+        int indiceOperadora = obterIndiceColuna(dadosExcel, "Empresa Fistel");
+        int indiceLatitude = obterIndiceColuna(dadosExcel, "Latitude decimal");
+        int indiceLongitude = obterIndiceColuna(dadosExcel, "Longitude decimal");
+        int indiceCodigoIBGE = obterIndiceColuna(dadosExcel, "Código IBGE");
+        int indiceTecnologia = obterIndiceColuna(dadosExcel, "Tecnologia");
+
+        String _longitude = validadacoesLinha.buscarValorValido(valores, indiceLongitude);
+        String _latitude = validadacoesLinha.buscarValorValido(valores, indiceLatitude);
 
         if (_longitude == null || _latitude == null) {
             return false;
@@ -55,12 +87,15 @@ public class InserirDados {
         Long longitude = Long.parseLong(_longitude.replace(".", ""));
         Long latitude = Long.parseLong(_latitude.replace(".", ""));
 
-        estacoes.setCidade(validadacoesLinha.buscarValorValido(valores, 28));
-        estacoes.setOperadora(validadacoesLinha.buscarValorValido(valores, 4));
+        estacoes.setCidade(validadacoesLinha.buscarValorValido(valores, indiceMunicipio + 2));
+        if (estacoes.getCidade().matches("\\d+")) {
+            return false;
+        }
+        estacoes.setOperadora(validadacoesLinha.buscarValorValido(valores, indiceOperadora));
         estacoes.setLatitude(latitude);
         estacoes.setLongitude(longitude);
-        estacoes.setCodigoIBGE(validadacoesLinha.buscarValorValido(valores, 25));
-        estacoes.setTecnologia(validadacoesLinha.buscarValorValido(valores, 9));
+        estacoes.setCodigoIBGE(validadacoesLinha.buscarValorValido(valores, indiceCodigoIBGE));
+        estacoes.setTecnologia(validadacoesLinha.buscarValorValido(valores, indiceTecnologia));
 
         if (validadacoesLinha.algumCampoInvalido(
                 estacoes.getCidade(),
@@ -72,14 +107,14 @@ public class InserirDados {
         )) {
             return false;
         }
-
         guardarValorProBanco(preparedStatement, estacoes.getCidade(), estacoes.getOperadora(), estacoes.getLatitude(), estacoes.getLongitude(), estacoes.getCodigoIBGE(), estacoes.getTecnologia());
         return true;
     }
 
     private String[] processarLinha(List<Object> linha) {
         String linhaConvertida = validadacoesLinha.buscarValorValido(linha);
-        return linhaConvertida.split(";");
+        String[] colunas = linhaConvertida.split(";");
+        return colunas;
     }
 
     private void guardarValorProBanco(PreparedStatement guardarValor, String cidade, String operadora, Long latitude, Long longitude, String codigoIBGE, String tecnologia) throws SQLException {

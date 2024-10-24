@@ -30,7 +30,7 @@ public class Main {
                 bancoDeDados.truncarTabela("censoIBGE");
 
                 for (File arquivo : arquivos) {
-                    List<List<Object>> dados = manipularArquivo.lerPlanilha(arquivo.toString(), false);
+                    List<List<Object>> dados = manipularArquivo.lerPlanilha(arquivo.toString(), true);
                     System.out.println("Inserindo dados do arquivo: " + arquivo.getName());
                     banco.inserirDados(dados, bancoDeDados.getConexao());
                 }
