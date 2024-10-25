@@ -18,6 +18,7 @@ public class InserirDados {
         bancoDeDados.validarConexao();
         bancoDeDados.truncarTabela("projecaoPopulacional");
 
+
         System.out.println("Inserindo dados...");
 
         String query = "INSERT INTO projecaoPopulacional (estado, ano, projecao) VALUES (?, ?, ?)";
@@ -111,9 +112,14 @@ public class InserirDados {
     }
 
     private void inserirNoBanco(PreparedStatement preparedStatement, String estado, int ano, long projecao) throws SQLException {
-        preparedStatement.setString(1, estado);
-        preparedStatement.setInt(2, ano);
-        preparedStatement.setLong(3, projecao);
+
+        this.projecao.setEstado(estado);
+        this.projecao.setAno(ano);
+        this.projecao.setProjecao(projecao);
+
+        preparedStatement.setString(1, this.projecao.getEstado());
+        preparedStatement.setInt(2, this.projecao.getAno());
+        preparedStatement.setLong(3, this.projecao.getProjecao());
         preparedStatement.addBatch();
     }
 }
