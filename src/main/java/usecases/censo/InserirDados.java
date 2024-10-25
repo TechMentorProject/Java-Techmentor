@@ -1,7 +1,7 @@
 package usecases.censo;
 
 import domain.CensoIBGE;
-import domain.Municipio;
+
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,9 +12,26 @@ public class InserirDados {
 
     CensoIBGE censo = new CensoIBGE();
 
+    private int obterIndiceColuna(List<List<Object>> dadosExcel, String nomeColuna) {
+
+        String cabecalho = dadosExcel.get(0).toString();
+        // Remover o BOM (Byte Order Mark) da primeira célula do cabeçalho
+        if (cabecalho.length() > 0 && cabecalho.charAt(0) == '\uFEFF') {
+            cabecalho = cabecalho.substring(1); // Remove o Byte Order Mark
+        }
+
+        String[] colunas = cabecalho.split(",");
+
+        for (int i = 0; i < colunas.length; i++) {
+            String nomeAtual = colunas[i].trim(); // Remover espaços em branco ao redor
+            if (nomeAtual.equalsIgnoreCase(nomeColuna)) {
+                return i;
+            }
+        }
+        throw new IllegalArgumentException("Coluna '" + nomeColuna + "' não encontrada no cabeçalho.");
+    }
+
     public void inserirDados(List<List<Object>> dadosExcel, Connection conexao) throws SQLException {
-
-
 
         if (conexao == null) {
             throw new SQLException("Conexão com o banco de dados não foi estabelecida.");
@@ -26,17 +43,20 @@ public class InserirDados {
 
             System.out.println("Inserindo dados no banco...");
 
-            // Iterando sobre os dados da planilha, ignorando o cabeçalho (i = 1)
+            int indiceMunicipio = obterIndiceColuna(dadosExcel, "Município");
+            int indiceDensidadeDemografica = obterIndiceColuna(dadosExcel, "Densidade demográfica(hab/km²)");
+            int indiceArea = obterIndiceColuna(dadosExcel, "Área(km²)");
+
             for (int i = 1; i < dadosExcel.size(); i++) {
                 List<Object> linha = dadosExcel.get(i);
+                System.out.println(linha.toString());
 
-                // Certifique-se de que a linha tem ao menos 3 colunas
                 if (linha.size() >= 3 && linha.get(0) != null && linha.get(1) != null && linha.get(2) != null) {
-                    // Definindo os valores no PreparedStatement
 
-                    censo.setCidade(linha.get(0).toString());
-                    censo.setCrescimentoPopulacional(Double.parseDouble(linha.get(1).toString()));
-                    censo.setDensidadeDemografica(Double.parseDouble(linha.get(2).toString()));
+                    censo.setCidade(linha.get(indiceMunicipio).toString());
+                    System.out.println(censo.getCidade());
+                    censo.setCrescimentoPopulacional(Double.parseDouble(linha.get(indiceArea).toString()));
+                    censo.setDensidadeDemografica(Double.parseDouble(linha.get(indiceDensidadeDemografica).toString()));
 
                     guardarValor.setString(1, censo.getCidade());  // Cidade
                     guardarValor.setDouble(2, censo.getCrescimentoPopulacional());  // Crescimento populacional

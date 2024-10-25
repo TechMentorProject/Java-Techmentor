@@ -2,15 +2,18 @@ package usecases.projecao_populacional;
 
 import infrastructure.database.BancoOperacoes;
 import infrastructure.processing.workbook.ManipularArquivo;
+import io.github.cdimascio.dotenv.Dotenv;
 import org.apache.poi.util.IOUtils;
 
+import java.io.File;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class Main {
 
     public static void main(String[] args) throws SQLException {
-
+        Dotenv dotenv = Dotenv.load();
         InserirDados banco = new InserirDados();
         BancoOperacoes bancoDeDados = new BancoOperacoes();
         ManipularArquivo manipularArquivo = new ManipularArquivo();
@@ -19,9 +22,25 @@ public class Main {
             // Aumentando limite de capacidade do apache poi
             IOUtils.setByteArrayMaxOverride(250_000_000);
 
-            String caminhoArquivo = "src/main/java/resources/projecoes_2024_tab1_idade_simples (1).xlsx";
+            String caminhoBase = dotenv.get("CAMINHO_BASE");
+            File diretorio = new File(caminhoBase);
+            Pattern padraoArquivo = Pattern.compile("projecoes_\\d{4}_tab1_idade_simples\\.xlsx");
 
-            List<List<Object>> dados = manipularArquivo.lerPlanilha(caminhoArquivo);
+            // Busca um arquivo que corresponda ao padrão no diretório
+            String nomeArquivo = null;
+            for (File arquivo : diretorio.listFiles()) {
+                if (padraoArquivo.matcher(arquivo.getName()).matches()) {
+                    nomeArquivo = arquivo.getName();
+                    break;
+                }
+            }
+
+            if (nomeArquivo == null) {
+                throw new RuntimeException("Nenhum arquivo encontrado com o padrão especificado.");
+            }
+            String caminhoArquivo = caminhoBase + "/" + nomeArquivo;
+
+            List<List<Object>> dados = manipularArquivo.lerPlanilha(caminhoArquivo, true);
 
             bancoDeDados.conectar();
             banco.inserirDadosComTratamento(dados, bancoDeDados.getConexao(), bancoDeDados);

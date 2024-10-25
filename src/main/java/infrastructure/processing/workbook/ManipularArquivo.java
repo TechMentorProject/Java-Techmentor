@@ -15,14 +15,14 @@ import java.util.List;
 
 public class ManipularArquivo {
 
-    public List<List<Object>> lerPlanilha(String caminhoArquivo) throws Exception {
+    public List<List<Object>> lerPlanilha(String caminhoArquivo, Boolean isProjecao) throws Exception {
         List<List<Object>> linhasPlanilha = new ArrayList<>();
 
         try (OPCPackage pacoteExcel = OPCPackage.open(new BufferedInputStream(new FileInputStream(caminhoArquivo)))) {
 
             XSSFReader leitorExcel = new XSSFReader(pacoteExcel);
             XMLReader leitorXML = org.apache.poi.util.XMLHelper.newXMLReader();
-            XSSFSheetXMLHandler manipularPlanilha = new XSSFSheetXMLHandler(leitorExcel.getStylesTable(), new ReadOnlySharedStringsTable(pacoteExcel), new ManipularPlanilha(linhasPlanilha), false);
+            XSSFSheetXMLHandler manipularPlanilha = new XSSFSheetXMLHandler(leitorExcel.getStylesTable(), new ReadOnlySharedStringsTable(pacoteExcel), new ManipularPlanilha(linhasPlanilha, isProjecao), false);
 
             try (InputStream fluxoFolha = leitorExcel.getSheetsData().next()) {
                 leitorXML.setContentHandler(manipularPlanilha);

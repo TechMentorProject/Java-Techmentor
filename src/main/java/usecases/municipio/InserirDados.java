@@ -12,7 +12,6 @@ public class InserirDados {
     ValidacoesLinha validadacoesLinha = new ValidacoesLinha();
     Municipio municipio = new Municipio();
 
-    // Método para inserir dados com tratamento (semelhante ao `inserirDadosComTratamento`)
     public void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException {
         bancoDeDados.validarConexao();
 
@@ -28,58 +27,79 @@ public class InserirDados {
             System.out.println("Dados inseridos com sucesso!");
         }
     }
+    private int obterIndiceColuna(List<List<Object>> dadosExcel, String nomeColuna) {
 
-    // Método para processar e inserir dados (semelhante ao `processarEInserirDados`)
+        String cabecalho = dadosExcel.get(0).get(0).toString(); // Obter a string do cabeçalho
+
+        // Remover o BOM (Byte Order Mark) da primeira célula do cabeçalho
+        if (cabecalho.length() > 0 && cabecalho.charAt(0) == '\uFEFF') {
+            cabecalho = cabecalho.substring(1); // Remove o Byte Order Mark
+        }
+
+        // Fazer o split da string com base no delimitador ";"
+        String[] colunas = cabecalho.split(";");
+
+        // Itera sobre as colunas buscando o nome correspondente
+        for (int i = 0; i < colunas.length; i++) {
+            String nomeAtual = colunas[i].trim(); // Remover espaços em branco ao redor
+
+            if (nomeAtual.equalsIgnoreCase(nomeColuna)) {
+                return i; // Retorna o índice correspondente ao nome da coluna
+            }
+        }
+        throw new IllegalArgumentException("Coluna '" + nomeColuna + "' não encontrada no cabeçalho.");
+    }
+
     private void processarEInserirDados(List<List<Object>> dadosExcel, PreparedStatement preparedStatement, BancoOperacoes bancoDeDados) throws SQLException {
         for (int i = 1; i < dadosExcel.size(); i++) {  // Ignora a primeira linha (cabeçalho)
             List<Object> linha = dadosExcel.get(i);
+
             String[] valores = validadacoesLinha.processarLinha(linha);
 
-            // Se a linha não for válida, pula para a próxima
-            if (!extraindoValoresDoMunicipio(preparedStatement, valores, linha)) {
+            if (!extraindoValoresDoMunicipio(preparedStatement, valores, linha, dadosExcel)) {
                 continue;
             }
             bancoDeDados.adicionarBatch(preparedStatement, i);
         }
     }
 
-    // Método para extrair e validar os valores de cada linha (similar a `extraindoValoresDoApache`)
-    private boolean extraindoValoresDoMunicipio(PreparedStatement preparedStatement, String[] valores, List<Object> linha) throws SQLException {
+    private boolean extraindoValoresDoMunicipio(PreparedStatement preparedStatement, String[] valores, List<Object> linha, List<List<Object>> dadosExcel) throws SQLException {
         if (valores.length < 13) {
             return false;
         }
 
-        // Extração e validação de valores
+        int indiceAno = obterIndiceColuna(dadosExcel, "Ano");
+        int indiceCidade = obterIndiceColuna(dadosExcel, "Município");
+        int indiceOperadora = obterIndiceColuna(dadosExcel, "Operadora");
+        int indiceDomiciliosCobertos = obterIndiceColuna(dadosExcel, "% domicílios cobertos");
+        int indiceAreaCoberta = obterIndiceColuna(dadosExcel, "% área coberta");
+        int indiceTecnologia = obterIndiceColuna(dadosExcel, "Tecnologia");
 
+        municipio.setAno(validadacoesLinha.buscarValorValido(valores, indiceAno));
+        municipio.setCidade(validadacoesLinha.buscarValorValido(valores, indiceCidade));
+        municipio.setOperadora(validadacoesLinha.buscarValorValido(valores, indiceOperadora));
 
-        municipio.setAno(validadacoesLinha.buscarValorValido(valores, 0));
-        municipio.setCidade(validadacoesLinha.buscarValorValido(valores, 5));
-        municipio.setOperadora(validadacoesLinha.buscarValorValido(valores, 2));
-
-        String domiciliosCobertosPercentBruto = validadacoesLinha.buscarValorValido(valores, 10);
+        String domiciliosCobertosPercentBruto = validadacoesLinha.buscarValorValido(valores, indiceDomiciliosCobertos - 1);
 
         if (domiciliosCobertosPercentBruto != null) {
             municipio.setDomiciliosCobertosPorcentagem(Integer.parseInt(domiciliosCobertosPercentBruto));
         }
 
-        String areaCobertaPercent = validadacoesLinha.buscarValorValido(valores, 11);
+        String areaCobertaPercent = validadacoesLinha.buscarValorValido(valores, indiceAreaCoberta - 1);
 
-        // Formatações específicas
         String areaCobertaFormatada = formatarAreaCoberta(areaCobertaPercent);
 
         if (areaCobertaFormatada != null) {
             municipio.setAreaCobertaPorcentagem(Integer.parseInt(areaCobertaFormatada));
         }
 
-        String tecnologiaFormatada = formatarTecnologia(validadacoesLinha.buscarValorValido(valores, 3));
+        String tecnologiaFormatada = formatarTecnologia(validadacoesLinha.buscarValorValido(valores, indiceTecnologia));
         municipio.setTecnologia(tecnologiaFormatada);
 
-        // Verifica se algum campo essencial é inválido
         if (validadacoesLinha.algumCampoInvalido(municipio.getAno(), municipio.getCidade(), municipio.getOperadora(), municipio.getDomiciliosCobertosPorcentagem(), municipio.getAreaCobertaPorcentagem(), municipio.getTecnologia())) {
             return false;
         }
 
-        // Ignora se % coberto é zero
         if (municipio.getAreaCobertaPorcentagem() == 0 || municipio.getDomiciliosCobertosPorcentagem() == 0) {
             return false;
         }
@@ -111,8 +131,6 @@ public class InserirDados {
         guardarValor.setString(6, tecnologiaFormatada);
     }
 
-
-    // Método auxiliar para formatar a tecnologia (igual ao `formatarTecnologia`)
     private String formatarTecnologia(String tecnologia) {
         if (tecnologia == null || tecnologia.isEmpty() || tecnologia.equalsIgnoreCase("Todas")) {
             return "2G, 3G, 4G, 5G";  // Se for "Todas", retorna todas as tecnologias
