@@ -68,7 +68,6 @@ public class InserirDados {
                     if (i % 5000 == 0) {
                         guardarValor.executeBatch();
                         conexao.commit();  // Commit manual
-                        System.out.println("Batch de 5000 registros executado.");
                     }
                 }
             }
