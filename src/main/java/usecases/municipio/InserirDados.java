@@ -22,7 +22,7 @@ public class InserirDados {
 
         System.out.println("Inserindo dados...");
 
-        String query = "INSERT INTO municipio (ano, cidade, operadora, domiciliosCobertosPorcentagem, areaCobertaPorcentagem, tecnologia) VALUES (?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO municipio (ano, cidade, operadora, domiciliosCobertosPercent, areaCobertaPercent, tecnologia) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = conexao.prepareStatement(query)) {
             processarEInserirDados(dadosExcel, preparedStatement, bancoDeDados);
             preparedStatement.executeBatch();

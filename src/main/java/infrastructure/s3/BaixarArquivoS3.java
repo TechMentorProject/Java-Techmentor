@@ -1,5 +1,4 @@
 package infrastructure.s3;
-import io.github.cdimascio.dotenv.Dotenv;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
@@ -16,12 +15,9 @@ import java.nio.file.StandardCopyOption; // Para substituir arquivos ao copiar, 
 public class BaixarArquivoS3 {
     public static void main(String[] args) throws IOException {
 
-        Dotenv dotenv = Dotenv.load();
-
-        // Obtém o valor da variável de ambiente S3_BUCKET
-        String nomeBucket = dotenv.get("S3_BUCKET_NAME");
+        String nomeBucket = "s3-teste-instancia";
         S3Client s3Client = new S3Provider().getS3Client();
-        String caminhoArquivo = dotenv.get("CAMINHO_BASE");
+        String caminhoArquivo = "/app/base-dados";
         String nomeObjeto;
         Path caminhoObjeto;
 

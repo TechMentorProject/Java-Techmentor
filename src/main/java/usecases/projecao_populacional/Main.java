@@ -2,7 +2,6 @@ package usecases.projecao_populacional;
 
 import infrastructure.database.BancoOperacoes;
 import infrastructure.processing.workbook.ManipularArquivo;
-import io.github.cdimascio.dotenv.Dotenv;
 import org.apache.poi.util.IOUtils;
 
 import java.io.File;
@@ -13,7 +12,6 @@ import java.util.regex.Pattern;
 public class Main {
 
     public static void main(String[] args) throws SQLException {
-        Dotenv dotenv = Dotenv.load();
         InserirDados banco = new InserirDados();
         BancoOperacoes bancoDeDados = new BancoOperacoes();
         ManipularArquivo manipularArquivo = new ManipularArquivo();
@@ -22,7 +20,8 @@ public class Main {
             // Aumentando limite de capacidade do apache poi
             IOUtils.setByteArrayMaxOverride(250_000_000);
 
-            String caminhoBase = dotenv.get("CAMINHO_BASE");
+            String caminhoBase = "/app/base-dados";
+
             File diretorio = new File(caminhoBase);
             Pattern padraoArquivo = Pattern.compile("projecoes_\\d{4}_tab1_idade_simples\\.xlsx");
 

@@ -10,16 +10,15 @@ public class MainExecutor {
         ExecutorService executor = Executors.newFixedThreadPool(numThreads);
 
         // Tarefa para baixar arquivo do S3
-        executor.submit(() -> {
-            System.out.println("Baixando arquivos do S3...");
-            try {
-                infrastructure.s3.BaixarArquivoS3.main(args);
-                System.out.println("Download do arquivo S3 concluído com sucesso!");
-            } catch (IOException e) {
-                System.err.println("Erro ao baixar arquivos do S3: " + e.getMessage());
-                e.printStackTrace();
-            }
-        });
+        try {
+            infrastructure.s3.BaixarArquivoS3.main(args);  // Executa a primeira main e aguarda a finalização
+            System.out.println("Download do arquivo S3 concluído com sucesso.");
+        } catch (IOException e) {
+            System.err.println("Falha ao baixar o arquivo S3: " + e.getMessage());
+            e.printStackTrace();
+            executor.shutdown();  // Finaliza o executor se o download falhar
+            return;  // Encerra o programa se o download falhar
+        }
 
         // Outras tarefas
         executor.submit(() -> executarTarefa("Censo", args, usecases.censo.Main::main));
@@ -29,7 +28,8 @@ public class MainExecutor {
 
         executor.shutdown();
         try {
-            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+
+            if (!executor.awaitTermination(460, TimeUnit.SECONDS)) {
                 System.err.println("Algumas tarefas não terminaram no tempo esperado e serão forçadas a encerrar.");
                 executor.shutdownNow();
             }
