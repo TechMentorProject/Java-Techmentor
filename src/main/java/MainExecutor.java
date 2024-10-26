@@ -28,6 +28,7 @@ public class MainExecutor {
 
         executor.shutdown();
         try {
+
             if (!executor.awaitTermination(460, TimeUnit.SECONDS)) {
                 System.err.println("Algumas tarefas não terminaram no tempo esperado e serão forçadas a encerrar.");
                 executor.shutdownNow();
