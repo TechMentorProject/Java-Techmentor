@@ -37,7 +37,8 @@ public class InserirDados {
             throw new SQLException("Conexão com o banco de dados não foi estabelecida.");
         }
 
-        String query = "INSERT INTO censoIBGE (cidade, crescimentoPopulacional, densidadeDemografica) VALUES (?, ?, ?)";
+        String query = "INSERT INTO censoIBGE (cidade, area, densidadeDemografica) VALUES (?, ?, ?)";
+        System.out.println(query);
 
         try (PreparedStatement guardarValor = conexao.prepareStatement(query)) {
 
@@ -55,11 +56,11 @@ public class InserirDados {
 
                     censo.setCidade(linha.get(indiceMunicipio).toString());
                     System.out.println(censo.getCidade());
-                    censo.setCrescimentoPopulacional(Double.parseDouble(linha.get(indiceArea).toString()));
+                    censo.setArea(Double.parseDouble(linha.get(indiceArea).toString()));
                     censo.setDensidadeDemografica(Double.parseDouble(linha.get(indiceDensidadeDemografica).toString()));
 
                     guardarValor.setString(1, censo.getCidade());  // Cidade
-                    guardarValor.setDouble(2, censo.getCrescimentoPopulacional());  // Crescimento populacional
+                    guardarValor.setDouble(2, censo.getArea());  // Crescimento populacional
                     guardarValor.setDouble(3, censo.getDensidadeDemografica());  // Densidade demográfica
 
                     guardarValor.addBatch();  // Adicionando ao batch
@@ -68,7 +69,6 @@ public class InserirDados {
                     if (i % 5000 == 0) {
                         guardarValor.executeBatch();
                         conexao.commit();  // Commit manual
-                        System.out.println("Batch de 5000 registros executado.");
                     }
                 }
             }

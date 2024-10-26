@@ -4,7 +4,7 @@ public class CensoIBGE {
 
     private int idCensoIBGE;
     private String cidade;
-    private Double crescimentoPopulacional;
+    private Double area;
     private Double densidadeDemografica;
 
     public CensoIBGE() {
@@ -13,7 +13,7 @@ public class CensoIBGE {
     public CensoIBGE(int idCensoIBGE, String cidade, Double crescimentoPopulacional, Double densidadeDemografica) {
         this.idCensoIBGE = idCensoIBGE;
         this.cidade = cidade;
-        this.crescimentoPopulacional = crescimentoPopulacional;
+        this.area = crescimentoPopulacional;
         this.densidadeDemografica = densidadeDemografica;
     }
 
@@ -33,12 +33,12 @@ public class CensoIBGE {
         this.cidade = cidade;
     }
 
-    public Double getCrescimentoPopulacional() {
-        return crescimentoPopulacional;
+    public Double getArea() {
+        return area;
     }
 
-    public void setCrescimentoPopulacional(Double crescimentoPopulacional) {
-        this.crescimentoPopulacional = crescimentoPopulacional;
+    public void setArea(Double area) {
+        this.area = area;
     }
 
     public Double getDensidadeDemografica() {
@@ -55,7 +55,7 @@ public class CensoIBGE {
         return "CensoIBGE{" +
                 "idCensoIBGE=" + idCensoIBGE +
                 ", cidade='" + cidade + '\'' +
-                ", crescimentoPopulacional=" + crescimentoPopulacional +
+                ", crescimentoPopulacional=" + area +
                 ", densidadeDemografica=" + densidadeDemografica +
                 '}';
     }
