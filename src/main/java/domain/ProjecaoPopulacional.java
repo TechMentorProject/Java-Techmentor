@@ -2,36 +2,17 @@ package domain;
 
 public class ProjecaoPopulacional {
 
-    private int idProjecaoPopulacional;
     private String estado;
-    private int idade;
-    private int projecao2024;
-    private int projecao2025;
-    private int projecao2026;
-    private int projecao2027;
-    private int projecao2028;
-
+    private int ano;
+    private long projecao;
 
     public ProjecaoPopulacional() {
     }
 
-    public ProjecaoPopulacional(int idProjecaoPopulacional, String estado, int idade, int projecao2024, int projecao2025, int projecao2026, int projecao2027, int projecao2028) {
-        this.idProjecaoPopulacional = idProjecaoPopulacional;
+    public ProjecaoPopulacional(String estado, int ano, long projecao) {
         this.estado = estado;
-        this.idade = idade;
-        this.projecao2024 = projecao2024;
-        this.projecao2025 = projecao2025;
-        this.projecao2026 = projecao2026;
-        this.projecao2027 = projecao2027;
-        this.projecao2028 = projecao2028;
-    }
-
-    public int getIdProjecaoPopulacional() {
-        return idProjecaoPopulacional;
-    }
-
-    public void setIdProjecaoPopulacional(int idProjecaoPopulacional) {
-        this.idProjecaoPopulacional = idProjecaoPopulacional;
+        this.ano = ano;
+        this.projecao = projecao;
     }
 
     public String getEstado() {
@@ -42,67 +23,28 @@ public class ProjecaoPopulacional {
         this.estado = estado;
     }
 
-    public int getIdade() {
-        return idade;
+    public int getAno() {
+        return ano;
     }
 
-    public void setIdade(int idade) {
-        this.idade = idade;
+    public void setAno(int ano) {
+        this.ano = ano;
     }
 
-    public int getProjecao2024() {
-        return projecao2024;
+    public long getProjecao() {
+        return projecao;
     }
 
-    public void setProjecao2024(int projecao2024) {
-        this.projecao2024 = projecao2024;
+    public void setProjecao(long projecao) {
+        this.projecao = projecao;
     }
 
-    public int getProjecao2025() {
-        return projecao2025;
-    }
-
-    public void setProjecao2025(int projecao2025) {
-        this.projecao2025 = projecao2025;
-    }
-
-    public int getProjecao2026() {
-        return projecao2026;
-    }
-
-    public void setProjecao2026(int projecao2026) {
-        this.projecao2026 = projecao2026;
-    }
-
-    public int getProjecao2027() {
-        return projecao2027;
-    }
-
-    public void setProjecao2027(int projecao2027) {
-        this.projecao2027 = projecao2027;
-    }
-
-    public int getProjecao2028() {
-        return projecao2028;
-    }
-
-    public void setProjecao2028(int projecao2028) {
-        this.projecao2028 = projecao2028;
-    }
-
-    // Método toString
     @Override
     public String toString() {
         return "ProjecaoPopulacional{" +
-                "idProjecaoPopulacional=" + idProjecaoPopulacional +
-                ", estado='" + estado + '\'' +
-                ", idade=" + idade +
-                ", projecao2024=" + projecao2024 +
-                ", projecao2025=" + projecao2025 +
-                ", projecao2026=" + projecao2026 +
-                ", projecao2027=" + projecao2027 +
-                ", projecao2028=" + projecao2028 +
+                "estado='" + estado + '\'' +
+                ", ano=" + ano +
+                ", projecao=" + projecao +
                 '}';
     }
-
 }

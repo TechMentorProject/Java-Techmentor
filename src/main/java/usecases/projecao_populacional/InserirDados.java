@@ -4,25 +4,26 @@ import domain.ProjecaoPopulacional;
 import infrastructure.database.BancoOperacoes;
 import infrastructure.utils.ValidacoesLinha;
 
-import java.awt.*;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.time.Year;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 public class InserirDados {
 
     ValidacoesLinha validacoesLinha = new ValidacoesLinha();
     ProjecaoPopulacional projecao = new ProjecaoPopulacional();
 
-    // Inserir dados com tratamento (similar ao `inserirDadosComTratamento`)
     public void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException {
         bancoDeDados.validarConexao();
-
         bancoDeDados.truncarTabela("projecaoPopulacional");
 
         System.out.println("Inserindo dados...");
 
-        String query = "INSERT INTO projecaoPopulacional (estado, idade, projecao_2024, projecao_2025, projecao_2026, projecao_2027, projecao_2028) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO projecaoPopulacional (estado, ano, projecao) VALUES (?, ?, ?)";
         try (PreparedStatement preparedStatement = conexao.prepareStatement(query)) {
             processarEInserirDados(dadosExcel, preparedStatement, bancoDeDados);
             preparedStatement.executeBatch();
@@ -31,112 +32,104 @@ public class InserirDados {
         }
     }
 
-    // Processar e inserir os dados no banco (semelhante ao `processarEInserirDados`)
     private void processarEInserirDados(List<List<Object>> dadosExcel, PreparedStatement preparedStatement, BancoOperacoes bancoDeDados) throws SQLException {
+        int anoAtual = Year.now().getValue();
 
-        for (int i = 0; i < dadosExcel.size(); i++) {
+        // Cache de índices das colunas
+        Map<String, Integer> indiceColunas = new HashMap<>();
+        indiceColunas.put("local", obterIndiceColuna(dadosExcel, "local"));
+        indiceColunas.put("idade", obterIndiceColuna(dadosExcel, "idade"));
+
+        for (int j = 0; j < 5; j++) { // Cache dos anos subsequentes
+            indiceColunas.put(String.valueOf(anoAtual + j), obterIndiceColuna(dadosExcel, String.valueOf(anoAtual + j)));
+        }
+
+        String estadoAtual = null;
+        Map<Integer, Long> somaProjecoes = new HashMap<>();
+
+        for (int i = 5; i < dadosExcel.size(); i++) {
             List<Object> linha = dadosExcel.get(i);
             String[] valores = validacoesLinha.processarLinha(linha);
 
-            // Verifica a validade dos dados e processa
-            if (!extraindoValoresDaProjecao(preparedStatement, valores, linha)) {
+            String estado = validacoesLinha.buscarValorValido(valores, indiceColunas.get("local")).replace(".", "");
+
+            if (estado == null || contemPalavrasProibidas(estado, linha)) {
                 continue;
             }
 
-            bancoDeDados.adicionarBatch(preparedStatement, i);
+            if (!estado.equals(estadoAtual)) {
+                // Insere projeções acumuladas no banco para o estado anterior
+                if (estadoAtual != null) {
+                    for (Map.Entry<Integer, Long> entry : somaProjecoes.entrySet()) {
+                        inserirNoBanco(preparedStatement, estadoAtual, entry.getKey(), entry.getValue());
+                    }
+                    somaProjecoes.clear();
+                }
+                estadoAtual = estado;
+            }
+
+            int idade = Integer.parseInt(validacoesLinha.buscarValorValido(valores, indiceColunas.get("idade")));
+            if (idade >= 0 && idade <= 90) {
+                for (int j = 0; j < 5; j++) {
+                    int ano = anoAtual + j;
+                    long projecaoAno = parseLongWithDot(validacoesLinha.buscarValorValido(valores, indiceColunas.get(String.valueOf(ano))));
+                    somaProjecoes.put(ano, somaProjecoes.getOrDefault(ano, 0L) + projecaoAno);
+                }
+            }
+        }
+
+        // Inserir as projeções para o último estado processado
+        for (Map.Entry<Integer, Long> entry : somaProjecoes.entrySet()) {
+            inserirNoBanco(preparedStatement, estadoAtual, entry.getKey(), entry.getValue());
         }
     }
 
-    // Extrair e validar valores da projeção (semelhante ao `extraindoValoresDoApache`)
-    private boolean extraindoValoresDaProjecao(PreparedStatement preparedStatement, String[] valores, List<Object> linha) throws SQLException {
-        if (valores.length < 34) {
-            return false;
-        }
-        String estado = validacoesLinha.buscarValorValido(valores, 4);
-        if (estado != null) {
-            estado = estado.replace(".", "");
+    private int obterIndiceColuna(List<List<Object>> dadosExcel, String nomeColuna) {
+        String cabecalho = dadosExcel.get(4).toString().replace("[", "").replace("]", "");
+        if (cabecalho.length() > 0 && cabecalho.charAt(0) == '\uFEFF') {
+            cabecalho = cabecalho.substring(1);
         }
 
-        String idade = validacoesLinha.buscarValorValido(valores, 0);
-        if (idade != null) {
-            idade = idade.replace(".", "");
+        String[] colunas = cabecalho.split(",");
+        for (int i = 0; i < colunas.length; i++) {
+            if (colunas[i].trim().equalsIgnoreCase(nomeColuna)) {
+                return i;
+            }
         }
-
-        String ano_2024 = validacoesLinha.buscarValorValido(valores, 29);
-        if (ano_2024 != null) {
-            ano_2024 = ano_2024.replace(".", "");
-        }
-
-        String ano_2025 = validacoesLinha.buscarValorValido(valores, 30);
-        if (ano_2025 != null) {
-            ano_2025 = ano_2025.replace(".", "");
-        }
-
-        String ano_2026 = validacoesLinha.buscarValorValido(valores, 31);
-        if (ano_2026 != null) {
-            ano_2026 = ano_2026.replace(".", "");
-        }
-
-        String ano_2027 = validacoesLinha.buscarValorValido(valores, 32);
-        if (ano_2027 != null) {
-            ano_2027 = ano_2027.replace(".", "");
-        }
-
-        String ano_2028 = validacoesLinha.buscarValorValido(valores, 33);
-        if (ano_2028 != null) {
-            ano_2028 = ano_2028.replace(".", "");
-        }
-
-        // Ignorar linhas com palavras proibidas
-        if (estado != null && contemPalavrasProibidas(estado, linha)) {
-            return false;
-        }
-
-        // Se algum campo é inválido, ignorar a linha
-        if (validacoesLinha.algumCampoInvalido(estado, idade, ano_2024, ano_2025, ano_2026, ano_2027, ano_2028)) {
-            return false;
-        }
-
-        // Preencher o `PreparedStatement`
-        guardarValorProBanco(preparedStatement, estado, idade, ano_2024, ano_2025, ano_2026, ano_2027, ano_2028);
-        return true;
+        throw new IllegalArgumentException("Coluna '" + nomeColuna + "' não encontrada no cabeçalho.");
     }
 
-    // Método para verificar se há palavras proibidas (similar ao `containsProhibitedWords`)
     private boolean contemPalavrasProibidas(String estado, List<Object> linha) {
-        // Converte a linha para String e aplica o filtro
-        String linhaLowerCase = linha.stream()
-                .map(celula -> celula != null ? celula.toString() : "")  // Converte cada célula para String
-                .collect(Collectors.joining(" "))  // Junta os valores com espaço
-                .toLowerCase();
-
-        if (estado.equalsIgnoreCase("sul") || estado.equalsIgnoreCase("norte") || estado.equalsIgnoreCase("local")) {
-            return true;
+        StringBuilder linhaLowerCase = new StringBuilder();
+        for (Object celula : linha) {
+            if (celula != null) {
+                linhaLowerCase.append(celula.toString().toLowerCase()).append(" ");
+            }
         }
 
-        if (linhaLowerCase.contains("brasil") || linhaLowerCase.contains("homens") || linhaLowerCase.contains("mulheres")
-                || linhaLowerCase.contains("centro-oeste") || linhaLowerCase.contains("sudeste") || linhaLowerCase.contains("nordeste")) {
-            return true;
-        }
-        return false;
+        return estado.equalsIgnoreCase("sul") || estado.equalsIgnoreCase("norte") || estado.equalsIgnoreCase("local")
+                || linhaLowerCase.toString().contains("brasil") || linhaLowerCase.toString().contains("homens")
+                || linhaLowerCase.toString().contains("mulheres") || linhaLowerCase.toString().contains("centro-oeste")
+                || linhaLowerCase.toString().contains("sudeste") || linhaLowerCase.toString().contains("nordeste");
     }
 
-    // Preencher o PreparedStatement (igual ao `guardarValorProBanco`)
-    private void guardarValorProBanco(PreparedStatement preparedStatement, String estado, String idade, String ano_2024, String ano_2025, String ano_2026, String ano_2027, String ano_2028) throws SQLException {
-        projecao.setEstado(estado);
-        projecao.setIdade(Integer.parseInt(idade));
-        projecao.setProjecao2024(Integer.parseInt(ano_2024));
-        projecao.setProjecao2025(Integer.parseInt(ano_2025));
-        projecao.setProjecao2026(Integer.parseInt(ano_2026));
-        projecao.setProjecao2027(Integer.parseInt(ano_2027));
-        projecao.setProjecao2028(Integer.parseInt(ano_2028));
+    private long parseLongWithDot(String numeroEmString) {
+        if (numeroEmString != null) {
+            numeroEmString = numeroEmString.replace(".", "");
+            return Long.parseLong(numeroEmString);
+        }
+        return 0;
+    }
 
-        preparedStatement.setString(1, projecao.getEstado());
-        preparedStatement.setInt(2, projecao.getIdade());
-        preparedStatement.setInt(3, projecao.getProjecao2024());
-        preparedStatement.setInt(4, projecao.getProjecao2025());
-        preparedStatement.setInt(5, projecao.getProjecao2026());
-        preparedStatement.setInt(6, projecao.getProjecao2027());
-        preparedStatement.setInt(7, projecao.getProjecao2028());
+    private void inserirNoBanco(PreparedStatement preparedStatement, String estado, int ano, long projecao) throws SQLException {
+
+        this.projecao.setEstado(estado);
+        this.projecao.setAno(ano);
+        this.projecao.setProjecao(projecao);
+
+        preparedStatement.setString(1, this.projecao.getEstado());
+        preparedStatement.setInt(2, this.projecao.getAno());
+        preparedStatement.setLong(3, this.projecao.getProjecao());
+        preparedStatement.addBatch();
     }
 }

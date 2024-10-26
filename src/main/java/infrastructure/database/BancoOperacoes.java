@@ -10,7 +10,7 @@ public class BancoOperacoes {
         System.out.println("Conectando no banco...");
         Class.forName("com.mysql.cj.jdbc.Driver");
         conexao = DriverManager.getConnection(
-                "jdbc:mysql://localhost:3306/techmentor",
+                "jdbc:mysql://54.159.196.113:3306/techmentor?rewriteBatchedStatements=true",
                 "root",
                 "root"
         );
@@ -46,6 +46,7 @@ public class BancoOperacoes {
         if (linhaAtual % 5000 == 0) {
             preparedStatement.executeBatch();
             conexao.commit();
+            preparedStatement.clearBatch();
         }
         preparedStatement.addBatch();
     }

@@ -10,7 +10,6 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) throws SQLException {
-
         InserirDados banco = new InserirDados();
         BancoOperacoes bancoDeDados = new BancoOperacoes();
         ManipularArquivo manipularArquivo = new ManipularArquivo();
@@ -19,9 +18,10 @@ public class Main {
             // Aumentando limite de capacidade do apache poi
             IOUtils.setByteArrayMaxOverride(250_000_000);
 
-            String caminhoArquivo = "src/main/java/resources/Meu_Municipio_Cobertura.xlsx";
+            String nomeArquivo = "Meu_Municipio_Cobertura.xlsx";
+            String caminhoArquivo = "/app/base-dados" + "/" + nomeArquivo;
 
-            List<List<Object>> dados = manipularArquivo.lerPlanilha(caminhoArquivo);
+            List<List<Object>> dados = manipularArquivo.lerPlanilha(caminhoArquivo, false);
 
             bancoDeDados.conectar();
             banco.inserirDadosComTratamento(dados, bancoDeDados.getConexao(), bancoDeDados);

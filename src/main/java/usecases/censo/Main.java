@@ -11,7 +11,6 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) throws SQLException {
-
         InserirDados banco = new InserirDados();
         BancoOperacoes bancoDeDados = new BancoOperacoes();
         ManipularArquivo manipularArquivo = new ManipularArquivo();
@@ -20,7 +19,7 @@ public class Main {
             // Aumentando limite de capacidade do Apache POI
             IOUtils.setByteArrayMaxOverride(250_000_000);
 
-            String diretorioBase = "src/main/java/resources";
+            String diretorioBase = "/app/base-dados";
             File pasta = new File(diretorioBase);
             File[] arquivos = pasta.listFiles((dir, nome) -> nome.contains("Território -") && nome.endsWith(".xlsx"));
 
@@ -29,7 +28,7 @@ public class Main {
                 bancoDeDados.truncarTabela("censoIBGE");
 
                 for (File arquivo : arquivos) {
-                    List<List<Object>> dados = manipularArquivo.lerPlanilha(arquivo.toString());
+                    List<List<Object>> dados = manipularArquivo.lerPlanilha(arquivo.toString(), true);
                     System.out.println("Inserindo dados do arquivo: " + arquivo.getName());
                     banco.inserirDados(dados, bancoDeDados.getConexao());
                 }
