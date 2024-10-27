@@ -10,7 +10,7 @@ public class BancoOperacoes {
         System.out.println("Conectando no banco...");
         Class.forName("com.mysql.cj.jdbc.Driver");
         conexao = DriverManager.getConnection(
-                "jdbc:mysql://54.159.196.113:3306/techmentor?rewriteBatchedStatements=true",
+                "jdbc:mysql://54.157.243.147:3306/techmentor?rewriteBatchedStatements=true",
                 "root",
                 "root"
         );
@@ -27,9 +27,9 @@ public class BancoOperacoes {
         }
     }
 
-    public void validarConexao() throws SQLException {
-        if (conexao == null) {
-            throw new SQLException("Conexão com o banco de dados não foi estabelecida.");
+    public void validarConexao() throws SQLException, ClassNotFoundException {
+        if (conexao == null || conexao.isClosed()) {
+            conectar(); // Reabre a conexão se estiver fechada ou nula
         }
     }
 

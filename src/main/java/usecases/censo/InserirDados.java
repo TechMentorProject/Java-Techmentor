@@ -1,6 +1,7 @@
 package usecases.censo;
 
 import domain.CensoIBGE;
+import infrastructure.logging.Logger;
 
 
 import java.sql.Connection;
@@ -8,9 +9,12 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
+import static infrastructure.logging.Logger.loggerInsercoes;
+
 public class InserirDados {
 
     CensoIBGE censo = new CensoIBGE();
+    Logger loggerInsercoes = Logger.getLoggerInsercoes();
 
     private int obterIndiceColuna(List<List<Object>> dadosExcel, String nomeColuna) {
 
@@ -43,6 +47,7 @@ public class InserirDados {
         try (PreparedStatement guardarValor = conexao.prepareStatement(query)) {
 
             System.out.println("Inserindo dados no banco...");
+            loggerInsercoes.gerarLog("💻 Iniciando inserção de dados na tabela censoIBGE... 💻");
 
             int indiceMunicipio = obterIndiceColuna(dadosExcel, "Município");
             int indiceDensidadeDemografica = obterIndiceColuna(dadosExcel, "Densidade demográfica(hab/km²)");
@@ -60,7 +65,7 @@ public class InserirDados {
                     censo.setDensidadeDemografica(Double.parseDouble(linha.get(indiceDensidadeDemografica).toString()));
 
                     guardarValor.setString(1, censo.getCidade());  // Cidade
-                    guardarValor.setDouble(2, censo.getArea());  // Crescimento populacional
+                    guardarValor.setDouble(2, censo.getArea());  // Area
                     guardarValor.setDouble(3, censo.getDensidadeDemografica());  // Densidade demográfica
 
                     guardarValor.addBatch();  // Adicionando ao batch
@@ -80,6 +85,7 @@ public class InserirDados {
 
         } catch (SQLException e) {
             conexao.rollback();  // Reverte em caso de erro
+            loggerInsercoes.gerarLog("❌ Erro ao inserir dados em CENSO: " + e.getMessage() + " - revertendo... ❌");
             throw e;
         }
     }

@@ -1,6 +1,7 @@
 package usecases.municipio;
 
 import infrastructure.database.BancoOperacoes;
+import infrastructure.logging.Logger;
 import infrastructure.processing.workbook.ManipularArquivo;
 import org.apache.poi.util.IOUtils;
 
@@ -13,21 +14,25 @@ public class Main {
         InserirDados banco = new InserirDados();
         BancoOperacoes bancoDeDados = new BancoOperacoes();
         ManipularArquivo manipularArquivo = new ManipularArquivo();
+        Logger loggerEventos = Logger.getLoggerEventos();
+        Logger loggerErros = Logger.getLoggerErros();
 
         try {
             // Aumentando limite de capacidade do apache poi
             IOUtils.setByteArrayMaxOverride(250_000_000);
 
             String nomeArquivo = "Meu_Municipio_Cobertura.xlsx";
-            String caminhoArquivo = "/app/base-dados" + "/" + nomeArquivo;
+            String caminhoArquivo = "/app/base-dados/Meu_Municipio_Cobertura.xlsx";
 
             List<List<Object>> dados = manipularArquivo.lerPlanilha(caminhoArquivo, false);
 
             bancoDeDados.conectar();
             banco.inserirDadosComTratamento(dados, bancoDeDados.getConexao(), bancoDeDados);
+            loggerEventos.gerarLog("✅ Dados de MUNICIPIO Inseridos com Sucesso! ✅");
 
         } catch (SQLException | ClassNotFoundException e) {
             System.out.println("Erro: " + e.getMessage());
+            loggerErros.gerarLog("❌ Erro ao Inserir Dados de MUNICIPIO. ❌");
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {

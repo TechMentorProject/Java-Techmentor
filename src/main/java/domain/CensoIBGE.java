@@ -10,10 +10,10 @@ public class CensoIBGE {
     public CensoIBGE() {
     }
 
-    public CensoIBGE(int idCensoIBGE, String cidade, Double crescimentoPopulacional, Double densidadeDemografica) {
+    public CensoIBGE(int idCensoIBGE, String cidade, Double area, Double densidadeDemografica) {
         this.idCensoIBGE = idCensoIBGE;
         this.cidade = cidade;
-        this.area = crescimentoPopulacional;
+        this.area = area;
         this.densidadeDemografica = densidadeDemografica;
     }
 

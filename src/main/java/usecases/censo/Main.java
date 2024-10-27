@@ -1,6 +1,7 @@
 package usecases.censo;
 
 import infrastructure.database.BancoOperacoes;
+import infrastructure.logging.Logger;
 import infrastructure.processing.workbook.ManipularArquivo;
 import org.apache.poi.util.IOUtils;
 
@@ -14,6 +15,8 @@ public class Main {
         InserirDados banco = new InserirDados();
         BancoOperacoes bancoDeDados = new BancoOperacoes();
         ManipularArquivo manipularArquivo = new ManipularArquivo();
+        Logger loggerEventos = Logger.getLoggerEventos();
+        Logger loggerErros = Logger.getLoggerErros();
 
         try {
             // Aumentando limite de capacidade do Apache POI
@@ -31,6 +34,7 @@ public class Main {
                     List<List<Object>> dados = manipularArquivo.lerPlanilha(arquivo.toString(), true);
                     System.out.println("Inserindo dados do arquivo: " + arquivo.getName());
                     banco.inserirDados(dados, bancoDeDados.getConexao());
+                    loggerEventos.gerarLog("✅ Dados de CENSO Inseridos com Sucesso! ✅");
                 }
 
                 bancoDeDados.fecharConexao();
@@ -38,6 +42,7 @@ public class Main {
 
         } catch (SQLException | ClassNotFoundException e) {
             System.out.println("Erro: " + e.getMessage());
+            loggerErros.gerarLog("❌ Erro ao Inserir Dados de CENSO. ❌");
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
