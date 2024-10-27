@@ -2,6 +2,7 @@ package usecases.estacoes_smp;
 
 import domain.EstacoesSMP;
 import infrastructure.database.BancoOperacoes;
+import infrastructure.logging.Logger;
 import infrastructure.utils.ValidacoesLinha;
 
 import java.sql.Connection;
@@ -15,12 +16,14 @@ public class InserirDados {
 
     ValidacoesLinha validacoesLinha = new ValidacoesLinha();
     EstacoesSMP estacoes = new EstacoesSMP();
+    Logger loggerInsercoes = Logger.getLoggerInsercoes();
 
-    void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException {
+    void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException, ClassNotFoundException {
         bancoDeDados.validarConexao();
         bancoDeDados.truncarTabela("estacoesSMP");
 
         System.out.println("Inserindo dados...");
+        loggerInsercoes.gerarLog("💻 Iniciando inserção de dados na tabela estacoesSMP... 💻");
 
         String query = "INSERT INTO estacoesSMP (cidade, operadora, latitude, longitude, codigoIBGE, tecnologia) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = conexao.prepareStatement(query)) {

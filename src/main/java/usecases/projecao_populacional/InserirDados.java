@@ -2,6 +2,7 @@ package usecases.projecao_populacional;
 
 import domain.ProjecaoPopulacional;
 import infrastructure.database.BancoOperacoes;
+import infrastructure.logging.Logger;
 import infrastructure.utils.ValidacoesLinha;
 
 import java.sql.Connection;
@@ -16,12 +17,14 @@ public class InserirDados {
 
     ValidacoesLinha validacoesLinha = new ValidacoesLinha();
     ProjecaoPopulacional projecao = new ProjecaoPopulacional();
+    Logger loggerInsercoes = Logger.getLoggerInsercoes();
 
-    public void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException {
+    public void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException, ClassNotFoundException {
         bancoDeDados.validarConexao();
         bancoDeDados.truncarTabela("projecaoPopulacional");
 
         System.out.println("Inserindo dados...");
+        loggerInsercoes.gerarLog("💻 Iniciando inserção de dados na tabela projecaoPopulacional... 💻");
 
         String query = "INSERT INTO projecaoPopulacional (estado, ano, projecao) VALUES (?, ?, ?)";
         try (PreparedStatement preparedStatement = conexao.prepareStatement(query)) {
@@ -115,11 +118,13 @@ public class InserirDados {
 
     private long parseLongWithDot(String numeroEmString) {
         if (numeroEmString != null) {
-            numeroEmString = numeroEmString.replace(".", "");
+            // Remove pontos e vírgulas da string antes de converter para Long
+            numeroEmString = numeroEmString.replace(".", "").replace(",", "");
             return Long.parseLong(numeroEmString);
         }
         return 0;
     }
+
 
     private void inserirNoBanco(PreparedStatement preparedStatement, String estado, int ano, long projecao) throws SQLException {
 
@@ -128,6 +133,7 @@ public class InserirDados {
         this.projecao.setProjecao(projecao);
 
         preparedStatement.setString(1, this.projecao.getEstado());
+        System.out.println(this.projecao.getEstado());
         preparedStatement.setInt(2, this.projecao.getAno());
         preparedStatement.setLong(3, this.projecao.getProjecao());
         preparedStatement.addBatch();

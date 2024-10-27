@@ -8,13 +8,7 @@ public class ProjecaoPopulacional {
 
     public ProjecaoPopulacional() {
     }
-
-    public ProjecaoPopulacional(String estado, int ano, long projecao) {
-        this.estado = estado;
-        this.ano = ano;
-        this.projecao = projecao;
-    }
-
+    
     public String getEstado() {
         return estado;
     }
