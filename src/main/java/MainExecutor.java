@@ -1,7 +1,26 @@
+import infrastructure.database.BancoOperacoes;
+import infrastructure.database.BancoSetup;
+
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 public class MainExecutor {
     public static void main(String[] args) {
+        BancoOperacoes bancoOperacoes = new BancoOperacoes();
+        // Conecta ao banco e cria a estrutura
+        try {
+            bancoOperacoes.conectar();
+            Connection conexao = bancoOperacoes.getConexao();
+            BancoSetup bancoSetup = new BancoSetup(conexao);
+            bancoSetup.criarEstruturaBanco();
+            System.out.println("Estrutura de banco de dados verificada e criada se necessário.");
+        } catch (ClassNotFoundException | SQLException e) {
+            System.err.println("Erro ao configurar o banco de dados: " + e.getMessage());
+            e.printStackTrace();
+            return;  // Encerra se falhar a criação do banco/tabelas
+        }
+
         // Tarefa para baixar arquivo do S3
         try {
             infrastructure.s3.BaixarArquivoS3.main(args);  // Executa a primeira main e aguarda a finalização

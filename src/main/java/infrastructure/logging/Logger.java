@@ -46,7 +46,7 @@ public class Logger {
     // Método estático para obter a instância do Logger de Eventos
     public static Logger getLoggerEventos() {
         if (loggerEventos == null) {
-            loggerEventos = new Logger("LogsTechMentor/Eventos", "eventos");
+            loggerEventos = new Logger("app/logs/LogsTechMentor/Eventos", "eventos");
         }
         return loggerEventos;
     }
@@ -54,7 +54,7 @@ public class Logger {
     // Método público para obter a instância do Logger de Erros
     public static Logger getLoggerErros() {
         if (loggerErros == null) {
-            loggerErros = new Logger("LogsTechMentor/Erros", "erros");
+            loggerErros = new Logger("app/logs/LogsTechMentor/Erros", "erros");
         }
         return loggerErros;
     }
@@ -62,7 +62,7 @@ public class Logger {
     // Método estático para obter a instância do Logger de Inserções
     public static Logger getLoggerInsercoes() {
         if (loggerInsercoes == null) {
-            loggerInsercoes = new Logger("LogsTechMentor/Insercoes", "insercoes");
+            loggerInsercoes = new Logger("app/logs/LogsTechMentor/Insercoes", "insercoes");
         }
         return loggerInsercoes;
     }
