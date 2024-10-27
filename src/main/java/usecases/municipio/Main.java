@@ -22,7 +22,7 @@ public class Main {
             IOUtils.setByteArrayMaxOverride(250_000_000);
 
             String nomeArquivo = "Meu_Municipio_Cobertura.xlsx";
-            String caminhoArquivo = "/app/base-dados/Meu_Municipio_Cobertura.xlsx";
+            String caminhoArquivo = "/app/base-dados" + "/" + nomeArquivo;
 
             List<List<Object>> dados = manipularArquivo.lerPlanilha(caminhoArquivo, false);
 
