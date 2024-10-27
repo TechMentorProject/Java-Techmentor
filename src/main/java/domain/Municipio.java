@@ -2,7 +2,6 @@ package domain;
 
 public class Municipio {
 
-    private int idMunicipio;
     private String ano;
     private String cidade;
     private String operadora;
@@ -11,24 +10,6 @@ public class Municipio {
     private String tecnologia;
 
     public Municipio() {
-    }
-
-    public Municipio(int idMunicipio, String ano, String cidade, String operadora, int domiciliosCobertosPorcentagem, int areaCobertaPorcentagem, String tecnologia) {
-        this.idMunicipio = idMunicipio;
-        this.ano = ano;
-        this.cidade = cidade;
-        this.operadora = operadora;
-        this.domiciliosCobertosPorcentagem = domiciliosCobertosPorcentagem;
-        this.areaCobertaPorcentagem = areaCobertaPorcentagem;
-        this.tecnologia = tecnologia;
-    }
-
-    public int getIdMunicipio() {
-        return idMunicipio;
-    }
-
-    public void setIdMunicipio(int idMunicipio) {
-        this.idMunicipio = idMunicipio;
     }
 
     public String getAno() {
@@ -82,8 +63,7 @@ public class Municipio {
     @Override
     public String toString() {
         return "Municipio{" +
-                "idMunicipio=" + idMunicipio +
-                ", ano='" + ano + '\'' +
+                "ano='" + ano + '\'' +
                 ", cidade='" + cidade + '\'' +
                 ", operadora='" + operadora + '\'' +
                 ", domiciliosCobertosPorcentagem=" + domiciliosCobertosPorcentagem +

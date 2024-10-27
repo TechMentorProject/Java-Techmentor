@@ -2,6 +2,7 @@ package usecases.municipio;
 
 import domain.Municipio;
 import infrastructure.database.BancoOperacoes;
+import infrastructure.logging.Logger;
 import infrastructure.utils.ValidacoesLinha;
 
 import java.sql.Connection;
@@ -15,12 +16,14 @@ public class InserirDados {
 
     ValidacoesLinha validacoesLinha = new ValidacoesLinha();
     Municipio municipio = new Municipio();
+    Logger loggerInsercoes = Logger.getLoggerInsercoes();
 
-    public void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException {
+    public void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException, ClassNotFoundException {
         bancoDeDados.validarConexao();
         bancoDeDados.truncarTabela("municipio");
 
         System.out.println("Inserindo dados...");
+        loggerInsercoes.gerarLog("💻 Iniciando inserção de dados na tabela municipio... 💻");
 
         String query = "INSERT INTO municipio (ano, cidade, operadora, domiciliosCobertosPercent, areaCobertaPercent, tecnologia) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = conexao.prepareStatement(query)) {

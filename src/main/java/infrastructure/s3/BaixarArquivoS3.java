@@ -15,7 +15,7 @@ import java.nio.file.StandardCopyOption; // Para substituir arquivos ao copiar, 
 public class BaixarArquivoS3 {
     public static void main(String[] args) throws IOException {
 
-        String nomeBucket = "s3-teste-instancia";
+        String nomeBucket = "techmentor-bucket";
         S3Client s3Client = new S3Provider().getS3Client();
         String caminhoArquivo = "/app/base-dados";
         String nomeObjeto;

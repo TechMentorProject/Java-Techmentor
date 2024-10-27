@@ -7,15 +7,38 @@ public class BancoOperacoes {
     private Connection conexao;
 
     public void conectar() throws ClassNotFoundException, SQLException {
-        System.out.println("Conectando no banco...");
+        System.out.println("Conectando ao servidor MySQL...");
         Class.forName("com.mysql.cj.jdbc.Driver");
+
+        // Conexão inicial sem especificar o banco de dados
         conexao = DriverManager.getConnection(
-                "jdbc:mysql://54.159.196.113:3306/techmentor?rewriteBatchedStatements=true",
+                "jdbc:mysql://98.81.168.163:3306?rewriteBatchedStatements=true",
                 "root",
                 "root"
         );
-        conexao.setAutoCommit(false);  // Controle de transação manual
-        System.out.println("Banco conectado.");
+        conexao.setAutoCommit(false);
+        System.out.println("Conexão ao servidor MySQL estabelecida.");
+
+        // Criação do banco de dados, se necessário
+        criarBancoSeNaoExistir("techmentor");
+
+        // Conectar novamente, agora especificando o banco de dados
+        conexao.close();
+        conexao = DriverManager.getConnection(
+                "jdbc:mysql://98.81.168.163:3306/techmentor?rewriteBatchedStatements=true",
+                "root",
+                "root"
+        );
+        conexao.setAutoCommit(false);
+        System.out.println("Conectado ao banco de dados 'techmentor'.");
+    }
+
+    private void criarBancoSeNaoExistir(String nomeBanco) throws SQLException {
+        try (Statement stmt = conexao.createStatement()) {
+            String sql = "CREATE DATABASE IF NOT EXISTS " + nomeBanco;
+            stmt.executeUpdate(sql);
+            System.out.println("Banco de dados '" + nomeBanco + "' criado/verificado com sucesso.");
+        }
     }
 
     public void fecharConexao() throws SQLException {
@@ -27,12 +50,13 @@ public class BancoOperacoes {
         }
     }
 
-    public void validarConexao() throws SQLException {
-        if (conexao == null) {
-            throw new SQLException("Conexão com o banco de dados não foi estabelecida.");
+    public void validarConexao() throws SQLException, ClassNotFoundException {
+        if (conexao == null || conexao.isClosed()) {
+            conectar();
         }
     }
 
+    // Método auxiliar para truncar tabelas
     public void truncarTabela(String nomeTabela) throws SQLException {
         System.out.println("Truncando a tabela " + nomeTabela + "...");
         try (Statement statement = conexao.createStatement()) {
@@ -54,5 +78,4 @@ public class BancoOperacoes {
     public Connection getConexao() {
         return conexao;
     }
-
 }

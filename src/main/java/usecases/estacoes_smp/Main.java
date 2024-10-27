@@ -1,6 +1,7 @@
 package usecases.estacoes_smp;
 
 import infrastructure.database.BancoOperacoes;
+import infrastructure.logging.Logger;
 import infrastructure.processing.workbook.ManipularArquivo;
 import org.apache.poi.util.IOUtils;
 
@@ -13,6 +14,8 @@ public class Main {
         InserirDados banco = new InserirDados();
         BancoOperacoes bancoDeDados = new BancoOperacoes();
         ManipularArquivo manipularArquivo = new ManipularArquivo();
+        Logger loggerEventos = Logger.getLoggerEventos();
+        Logger loggerErros = Logger.getLoggerErros();
 
         try {
             // Aumentando limite de capacidade do apache poi
@@ -25,9 +28,11 @@ public class Main {
 
             bancoDeDados.conectar();
             banco.inserirDadosComTratamento(dados, bancoDeDados.getConexao(), bancoDeDados);
+            loggerEventos.gerarLog("✅ Dados de ESTAÇÕES Inseridos com Sucesso! ✅");
 
         } catch (SQLException | ClassNotFoundException e) {
             System.out.println("Erro: " + e.getMessage());
+            loggerErros.gerarLog("❌ Erro ao Inserir Dados de ESTAÇÕES. ❌");
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
