@@ -2,7 +2,6 @@ package domain;
 
 public class CensoIBGE {
 
-    private int idCensoIBGE;
     private String cidade;
     private Double area;
     private Double densidadeDemografica;
@@ -10,19 +9,10 @@ public class CensoIBGE {
     public CensoIBGE() {
     }
 
-    public CensoIBGE(int idCensoIBGE, String cidade, Double area, Double densidadeDemografica) {
-        this.idCensoIBGE = idCensoIBGE;
+    public CensoIBGE(String cidade, Double area, Double densidadeDemografica) {
         this.cidade = cidade;
         this.area = area;
         this.densidadeDemografica = densidadeDemografica;
-    }
-
-    public int getIdCensoIBGE() {
-        return idCensoIBGE;
-    }
-
-    public void setIdCensoIBGE(int idCensoIBGE) {
-        this.idCensoIBGE = idCensoIBGE;
     }
 
     public String getCidade() {
@@ -49,15 +39,12 @@ public class CensoIBGE {
         this.densidadeDemografica = densidadeDemografica;
     }
 
-    // Método toString
     @Override
     public String toString() {
         return "CensoIBGE{" +
-                "idCensoIBGE=" + idCensoIBGE +
-                ", cidade='" + cidade + '\'' +
-                ", crescimentoPopulacional=" + area +
+                "cidade='" + cidade + '\'' +
+                ", area=" + area +
                 ", densidadeDemografica=" + densidadeDemografica +
                 '}';
     }
-
 }

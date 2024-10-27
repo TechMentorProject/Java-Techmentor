@@ -2,7 +2,6 @@ package domain;
 
 public class EstacoesSMP {
 
-    private int idEstacoesSMP;
     private String cidade;
     private String operadora;
     private long latitude;
@@ -13,22 +12,13 @@ public class EstacoesSMP {
     public EstacoesSMP() {
     }
 
-    public EstacoesSMP(int idEstacoesSMP, String cidade, String operadora, long latitude, long longitude, String codigoIBGE, String tecnologia) {
-        this.idEstacoesSMP = idEstacoesSMP;
+    public EstacoesSMP(String cidade, String operadora, long latitude, long longitude, String codigoIBGE, String tecnologia) {
         this.cidade = cidade;
         this.operadora = operadora;
         this.latitude = latitude;
         this.longitude = longitude;
         this.codigoIBGE = codigoIBGE;
         this.tecnologia = tecnologia;
-    }
-
-    public int getIdEstacoesSMP() {
-        return idEstacoesSMP;
-    }
-
-    public void setIdEstacoesSMP(int idEstacoesSMP) {
-        this.idEstacoesSMP = idEstacoesSMP;
     }
 
     public String getCidade() {
@@ -81,9 +71,8 @@ public class EstacoesSMP {
 
     @Override
     public String toString() {
-        return "EstacaoSMP{" +
-                "idEstacoesSMP=" + idEstacoesSMP +
-                ", cidade='" + cidade + '\'' +
+        return "EstacoesSMP{" +
+                "cidade='" + cidade + '\'' +
                 ", operadora='" + operadora + '\'' +
                 ", latitude=" + latitude +
                 ", longitude=" + longitude +
