@@ -12,15 +12,6 @@ public class Municipio {
     public Municipio() {
     }
 
-    public Municipio(String ano, String cidade, String operadora, int domiciliosCobertosPorcentagem, int areaCobertaPorcentagem, String tecnologia) {
-        this.ano = ano;
-        this.cidade = cidade;
-        this.operadora = operadora;
-        this.domiciliosCobertosPorcentagem = domiciliosCobertosPorcentagem;
-        this.areaCobertaPorcentagem = areaCobertaPorcentagem;
-        this.tecnologia = tecnologia;
-    }
-
     public String getAno() {
         return ano;
     }

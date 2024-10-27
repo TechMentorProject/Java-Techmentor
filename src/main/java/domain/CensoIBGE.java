@@ -9,12 +9,6 @@ public class CensoIBGE {
     public CensoIBGE() {
     }
 
-    public CensoIBGE(String cidade, Double area, Double densidadeDemografica) {
-        this.cidade = cidade;
-        this.area = area;
-        this.densidadeDemografica = densidadeDemografica;
-    }
-
     public String getCidade() {
         return cidade;
     }

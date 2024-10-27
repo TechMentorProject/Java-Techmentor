@@ -12,15 +12,6 @@ public class EstacoesSMP {
     public EstacoesSMP() {
     }
 
-    public EstacoesSMP(String cidade, String operadora, long latitude, long longitude, String codigoIBGE, String tecnologia) {
-        this.cidade = cidade;
-        this.operadora = operadora;
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.codigoIBGE = codigoIBGE;
-        this.tecnologia = tecnologia;
-    }
-
     public String getCidade() {
         return cidade;
     }
