@@ -12,7 +12,7 @@ public class BancoOperacoes {
 
         // Conexão inicial sem especificar o banco de dados
         conexao = DriverManager.getConnection(
-                "jdbc:mysql://98.81.168.163:3306?rewriteBatchedStatements=true",
+                "jdbc:mysql://3.84.242.202:3306?rewriteBatchedStatements=true",
                 "root",
                 "root"
         );
@@ -25,7 +25,7 @@ public class BancoOperacoes {
         // Conectar novamente, agora especificando o banco de dados
         conexao.close();
         conexao = DriverManager.getConnection(
-                "jdbc:mysql://98.81.168.163:3306/techmentor?rewriteBatchedStatements=true",
+                "jdbc:mysql://3.84.242.202:3306/techmentor?rewriteBatchedStatements=true",
                 "root",
                 "root"
         );
