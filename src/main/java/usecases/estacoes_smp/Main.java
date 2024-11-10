@@ -28,11 +28,11 @@ public class Main {
 
             bancoDeDados.conectar();
             banco.inserirDadosComTratamento(dados, bancoDeDados.getConexao(), bancoDeDados);
-            loggerEventos.gerarLog("✅ Dados de ESTAÇÕES Inseridos com Sucesso! ✅");
+//            loggerEventos.gerarLog("✅ Dados de ESTAÇÕES Inseridos com Sucesso! ✅");
 
         } catch (SQLException | ClassNotFoundException e) {
             System.out.println("Erro: " + e.getMessage());
-            loggerErros.gerarLog("❌ Erro ao Inserir Dados de ESTAÇÕES. ❌");
+//            loggerErros.gerarLog("❌ Erro ao Inserir Dados de ESTAÇÕES. ❌");
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {

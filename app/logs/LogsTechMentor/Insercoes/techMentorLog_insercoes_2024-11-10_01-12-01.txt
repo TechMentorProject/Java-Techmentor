@@ -1,0 +1,1 @@
+10/11/2024 01:12:03 - ❌ Erro ao inserir dados em CENSO: Cannot add or update a child row: a foreign key constraint fails (`techmentor`.`censoibge`, CONSTRAINT `censoibge_ibfk_1` FOREIGN KEY (`fkCidade`) REFERENCES `cidade` (`nomeCidade`)) - revertendo... ❌

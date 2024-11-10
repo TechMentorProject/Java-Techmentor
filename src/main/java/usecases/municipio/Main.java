@@ -1,10 +1,12 @@
 package usecases.municipio;
 
+import infrastructure.database.BancoInsert;
 import infrastructure.database.BancoOperacoes;
 import infrastructure.logging.Logger;
 import infrastructure.processing.workbook.ManipularArquivo;
 import org.apache.poi.util.IOUtils;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -14,6 +16,7 @@ public class Main {
         InserirDados banco = new InserirDados();
         BancoOperacoes bancoDeDados = new BancoOperacoes();
         ManipularArquivo manipularArquivo = new ManipularArquivo();
+        BancoInsert bancoInsert = new BancoInsert(bancoDeDados);
         Logger loggerEventos = Logger.getLoggerEventos();
         Logger loggerErros = Logger.getLoggerErros();
 
@@ -28,11 +31,11 @@ public class Main {
 
             bancoDeDados.conectar();
             banco.inserirDadosComTratamento(dados, bancoDeDados.getConexao(), bancoDeDados);
-            loggerEventos.gerarLog("✅ Dados de MUNICIPIO Inseridos com Sucesso! ✅");
+//            loggerEventos.gerarLog("✅ Dados de MUNICIPIO Inseridos com Sucesso! ✅");
 
         } catch (SQLException | ClassNotFoundException e) {
             System.out.println("Erro: " + e.getMessage());
-            loggerErros.gerarLog("❌ Erro ao Inserir Dados de MUNICIPIO. ❌");
+//            loggerErros.gerarLog("❌ Erro ao Inserir Dados de MUNICIPIO. ❌");
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
