@@ -1,5 +1,6 @@
 package infrastructure.s3;
 
+import infrastructure.config.Configuracoes;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -11,8 +12,8 @@ import java.nio.file.Paths;
 public class AdicionarArquivoS3 {
 
     public void adicionarLogsS3() {
-        String nomeBucket = "techmentor-bucket";
-        String diretorioLogs = "app/logs/LogsTechMentor";
+        String nomeBucket = Configuracoes.NOME_BUCKET_S3.getValor();
+        String diretorioLogs = Configuracoes.DIRETORIO_LOGS.getValor();
 
         S3Client s3Client = new S3Provider().getS3Client();
         File diretorio = new File(diretorioLogs);

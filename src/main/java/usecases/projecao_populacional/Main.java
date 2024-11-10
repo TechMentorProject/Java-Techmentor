@@ -1,5 +1,7 @@
 package usecases.projecao_populacional;
 
+import infrastructure.config.Configuracoes;
+import infrastructure.config.NomeArquivo;
 import infrastructure.database.BancoOperacoes;
 import infrastructure.logging.Logger;
 import infrastructure.processing.workbook.ManipularArquivo;
@@ -21,18 +23,18 @@ public class Main {
             // Aumentando limite de capacidade do apache poi
             IOUtils.setByteArrayMaxOverride(250_000_000);
 
-            String nomeArquivo = "projecoes_2024_tab1_idade_simples.xlsx";
-            String caminhoArquivo = "/app/base-dados" + "/" + nomeArquivo;
+            String nomeArquivo = NomeArquivo.PROJECAO.getNome();
+            String caminhoArquivo = Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor() + "/" + nomeArquivo;
 
             List<List<Object>> dados = manipularArquivo.lerPlanilha(caminhoArquivo, true);
 
             bancoDeDados.conectar();
             banco.inserirDadosComTratamento(dados, bancoDeDados.getConexao(), bancoDeDados);
-//            loggerEventos.gerarLog("✅ Dados de PROJEÇÃO POPULACIONAL Inseridos com Sucesso! ✅");
+            loggerEventos.gerarLog("✅ Dados de PROJEÇÃO POPULACIONAL Inseridos com Sucesso! ✅");
 
         } catch (SQLException | ClassNotFoundException e) {
             System.out.println("Erro: " + e.getMessage());
-//            loggerErros.gerarLog("❌ Erro ao Inserir Dados de PROJEÇÃO POPULACIONAL. ❌");
+            loggerErros.gerarLog("❌ Erro ao Inserir Dados de PROJEÇÃO POPULACIONAL. ❌");
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {

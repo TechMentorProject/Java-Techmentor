@@ -1,4 +1,5 @@
 package infrastructure.s3;
+import infrastructure.config.Configuracoes;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -18,9 +19,9 @@ import java.util.UUID;
 public class BaixarArquivoS3 {
     public static void main(String[] args) throws IOException {
 
-        String nomeBucket = "techmentor-bucket";
+        String nomeBucket = Configuracoes.NOME_BUCKET_S3.getValor();
         S3Client s3Client = new S3Provider().getS3Client();
-        String caminhoArquivo = "/app/base-dados";
+        String caminhoArquivo = Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor();
         String nomeObjeto;
         Path caminhoObjeto;
 

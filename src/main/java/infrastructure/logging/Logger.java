@@ -2,6 +2,7 @@ package infrastructure.logging;
 
 
 
+import infrastructure.config.Configuracoes;
 import infrastructure.s3.AdicionarArquivoS3;
 
 import java.io.File;
@@ -80,8 +81,13 @@ public class Logger {
             this.logFileWriter.write(timestamp + " - " + message + "\n");
             // Força a escrita no arquivo
             this.logFileWriter.flush();
+
             AdicionarArquivoS3 adicionarArquivoS3 = new AdicionarArquivoS3();
-            adicionarArquivoS3.adicionarLogsS3();
+
+            if(!Configuracoes.AMBIENTE.getValor().equals("DEV")) {
+                adicionarArquivoS3.adicionarLogsS3();
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }

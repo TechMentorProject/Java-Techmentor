@@ -1,3 +1,4 @@
+import infrastructure.config.Configuracoes;
 import infrastructure.database.BancoInsert;
 import infrastructure.database.BancoOperacoes;
 import infrastructure.database.BancoSetup;
@@ -36,15 +37,16 @@ public class MainExecutor {
         List<String> cidades = bancoInsert.extrairCidades(dados);
         bancoInsert.inserirCidades(cidades);
 
-        // Tarefa para baixar arquivo do S3
-//        try {
-//            infrastructure.s3.BaixarArquivoS3.main(args);  // Executa a primeira main e aguarda a finalização
-//            System.out.println("Download do arquivo S3 concluído com sucesso.");
-//        } catch (IOException e) {
-//            System.err.println("Falha ao baixar o arquivo S3: " + e.getMessage());
-//            e.printStackTrace();
-//            return;  // Encerra o programa se o download falhar
-//        }
+        if(!Configuracoes.AMBIENTE.getValor().equals("DEV")) {
+            try {
+                infrastructure.s3.BaixarArquivoS3.main(args);  // Executa a primeira main e aguarda a finalização
+                System.out.println("Download do arquivo S3 concluído com sucesso.");
+            } catch (IOException e) {
+                System.err.println("Falha ao baixar o arquivo S3: " + e.getMessage());
+                e.printStackTrace();
+                return;  // Encerra o programa se o download falhar
+            }
+        }
 
         // Executa cada tarefa de forma sequencial
         executarTarefa("Estações", args, usecases.estacoes_smp.Main::main);
