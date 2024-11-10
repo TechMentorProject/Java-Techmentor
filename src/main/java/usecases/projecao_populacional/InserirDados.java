@@ -24,9 +24,9 @@ public class InserirDados {
         bancoDeDados.truncarTabela("projecaoPopulacional");
 
         System.out.println("Inserindo dados...");
-        loggerInsercoes.gerarLog("💻 Iniciando inserção de dados na tabela projecaoPopulacional... 💻");
+//        loggerInsercoes.gerarLog("💻 Iniciando inserção de dados na tabela projecaoPopulacional... 💻");
 
-        String query = "INSERT INTO projecaoPopulacional (estado, ano, projecao) VALUES (?, ?, ?)";
+        String query = "INSERT INTO projecaoPopulacional (fkEstado, ano, projecao) VALUES (?, ?, ?)";
         try (PreparedStatement preparedStatement = conexao.prepareStatement(query)) {
             processarEInserirDados(dadosExcel, preparedStatement, bancoDeDados);
             preparedStatement.executeBatch();
@@ -125,7 +125,6 @@ public class InserirDados {
         return 0;
     }
 
-
     private void inserirNoBanco(PreparedStatement preparedStatement, String estado, int ano, long projecao) throws SQLException {
 
         this.projecao.setEstado(estado);
@@ -133,7 +132,6 @@ public class InserirDados {
         this.projecao.setProjecao(projecao);
 
         preparedStatement.setString(1, this.projecao.getEstado());
-        System.out.println(this.projecao.getEstado());
         preparedStatement.setInt(2, this.projecao.getAno());
         preparedStatement.setLong(3, this.projecao.getProjecao());
         preparedStatement.addBatch();

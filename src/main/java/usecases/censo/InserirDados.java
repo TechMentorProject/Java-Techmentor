@@ -41,13 +41,13 @@ public class InserirDados {
             throw new SQLException("Conexão com o banco de dados não foi estabelecida.");
         }
 
-        String query = "INSERT INTO censoIBGE (cidade, area, densidadeDemografica) VALUES (?, ?, ?)";
+        String query = "INSERT INTO censoIBGE (fkCidade, area, densidadeDemografica) VALUES (?, ?, ?)";
         System.out.println(query);
 
         try (PreparedStatement guardarValor = conexao.prepareStatement(query)) {
 
             System.out.println("Inserindo dados no banco...");
-            loggerInsercoes.gerarLog("💻 Iniciando inserção de dados na tabela censoIBGE... 💻");
+//            loggerInsercoes.gerarLog("💻 Iniciando inserção de dados na tabela censoIBGE... 💻");
 
             int indiceMunicipio = obterIndiceColuna(dadosExcel, "Município");
             int indiceDensidadeDemografica = obterIndiceColuna(dadosExcel, "Densidade demográfica(hab/km²)");
@@ -59,7 +59,7 @@ public class InserirDados {
 
                 if (linha.size() >= 3 && linha.get(0) != null && linha.get(1) != null && linha.get(2) != null) {
 
-                    censo.setCidade(linha.get(indiceMunicipio).toString());
+                    censo.setCidade(linha.get(indiceMunicipio).toString().trim());
                     System.out.println(censo.getCidade());
                     censo.setArea(Double.parseDouble(linha.get(indiceArea).toString()));
                     censo.setDensidadeDemografica(Double.parseDouble(linha.get(indiceDensidadeDemografica).toString()));
@@ -85,7 +85,7 @@ public class InserirDados {
 
         } catch (SQLException e) {
             conexao.rollback();  // Reverte em caso de erro
-            loggerInsercoes.gerarLog("❌ Erro ao inserir dados em CENSO: " + e.getMessage() + " - revertendo... ❌");
+//            loggerInsercoes.gerarLog("❌ Erro ao inserir dados em CENSO: " + e.getMessage() + " - revertendo... ❌");
             throw e;
         }
     }

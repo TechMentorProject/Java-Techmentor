@@ -23,9 +23,9 @@ public class InserirDados {
         bancoDeDados.truncarTabela("municipio");
 
         System.out.println("Inserindo dados...");
-        loggerInsercoes.gerarLog("💻 Iniciando inserção de dados na tabela municipio... 💻");
+//        loggerInsercoes.gerarLog("💻 Iniciando inserção de dados na tabela municipio... 💻");
 
-        String query = "INSERT INTO municipio (ano, cidade, operadora, domiciliosCobertosPercent, areaCobertaPercent, tecnologia) VALUES (?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO municipio (ano, fkCidade, operadora, domiciliosCobertosPercent, areaCobertaPercent, tecnologia) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = conexao.prepareStatement(query)) {
             processarEInserirDados(dadosExcel, preparedStatement, bancoDeDados);
             preparedStatement.executeBatch();
@@ -34,7 +34,7 @@ public class InserirDados {
         }
     }
 
-    private void processarEInserirDados(List<List<Object>> dadosExcel, PreparedStatement preparedStatement, BancoOperacoes bancoDeDados) throws SQLException {
+    public void processarEInserirDados(List<List<Object>> dadosExcel, PreparedStatement preparedStatement, BancoOperacoes bancoDeDados) throws SQLException {
         // Cache de índices das colunas para otimizar
         Map<String, Integer> indiceColunas = new HashMap<>();
         indiceColunas.put("Ano", obterIndiceColuna(dadosExcel, "Ano"));
@@ -70,14 +70,31 @@ public class InserirDados {
         throw new IllegalArgumentException("Coluna '" + nomeColuna + "' não encontrada no cabeçalho.");
     }
 
+    private String formatarCidade(String cidade) {
+        if (cidade != null && cidade.contains(" - ")) {
+            return cidade.split(" - ")[0].trim();
+        }
+        return cidade;
+    }
+
     private boolean extraindoValoresDoMunicipio(PreparedStatement preparedStatement, String[] valores, List<Object> linha, Map<String, Integer> indiceColunas) throws SQLException {
         if (valores.length < 13) {
             return false;
         }
 
-        // Extraindo valores usando os índices cacheados
         municipio.setAno(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Ano")));
-        municipio.setCidade(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Cidade")));
+
+        // Aplica o método formatarCidade para remover o sufixo do estado
+        String cidade = formatarCidade(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Cidade")));
+
+        if (cidade != null && cidade.contains("�?")) {
+            System.out.println("Cidade com possível erro de codificação detectada: " + cidade);
+            return false;  // Pula essa linha
+        }
+
+
+        municipio.setCidade(cidade);
+
         municipio.setOperadora(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Operadora")));
 
         String domiciliosCobertosPercentBruto = validacoesLinha.buscarValorValido(valores, indiceColunas.get("DomiciliosCobertos") - 1);
@@ -103,12 +120,13 @@ public class InserirDados {
             return false;
         }
 
-        // Preencher o `PreparedStatement`
         guardarValorProBanco(preparedStatement, municipio.getAno(), municipio.getCidade(), municipio.getOperadora(),
                 municipio.getDomiciliosCobertosPorcentagem(), municipio.getAreaCobertaPorcentagem(), municipio.getTecnologia());
 
         return true;
     }
+
+
 
     private String formatarAreaCoberta(String areaCobertaPercent) {
         if (areaCobertaPercent != null && areaCobertaPercent.length() >= 2) {
@@ -120,6 +138,7 @@ public class InserirDados {
     private void guardarValorProBanco(PreparedStatement guardarValor, String ano, String cidade, String operadora, Integer domiciliosCobertosPercent, Integer areaCobertaFormatada, String tecnologiaFormatada) throws SQLException {
         guardarValor.setString(1, ano);
         guardarValor.setString(2, cidade);
+        System.out.println(cidade);
         guardarValor.setString(3, operadora);
         guardarValor.setInt(4, domiciliosCobertosPercent);
         guardarValor.setInt(5, areaCobertaFormatada);

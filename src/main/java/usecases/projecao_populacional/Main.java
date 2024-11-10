@@ -24,15 +24,15 @@ public class Main {
             String nomeArquivo = "projecoes_2024_tab1_idade_simples.xlsx";
             String caminhoArquivo = "/app/base-dados" + "/" + nomeArquivo;
 
-            List<List<Object>> dados = manipularArquivo.lerPlanilha(caminhoArquivo, false);
+            List<List<Object>> dados = manipularArquivo.lerPlanilha(caminhoArquivo, true);
 
             bancoDeDados.conectar();
             banco.inserirDadosComTratamento(dados, bancoDeDados.getConexao(), bancoDeDados);
-            loggerEventos.gerarLog("✅ Dados de PROJEÇÃO POPULACIONAL Inseridos com Sucesso! ✅");
+//            loggerEventos.gerarLog("✅ Dados de PROJEÇÃO POPULACIONAL Inseridos com Sucesso! ✅");
 
         } catch (SQLException | ClassNotFoundException e) {
             System.out.println("Erro: " + e.getMessage());
-            loggerErros.gerarLog("❌ Erro ao Inserir Dados de PROJEÇÃO POPULACIONAL. ❌");
+//            loggerErros.gerarLog("❌ Erro ao Inserir Dados de PROJEÇÃO POPULACIONAL. ❌");
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {

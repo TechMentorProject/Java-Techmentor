@@ -1,0 +1,2 @@
+07/11/2024 23:26:18 - 💻 Iniciando inserção de dados na tabela estacoesSMP... 💻
+07/11/2024 23:26:21 - 💻 Iniciando inserção de dados na tabela censoIBGE... 💻

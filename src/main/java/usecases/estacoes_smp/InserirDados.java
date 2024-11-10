@@ -23,22 +23,20 @@ public class InserirDados {
         bancoDeDados.truncarTabela("estacoesSMP");
 
         System.out.println("Inserindo dados...");
-        loggerInsercoes.gerarLog("💻 Iniciando inserção de dados na tabela estacoesSMP... 💻");
+//        loggerInsercoes.gerarLog("💻 Iniciando inserção de dados na tabela estacoesSMP... 💻");
 
-        String query = "INSERT INTO estacoesSMP (cidade, operadora, latitude, longitude, codigoIBGE, tecnologia) VALUES (?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO estacoesSMP (fkCidade, operadora, codigoIBGE, tecnologia) VALUES (?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = conexao.prepareStatement(query)) {
             processarEInserirDados(dadosExcel, preparedStatement, bancoDeDados);
             System.out.println("Dados inseridos com sucesso!");
         }
     }
 
-    private void processarEInserirDados(List<List<Object>> dadosExcel, PreparedStatement preparedStatement, BancoOperacoes bancoDeDados) throws SQLException {
+    private void processarEInserirDados(List<List<Object>> dadosExcel, PreparedStatement preparedStatement, BancoOperacoes bancoDeDados) {
         // Cache de índices das colunas para otimizar o código
         Map<String, Integer> indiceColunas = new HashMap<>();
         indiceColunas.put("Municipio", obterIndiceColuna(dadosExcel, "Município-UF"));
         indiceColunas.put("Operadora", obterIndiceColuna(dadosExcel, "Empresa Fistel"));
-        indiceColunas.put("Latitude", obterIndiceColuna(dadosExcel, "Latitude decimal"));
-        indiceColunas.put("Longitude", obterIndiceColuna(dadosExcel, "Longitude decimal"));
         indiceColunas.put("CodigoIBGE", obterIndiceColuna(dadosExcel, "Código IBGE"));
         indiceColunas.put("Tecnologia", obterIndiceColuna(dadosExcel, "Tecnologia"));
 
@@ -46,12 +44,21 @@ public class InserirDados {
             List<Object> linha = dadosExcel.get(i);
             String[] valores = processarLinha(linha);
 
-            if (!extraindoValoresDoApache(preparedStatement, valores, linha, indiceColunas)) {
-                continue;
+            try {
+                // Tenta extrair e inserir os valores; se falhar, loga o erro e continua
+                if (extraindoValoresDoApache(preparedStatement, valores, linha, indiceColunas)) {
+                    bancoDeDados.adicionarBatch(preparedStatement, i);
+                }
+            } catch (SQLException e) {
+                System.err.println("Erro ao processar a linha " + i + ": " + e.getMessage());
+                // Opcional: loggerInsercoes.gerarLog("Erro ao processar a linha " + i + ": " + e.getMessage());
+            } catch (Exception e) {
+                System.err.println("Erro inesperado na linha " + i + ": " + e.getMessage());
+                // Opcional: loggerInsercoes.gerarLog("Erro inesperado na linha " + i + ": " + e.getMessage());
             }
-            bancoDeDados.adicionarBatch(preparedStatement, i);
         }
     }
+
 
     private int obterIndiceColuna(List<List<Object>> dadosExcel, String nomeColuna) {
         if (dadosExcel == null || dadosExcel.isEmpty() || dadosExcel.get(0).isEmpty()) {
@@ -79,40 +86,35 @@ public class InserirDados {
             System.err.println("Linha inválida, ignorando: " + linha);
             return false;
         }
-    
-        // Extraindo valores usando os índices já cacheados
-        String _longitude = validacoesLinha.buscarValorValido(valores, indiceColunas.get("Longitude"));
-        String _latitude = validacoesLinha.buscarValorValido(valores, indiceColunas.get("Latitude"));
 
-        if (_longitude == null || _latitude == null) {
-            return false;
-        }
-
-        Long longitude = Long.parseLong(_longitude.replace(".", ""));
-        Long latitude = Long.parseLong(_latitude.replace(".", ""));
-
-        estacoes.setCidade(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Municipio") + 2));
+        // Aplica o método formatarCidade para remover o sufixo do estado
+        estacoes.setCidade(formatarCidade(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Municipio") + 2)));
         if (estacoes.getCidade().matches("\\d+")) {
             return false;
         }
+
         estacoes.setOperadora(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Operadora")));
-        estacoes.setLatitude(latitude);
-        estacoes.setLongitude(longitude);
         estacoes.setCodigoIBGE(validacoesLinha.buscarValorValido(valores, indiceColunas.get("CodigoIBGE")));
         estacoes.setTecnologia(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Tecnologia")));
 
         if (validacoesLinha.algumCampoInvalido(
                 estacoes.getCidade(),
                 estacoes.getOperadora(),
-                estacoes.getLatitude(),
-                estacoes.getLongitude(),
                 estacoes.getCodigoIBGE(),
                 estacoes.getTecnologia()
         )) {
             return false;
         }
-        guardarValorProBanco(preparedStatement, estacoes.getCidade(), estacoes.getOperadora(), estacoes.getLatitude(), estacoes.getLongitude(), estacoes.getCodigoIBGE(), estacoes.getTecnologia());
+        guardarValorProBanco(preparedStatement, estacoes.getCidade(), estacoes.getOperadora(), estacoes.getCodigoIBGE(), estacoes.getTecnologia());
         return true;
+    }
+
+
+    private String formatarCidade(String cidade) {
+        if (cidade != null && cidade.contains("-")) {
+            return cidade.split("-")[0].trim(); // Remove o estado após o "-"
+        }
+        return cidade;
     }
 
     private String[] processarLinha(List<Object> linha) {
@@ -124,12 +126,10 @@ public class InserirDados {
         return linhaBuilder.toString().split(";");
     }
 
-    private void guardarValorProBanco(PreparedStatement preparedStatement, String cidade, String operadora, Long latitude, Long longitude, String codigoIBGE, String tecnologia) throws SQLException {
+    private void guardarValorProBanco(PreparedStatement preparedStatement, String cidade, String operadora, String codigoIBGE, String tecnologia) throws SQLException {
         preparedStatement.setString(1, cidade);
         preparedStatement.setString(2, operadora);
-        preparedStatement.setDouble(3, latitude);
-        preparedStatement.setDouble(4, longitude);
-        preparedStatement.setString(5, codigoIBGE);
-        preparedStatement.setString(6, tecnologia);
+        preparedStatement.setString(3, codigoIBGE);
+        preparedStatement.setString(4, tecnologia);
     }
 }
