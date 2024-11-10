@@ -1,5 +1,7 @@
 package infrastructure.database;
 
+import infrastructure.config.Configuracoes;
+
 import java.sql.*;
 
 public class BancoOperacoes {
@@ -12,9 +14,9 @@ public class BancoOperacoes {
 
         // Conexão inicial sem especificar o banco de dados
         conexao = DriverManager.getConnection(
-                "jdbc:mysql://localhost:3306?rewriteBatchedStatements=true",
-                "root",
-                "root"
+                "jdbc:mysql://" + Configuracoes.IP_BANCO.getValor() + ":" + Configuracoes.PORTA_BANCO.getValor() + "?rewriteBatchedStatements=true",
+                Configuracoes.USUARIO.getValor(),
+                Configuracoes.SENHA.getValor()
         );
         conexao.setAutoCommit(false);
         System.out.println("Conexão ao servidor MySQL estabelecida.");
@@ -25,9 +27,9 @@ public class BancoOperacoes {
         // Conectar novamente, agora especificando o banco de dados
         conexao.close();
         conexao = DriverManager.getConnection(
-                "jdbc:mysql://localhost:3306/techmentor?rewriteBatchedStatements=true",
-                "root",
-                "root"
+                "jdbc:mysql://" + Configuracoes.IP_BANCO.getValor() + ":" + Configuracoes.PORTA_BANCO.getValor() + "/techmentor?rewriteBatchedStatements=true",
+                Configuracoes.USUARIO.getValor(),
+                Configuracoes.SENHA.getValor()
         );
         conexao.setAutoCommit(false);
         System.out.println("Conectado ao banco de dados 'techmentor'.");

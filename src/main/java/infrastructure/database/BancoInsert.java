@@ -146,7 +146,7 @@ public class BancoInsert {
                     stmt.setString(2, nomeEstado);          // Insere a chave estrangeira do estado
                     stmt.executeUpdate();
                 }
-            } 
+            }
         } catch (Exception e) {
             System.err.println("Erro ao inserir cidade com estado: " + e.getMessage());
         }

@@ -24,7 +24,7 @@ public class InserirDados {
         bancoDeDados.truncarTabela("projecaoPopulacional");
 
         System.out.println("Inserindo dados...");
-//        loggerInsercoes.gerarLog("💻 Iniciando inserção de dados na tabela projecaoPopulacional... 💻");
+        loggerInsercoes.gerarLog("💻 Iniciando inserção de dados na tabela projecaoPopulacional... 💻");
 
         String query = "INSERT INTO projecaoPopulacional (fkEstado, ano, projecao) VALUES (?, ?, ?)";
         try (PreparedStatement preparedStatement = conexao.prepareStatement(query)) {

@@ -1,0 +1,13 @@
+10/11/2024 16:18:17 - 💻 Iniciando inserção de dados na tabela estacoesSMP... 💻
+10/11/2024 16:18:46 - 💻 Iniciando inserção de dados na tabela censoIBGE... 💻
+10/11/2024 16:18:46 - 💻 Iniciando inserção de dados na tabela censoIBGE... 💻
+10/11/2024 16:18:46 - 💻 Iniciando inserção de dados na tabela censoIBGE... 💻
+10/11/2024 16:18:47 - 💻 Iniciando inserção de dados na tabela censoIBGE... 💻
+10/11/2024 16:18:47 - 💻 Iniciando inserção de dados na tabela censoIBGE... 💻
+10/11/2024 16:18:47 - 💻 Iniciando inserção de dados na tabela censoIBGE... 💻
+10/11/2024 16:18:47 - 💻 Iniciando inserção de dados na tabela censoIBGE... 💻
+10/11/2024 16:18:47 - 💻 Iniciando inserção de dados na tabela censoIBGE... 💻
+10/11/2024 16:18:47 - 💻 Iniciando inserção de dados na tabela censoIBGE... 💻
+10/11/2024 16:18:47 - 💻 Iniciando inserção de dados na tabela censoIBGE... 💻
+10/11/2024 16:18:55 - 💻 Iniciando inserção de dados na tabela municipio... 💻
+10/11/2024 16:19:05 - 💻 Iniciando inserção de dados na tabela projecaoPopulacional... 💻

@@ -23,7 +23,7 @@ public class InserirDados {
         bancoDeDados.truncarTabela("municipio");
 
         System.out.println("Inserindo dados...");
-//        loggerInsercoes.gerarLog("💻 Iniciando inserção de dados na tabela municipio... 💻");
+        loggerInsercoes.gerarLog("💻 Iniciando inserção de dados na tabela municipio... 💻");
 
         String query = "INSERT INTO municipio (ano, fkCidade, operadora, domiciliosCobertosPercent, areaCobertaPercent, tecnologia) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = conexao.prepareStatement(query)) {

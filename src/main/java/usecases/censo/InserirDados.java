@@ -47,7 +47,7 @@ public class InserirDados {
         try (PreparedStatement guardarValor = conexao.prepareStatement(query)) {
 
             System.out.println("Inserindo dados no banco...");
-//            loggerInsercoes.gerarLog("💻 Iniciando inserção de dados na tabela censoIBGE... 💻");
+            loggerInsercoes.gerarLog("💻 Iniciando inserção de dados na tabela censoIBGE... 💻");
 
             int indiceMunicipio = obterIndiceColuna(dadosExcel, "Município");
             int indiceDensidadeDemografica = obterIndiceColuna(dadosExcel, "Densidade demográfica(hab/km²)");
@@ -85,7 +85,7 @@ public class InserirDados {
 
         } catch (SQLException e) {
             conexao.rollback();  // Reverte em caso de erro
-//            loggerInsercoes.gerarLog("❌ Erro ao inserir dados em CENSO: " + e.getMessage() + " - revertendo... ❌");
+            loggerInsercoes.gerarLog("❌ Erro ao inserir dados em CENSO: " + e.getMessage() + " - revertendo... ❌");
             throw e;
         }
     }
