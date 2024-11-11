@@ -1,9 +1,9 @@
 package usecases.municipio;
 
-import domain.Municipio;
 import infrastructure.database.BancoOperacoes;
 import infrastructure.logging.Logger;
 import infrastructure.utils.ValidacoesLinha;
+import usecases.BaseDeDados;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,11 +12,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class InserirDados {
+public class Municipio extends BaseDeDados {
 
-    ValidacoesLinha validacoesLinha = new ValidacoesLinha();
-    Municipio municipio = new Municipio();
-    Logger loggerInsercoes = Logger.getLoggerInsercoes();
+    private String ano;
+    private String cidade;
+    private String operadora;
+    private int domiciliosCobertosPorcentagem;
+    private int areaCobertaPorcentagem;
+    private String tecnologia;
+    private ValidacoesLinha validacoesLinha;
+    private Logger loggerInsercoes;
+
+    public Municipio(ValidacoesLinha validacoesLinha, Logger loggerInsercoes) {
+        this.validacoesLinha = validacoesLinha;
+        this.loggerInsercoes = loggerInsercoes;
+    }
 
     public void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException, ClassNotFoundException {
         bancoDeDados.validarConexao();
@@ -55,7 +65,7 @@ public class InserirDados {
         }
     }
 
-    private int obterIndiceColuna(List<List<Object>> dadosExcel, String nomeColuna) {
+    public int obterIndiceColuna(List<List<Object>> dadosExcel, String nomeColuna) {
         String cabecalho = dadosExcel.get(0).get(0).toString();
         if (cabecalho.length() > 0 && cabecalho.charAt(0) == '\uFEFF') {
             cabecalho = cabecalho.substring(1);
@@ -82,7 +92,7 @@ public class InserirDados {
             return false;
         }
 
-        municipio.setAno(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Ano")));
+        setAno(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Ano")));
 
         // Aplica o método formatarCidade para remover o sufixo do estado
         String cidade = formatarCidade(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Cidade")));
@@ -93,35 +103,35 @@ public class InserirDados {
         }
 
 
-        municipio.setCidade(cidade);
+        setCidade(cidade);
 
-        municipio.setOperadora(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Operadora")));
+        setOperadora(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Operadora")));
 
         String domiciliosCobertosPercentBruto = validacoesLinha.buscarValorValido(valores, indiceColunas.get("DomiciliosCobertos") - 1);
         if (domiciliosCobertosPercentBruto != null) {
-            municipio.setDomiciliosCobertosPorcentagem(Integer.parseInt(domiciliosCobertosPercentBruto));
+            setDomiciliosCobertosPorcentagem(Integer.parseInt(domiciliosCobertosPercentBruto));
         }
 
         String areaCobertaPercent = validacoesLinha.buscarValorValido(valores, indiceColunas.get("AreaCoberta") - 1);
         String areaCobertaFormatada = formatarAreaCoberta(areaCobertaPercent);
         if (areaCobertaFormatada != null) {
-            municipio.setAreaCobertaPorcentagem(Integer.parseInt(areaCobertaFormatada));
+            setAreaCobertaPorcentagem(Integer.parseInt(areaCobertaFormatada));
         }
 
         String tecnologiaFormatada = formatarTecnologia(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Tecnologia")));
-        municipio.setTecnologia(tecnologiaFormatada);
+        setTecnologia(tecnologiaFormatada);
 
-        if (validacoesLinha.algumCampoInvalido(municipio.getAno(), municipio.getCidade(), municipio.getOperadora(),
-                municipio.getDomiciliosCobertosPorcentagem(), municipio.getAreaCobertaPorcentagem(), municipio.getTecnologia())) {
+        if (validacoesLinha.algumCampoInvalido(getAno(), getCidade(), getOperadora(),
+                getDomiciliosCobertosPorcentagem(), getAreaCobertaPorcentagem(), getTecnologia())) {
             return false;
         }
 
-        if (municipio.getAreaCobertaPorcentagem() == 0 || municipio.getDomiciliosCobertosPorcentagem() == 0) {
+        if (getAreaCobertaPorcentagem() == 0 || getDomiciliosCobertosPorcentagem() == 0) {
             return false;
         }
 
-        guardarValorProBanco(preparedStatement, municipio.getAno(), municipio.getCidade(), municipio.getOperadora(),
-                municipio.getDomiciliosCobertosPorcentagem(), municipio.getAreaCobertaPorcentagem(), municipio.getTecnologia());
+        guardarValorProBanco(preparedStatement, getAno(), getCidade(), getOperadora(),
+                getDomiciliosCobertosPorcentagem(), getAreaCobertaPorcentagem(), getTecnologia());
 
         return true;
     }
@@ -162,5 +172,69 @@ public class InserirDados {
             }
         }
         return tecnologiasFormatadas.length() == 0 ? null : tecnologiasFormatadas.toString();
+    }
+
+    public String getAno() {
+        return ano;
+    }
+
+    public void setAno(String ano) {
+        this.ano = ano;
+    }
+
+    public String getCidade() {
+        return cidade;
+    }
+
+    public void setCidade(String cidade) {
+        this.cidade = cidade;
+    }
+
+    public String getOperadora() {
+        return operadora;
+    }
+
+    public void setOperadora(String operadora) {
+        this.operadora = operadora;
+    }
+
+    public int getDomiciliosCobertosPorcentagem() {
+        return domiciliosCobertosPorcentagem;
+    }
+
+    public void setDomiciliosCobertosPorcentagem(int domiciliosCobertosPorcentagem) {
+        this.domiciliosCobertosPorcentagem = domiciliosCobertosPorcentagem;
+    }
+
+    public int getAreaCobertaPorcentagem() {
+        return areaCobertaPorcentagem;
+    }
+
+    public void setAreaCobertaPorcentagem(int areaCobertaPorcentagem) {
+        this.areaCobertaPorcentagem = areaCobertaPorcentagem;
+    }
+
+    public String getTecnologia() {
+        return tecnologia;
+    }
+
+    public void setTecnologia(String tecnologia) {
+        this.tecnologia = tecnologia;
+    }
+
+    public ValidacoesLinha getValidacoesLinha() {
+        return validacoesLinha;
+    }
+
+    public void setValidacoesLinha(ValidacoesLinha validacoesLinha) {
+        this.validacoesLinha = validacoesLinha;
+    }
+
+    public Logger getLoggerInsercoes() {
+        return loggerInsercoes;
+    }
+
+    public void setLoggerInsercoes(Logger loggerInsercoes) {
+        this.loggerInsercoes = loggerInsercoes;
     }
 }

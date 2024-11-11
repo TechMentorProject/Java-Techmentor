@@ -12,11 +12,13 @@ import java.util.List;
 public class BancoSetup {
 
     private final Connection conexao;
-    BancoOperacoes bancoOperacoes = new BancoOperacoes();
-    BancoInsert bancoInsert = new BancoInsert(bancoOperacoes);
-    ManipularArquivo manipularArquivo = new ManipularArquivo();
-    public BancoSetup(Connection conexao) {
+    private BancoInsert bancoInsert;
+    private ManipularArquivo manipularArquivo;
+
+    public BancoSetup(Connection conexao, BancoInsert bancoInsert, ManipularArquivo manipularArquivo) {
         this.conexao = conexao;
+        this.bancoInsert = bancoInsert;
+        this.manipularArquivo = manipularArquivo;
     }
 
     public void criarEstruturaBanco() throws SQLException {

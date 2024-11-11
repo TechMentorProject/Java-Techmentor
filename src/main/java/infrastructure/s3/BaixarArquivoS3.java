@@ -1,11 +1,9 @@
 package infrastructure.s3;
-import infrastructure.config.Configuracoes;
-import software.amazon.awssdk.core.sync.RequestBody;
+import config.Configuracoes;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -14,7 +12,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import java.nio.file.StandardCopyOption; // Para substituir arquivos ao copiar, se necessário
-import java.util.UUID;
+
 
 public class BaixarArquivoS3 {
     public static void main(String[] args) throws IOException {

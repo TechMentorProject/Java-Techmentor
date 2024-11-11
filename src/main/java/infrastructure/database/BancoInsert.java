@@ -7,9 +7,11 @@ import java.util.*;
 public class BancoInsert {
 
     private final BancoOperacoes bancoOperacoes;
+    private final ValidacoesLinha validacoesLinha;
 
-    public BancoInsert(BancoOperacoes bancoOperacoes) {
+    public BancoInsert(BancoOperacoes bancoOperacoes, ValidacoesLinha validacoesLinha) {
         this.bancoOperacoes = bancoOperacoes;
+        this.validacoesLinha = validacoesLinha;
     }
 
     public void inserirDadosIniciais() throws SQLException {
@@ -77,7 +79,6 @@ public class BancoInsert {
 
     public List<String> extrairCidades(List<List<Object>> dadosExcel) {
         Set<String> cidadesSet = new HashSet<>();
-        ValidacoesLinha validacoesLinha = new ValidacoesLinha();
         Integer indiceColuna = obterIndiceColuna(dadosExcel, "Município");
 
         for (int i = 1; i < dadosExcel.size(); i++) {

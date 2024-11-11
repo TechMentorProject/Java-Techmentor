@@ -1,6 +1,6 @@
 package infrastructure.s3;
 
-import infrastructure.config.Configuracoes;
+import config.Configuracoes;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -11,17 +11,22 @@ import java.nio.file.Paths;
 
 public class AdicionarArquivoS3 {
 
+   private final S3Provider s3Provider;
+
+    public AdicionarArquivoS3(S3Provider s3Provider) {
+        this.s3Provider = s3Provider;
+    }
+
     public void adicionarLogsS3() {
         String nomeBucket = Configuracoes.NOME_BUCKET_S3.getValor();
         String diretorioLogs = Configuracoes.DIRETORIO_LOGS.getValor();
 
-        S3Client s3Client = new S3Provider().getS3Client();
         File diretorio = new File(diretorioLogs);
 
         if (diretorio.exists() && diretorio.isDirectory()) {
             // Chamada recursiva para processar o diretório e suas subpastas
             Path raizPath = Paths.get(diretorioLogs);
-            enviarArquivosRecursivamente(s3Client, diretorio, nomeBucket, raizPath);
+            enviarArquivosRecursivamente(s3Provider.getS3Client(), diretorio, nomeBucket, raizPath);
         } else {
             System.out.println("O diretório de logs não existe ou não é um diretório válido.");
         }
@@ -41,7 +46,7 @@ public class AdicionarArquivoS3 {
                         .key(key)
                         .build();
 
-                s3Client.putObject(putObjectRequest, RequestBody.fromFile(arquivo));
+                s3Provider.getS3Client().putObject(putObjectRequest, RequestBody.fromFile(arquivo));
                 System.out.println("Upload realizado para o arquivo: " + key);
             } else if (arquivo.isDirectory()) {
                 // Chamada recursiva para processar subdiretórios

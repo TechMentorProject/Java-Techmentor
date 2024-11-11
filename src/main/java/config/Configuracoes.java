@@ -1,4 +1,4 @@
-package infrastructure.config;
+package config;
 
 public enum Configuracoes {
 
