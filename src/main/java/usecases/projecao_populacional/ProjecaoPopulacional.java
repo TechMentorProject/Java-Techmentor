@@ -1,9 +1,9 @@
 package usecases.projecao_populacional;
 
-import domain.ProjecaoPopulacional;
 import infrastructure.database.BancoOperacoes;
 import infrastructure.logging.Logger;
 import infrastructure.utils.ValidacoesLinha;
+import usecases.BaseDeDados;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -13,11 +13,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class InserirDados {
+public class ProjecaoPopulacional extends BaseDeDados {
 
-    ValidacoesLinha validacoesLinha = new ValidacoesLinha();
-    ProjecaoPopulacional projecao = new ProjecaoPopulacional();
-    Logger loggerInsercoes = Logger.getLoggerInsercoes();
+    private String estado;
+    private int ano;
+    private long projecao;
+    private ValidacoesLinha validacoesLinha;
+    private Logger loggerInsercoes;
+
+    public ProjecaoPopulacional(ValidacoesLinha validacoesLinha, Logger loggerInsercoes) {
+        this.validacoesLinha = validacoesLinha;
+        this.loggerInsercoes = loggerInsercoes;
+    }
 
     public void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException, ClassNotFoundException {
         bancoDeDados.validarConexao();
@@ -87,7 +94,7 @@ public class InserirDados {
         }
     }
 
-    private int obterIndiceColuna(List<List<Object>> dadosExcel, String nomeColuna) {
+    public int obterIndiceColuna(List<List<Object>> dadosExcel, String nomeColuna) {
         String cabecalho = dadosExcel.get(4).toString().replace("[", "").replace("]", "");
         if (cabecalho.length() > 0 && cabecalho.charAt(0) == '\uFEFF') {
             cabecalho = cabecalho.substring(1);
@@ -127,13 +134,53 @@ public class InserirDados {
 
     private void inserirNoBanco(PreparedStatement preparedStatement, String estado, int ano, long projecao) throws SQLException {
 
-        this.projecao.setEstado(estado);
-        this.projecao.setAno(ano);
-        this.projecao.setProjecao(projecao);
+        setEstado(estado);
+        setAno(ano);
+        setProjecao(projecao);
 
-        preparedStatement.setString(1, this.projecao.getEstado());
-        preparedStatement.setInt(2, this.projecao.getAno());
-        preparedStatement.setLong(3, this.projecao.getProjecao());
+        preparedStatement.setString(1, getEstado());
+        preparedStatement.setInt(2, getAno());
+        preparedStatement.setLong(3, getProjecao());
         preparedStatement.addBatch();
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+
+    public int getAno() {
+        return ano;
+    }
+
+    public void setAno(int ano) {
+        this.ano = ano;
+    }
+
+    public long getProjecao() {
+        return projecao;
+    }
+
+    public void setProjecao(long projecao) {
+        this.projecao = projecao;
+    }
+
+    public ValidacoesLinha getValidacoesLinha() {
+        return validacoesLinha;
+    }
+
+    public void setValidacoesLinha(ValidacoesLinha validacoesLinha) {
+        this.validacoesLinha = validacoesLinha;
+    }
+
+    public Logger getLoggerInsercoes() {
+        return loggerInsercoes;
+    }
+
+    public void setLoggerInsercoes(Logger loggerInsercoes) {
+        this.loggerInsercoes = loggerInsercoes;
     }
 }

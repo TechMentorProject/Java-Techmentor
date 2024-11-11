@@ -1,9 +1,9 @@
 package usecases.estacoes_smp;
 
-import domain.EstacoesSMP;
 import infrastructure.database.BancoOperacoes;
 import infrastructure.logging.Logger;
 import infrastructure.utils.ValidacoesLinha;
+import usecases.BaseDeDados;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,13 +12,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class InserirDados {
+public class EstacoesSmp extends BaseDeDados {
 
-    ValidacoesLinha validacoesLinha = new ValidacoesLinha();
-    EstacoesSMP estacoes = new EstacoesSMP();
-    Logger loggerInsercoes = Logger.getLoggerInsercoes();
+    private String cidade;
+    private String operadora;
+    private long latitude;
+    private long longitude;
+    private String codigoIBGE;
+    private String tecnologia;
+    private ValidacoesLinha validacoesLinha;
+    private Logger loggerInsercoes;
 
-    void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException, ClassNotFoundException {
+
+    public EstacoesSmp(ValidacoesLinha validacoesLinha, Logger loggerInsercoes) {
+        this.validacoesLinha = validacoesLinha;
+        this.loggerInsercoes = loggerInsercoes;
+    }
+
+    public void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException, ClassNotFoundException {
         bancoDeDados.validarConexao();
         bancoDeDados.truncarTabela("estacoesSMP");
 
@@ -60,7 +71,7 @@ public class InserirDados {
     }
 
 
-    private int obterIndiceColuna(List<List<Object>> dadosExcel, String nomeColuna) {
+    public int obterIndiceColuna(List<List<Object>> dadosExcel, String nomeColuna) {
         if (dadosExcel == null || dadosExcel.isEmpty() || dadosExcel.get(0).isEmpty()) {
             throw new IllegalArgumentException("O cabeçalho está vazio ou mal formado.");
         }
@@ -88,24 +99,24 @@ public class InserirDados {
         }
 
         // Aplica o método formatarCidade para remover o sufixo do estado
-        estacoes.setCidade(formatarCidade(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Municipio") + 2)));
-        if (estacoes.getCidade().matches("\\d+")) {
+        setCidade(formatarCidade(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Municipio") + 2)));
+        if (getCidade().matches("\\d+")) {
             return false;
         }
 
-        estacoes.setOperadora(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Operadora")));
-        estacoes.setCodigoIBGE(validacoesLinha.buscarValorValido(valores, indiceColunas.get("CodigoIBGE")));
-        estacoes.setTecnologia(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Tecnologia")));
+        setOperadora(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Operadora")));
+        setCodigoIBGE(validacoesLinha.buscarValorValido(valores, indiceColunas.get("CodigoIBGE")));
+        setTecnologia(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Tecnologia")));
 
         if (validacoesLinha.algumCampoInvalido(
-                estacoes.getCidade(),
-                estacoes.getOperadora(),
-                estacoes.getCodigoIBGE(),
-                estacoes.getTecnologia()
+                getCidade(),
+                getOperadora(),
+                getCodigoIBGE(),
+                getTecnologia()
         )) {
             return false;
         }
-        guardarValorProBanco(preparedStatement, estacoes.getCidade(), estacoes.getOperadora(), estacoes.getCodigoIBGE(), estacoes.getTecnologia());
+        guardarValorProBanco(preparedStatement, getCidade(), getOperadora(), getCodigoIBGE(), getTecnologia());
         return true;
     }
 
@@ -131,5 +142,69 @@ public class InserirDados {
         preparedStatement.setString(2, operadora);
         preparedStatement.setString(3, codigoIBGE);
         preparedStatement.setString(4, tecnologia);
+    }
+
+    public String getCidade() {
+        return cidade;
+    }
+
+    public void setCidade(String cidade) {
+        this.cidade = cidade;
+    }
+
+    public String getOperadora() {
+        return operadora;
+    }
+
+    public void setOperadora(String operadora) {
+        this.operadora = operadora;
+    }
+
+    public long getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(long latitude) {
+        this.latitude = latitude;
+    }
+
+    public long getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(long longitude) {
+        this.longitude = longitude;
+    }
+
+    public String getCodigoIBGE() {
+        return codigoIBGE;
+    }
+
+    public void setCodigoIBGE(String codigoIBGE) {
+        this.codigoIBGE = codigoIBGE;
+    }
+
+    public String getTecnologia() {
+        return tecnologia;
+    }
+
+    public void setTecnologia(String tecnologia) {
+        this.tecnologia = tecnologia;
+    }
+
+    public ValidacoesLinha getValidacoesLinha() {
+        return validacoesLinha;
+    }
+
+    public void setValidacoesLinha(ValidacoesLinha validacoesLinha) {
+        this.validacoesLinha = validacoesLinha;
+    }
+
+    public Logger getLoggerInsercoes() {
+        return loggerInsercoes;
+    }
+
+    public void setLoggerInsercoes(Logger loggerInsercoes) {
+        this.loggerInsercoes = loggerInsercoes;
     }
 }

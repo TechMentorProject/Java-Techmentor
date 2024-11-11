@@ -1,6 +1,6 @@
 package infrastructure.database;
 
-import infrastructure.config.Configuracoes;
+import config.Configuracoes;
 
 import java.sql.*;
 

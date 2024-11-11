@@ -2,8 +2,9 @@ package infrastructure.logging;
 
 
 
-import infrastructure.config.Configuracoes;
+import config.Configuracoes;
 import infrastructure.s3.AdicionarArquivoS3;
+import infrastructure.s3.S3Provider;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -24,7 +25,7 @@ public class Logger {
     private DateTimeFormatter logFormatter;
 
     // Construtor privado para inicializar o logger
-    private Logger(String directoryName, String logType) {
+    public Logger(String directoryName, String logType) {
         try {
             // Cria o diretório caso não exista
             File directory = new File(directoryName);
@@ -82,9 +83,9 @@ public class Logger {
             // Força a escrita no arquivo
             this.logFileWriter.flush();
 
-            AdicionarArquivoS3 adicionarArquivoS3 = new AdicionarArquivoS3();
-
             if(!Configuracoes.AMBIENTE.getValor().equals("DEV")) {
+                S3Provider s3Provider = new S3Provider();
+                AdicionarArquivoS3 adicionarArquivoS3 = new AdicionarArquivoS3(s3Provider);
                 adicionarArquivoS3.adicionarLogsS3();
             }
 

@@ -1,6 +1,5 @@
 package usecases.censo;
 
-import domain.CensoIBGE;
 import infrastructure.logging.Logger;
 
 
@@ -9,12 +8,17 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
-import static infrastructure.logging.Logger.loggerInsercoes;
+public class CensoIbge {
 
-public class InserirDados {
+    private String cidade;
+    private Double area;
+    private Double densidadeDemografica;
+    private Logger loggerInsercoes;
 
-    CensoIBGE censo = new CensoIBGE();
-    Logger loggerInsercoes = Logger.getLoggerInsercoes();
+
+    public CensoIbge(Logger loggerInsercoes) {
+        this.loggerInsercoes = loggerInsercoes;
+    }
 
     private int obterIndiceColuna(List<List<Object>> dadosExcel, String nomeColuna) {
 
@@ -59,14 +63,14 @@ public class InserirDados {
 
                 if (linha.size() >= 3 && linha.get(0) != null && linha.get(1) != null && linha.get(2) != null) {
 
-                    censo.setCidade(linha.get(indiceMunicipio).toString().trim());
-                    System.out.println(censo.getCidade());
-                    censo.setArea(Double.parseDouble(linha.get(indiceArea).toString()));
-                    censo.setDensidadeDemografica(Double.parseDouble(linha.get(indiceDensidadeDemografica).toString()));
+                    setCidade(linha.get(indiceMunicipio).toString().trim());
+                    System.out.println(getCidade());
+                    setArea(Double.parseDouble(linha.get(indiceArea).toString()));
+                    setDensidadeDemografica(Double.parseDouble(linha.get(indiceDensidadeDemografica).toString()));
 
-                    guardarValor.setString(1, censo.getCidade());  // Cidade
-                    guardarValor.setDouble(2, censo.getArea());  // Area
-                    guardarValor.setDouble(3, censo.getDensidadeDemografica());  // Densidade demográfica
+                    guardarValor.setString(1, getCidade());  // Cidade
+                    guardarValor.setDouble(2, getArea());  // Area
+                    guardarValor.setDouble(3, getDensidadeDemografica());  // Densidade demográfica
 
                     guardarValor.addBatch();  // Adicionando ao batch
 
@@ -88,5 +92,37 @@ public class InserirDados {
             loggerInsercoes.gerarLog("❌ Erro ao inserir dados em CENSO: " + e.getMessage() + " - revertendo... ❌");
             throw e;
         }
+    }
+
+    public String getCidade() {
+        return cidade;
+    }
+
+    public void setCidade(String cidade) {
+        this.cidade = cidade;
+    }
+
+    public Double getArea() {
+        return area;
+    }
+
+    public void setArea(Double area) {
+        this.area = area;
+    }
+
+    public Double getDensidadeDemografica() {
+        return densidadeDemografica;
+    }
+
+    public void setDensidadeDemografica(Double densidadeDemografica) {
+        this.densidadeDemografica = densidadeDemografica;
+    }
+
+    public Logger getLoggerInsercoes() {
+        return loggerInsercoes;
+    }
+
+    public void setLoggerInsercoes(Logger loggerInsercoes) {
+        this.loggerInsercoes = loggerInsercoes;
     }
 }
