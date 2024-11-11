@@ -22,17 +22,17 @@ public class BancoOperacoes {
         System.out.println("Conexão ao servidor MySQL estabelecida.");
 
         // Criação do banco de dados, se necessário
-        criarBancoSeNaoExistir("techmentor");
+        criarBancoSeNaoExistir(Configuracoes.DATABASE.getValor());
 
         // Conectar novamente, agora especificando o banco de dados
         conexao.close();
         conexao = DriverManager.getConnection(
-                "jdbc:mysql://" + Configuracoes.IP_BANCO.getValor() + ":" + Configuracoes.PORTA_BANCO.getValor() + "/techmentor?rewriteBatchedStatements=true",
+                "jdbc:mysql://" + Configuracoes.IP_BANCO.getValor() + ":" + Configuracoes.PORTA_BANCO.getValor() + "/" + Configuracoes.DATABASE.getValor() + "?rewriteBatchedStatements=true",
                 Configuracoes.USUARIO.getValor(),
                 Configuracoes.SENHA.getValor()
         );
         conexao.setAutoCommit(false);
-        System.out.println("Conectado ao banco de dados 'techmentor'.");
+        System.out.println("Conectado ao banco de dados " + Configuracoes.DATABASE.getValor() + ".");
     }
 
     private void criarBancoSeNaoExistir(String nomeBanco) throws SQLException {
