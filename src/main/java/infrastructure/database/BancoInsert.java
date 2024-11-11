@@ -132,6 +132,9 @@ public class BancoInsert {
             }
 
             String cidadeParaInsercao = partes[0].trim();
+            if (cidadeParaInsercao.charAt(0) == '"') {
+                cidadeParaInsercao = cidadeParaInsercao.substring(1);
+            }
             String cidadeParaComparacao = cidadeParaInsercao.toLowerCase();
             String sigla = limparSigla(partes[1].trim());
 
