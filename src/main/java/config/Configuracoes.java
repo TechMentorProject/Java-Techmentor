@@ -5,6 +5,7 @@ public enum Configuracoes {
     // Enum constants
     IP_BANCO("localhost"),
     PORTA_BANCO("3306"),
+    DATABASE("techmentor"),
     USUARIO("root"),
     SENHA("root"),
     NOME_BUCKET_S3("techmentor-bucket"),

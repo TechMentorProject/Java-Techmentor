@@ -1,5 +1,6 @@
 package infrastructure.database;
 
+import config.Configuracoes;
 import infrastructure.processing.workbook.ManipularArquivo;
 import infrastructure.processing.workbook.ManipularPlanilha;
 import org.apache.poi.util.IOUtils;
@@ -25,8 +26,8 @@ public class BancoSetup {
 
         try (Statement stmt = conexao.createStatement()) {
 
-            stmt.executeUpdate("CREATE DATABASE IF NOT EXISTS techmentor");
-            stmt.executeUpdate("USE techmentor");
+            stmt.executeUpdate("CREATE DATABASE IF NOT EXISTS " + Configuracoes.DATABASE.getValor());
+            stmt.executeUpdate("USE " + Configuracoes.DATABASE.getValor());
 
             stmt.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS estado (
@@ -126,7 +127,7 @@ public class BancoSetup {
             IOUtils.setByteArrayMaxOverride(250_000_000);
 
             String nomeArquivo = "Meu_Municipio_Cobertura.xlsx";
-            String caminhoArquivo = "/app/base-dados" + "/" + nomeArquivo;
+            String caminhoArquivo = Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor() + "/" + nomeArquivo;
 
             List<List<Object>> dados = manipularArquivo.lerPlanilha(caminhoArquivo, false);
 
