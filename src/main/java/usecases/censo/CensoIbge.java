@@ -46,7 +46,6 @@ public class CensoIbge {
         }
 
         String query = "INSERT INTO censoIBGE (fkCidade, area, densidadeDemografica) VALUES (?, ?, ?)";
-        System.out.println(query);
 
         try (PreparedStatement guardarValor = conexao.prepareStatement(query)) {
 
@@ -59,12 +58,10 @@ public class CensoIbge {
 
             for (int i = 1; i < dadosExcel.size(); i++) {
                 List<Object> linha = dadosExcel.get(i);
-                System.out.println(linha.toString());
 
                 if (linha.size() >= 3 && linha.get(0) != null && linha.get(1) != null && linha.get(2) != null) {
 
                     setCidade(linha.get(indiceMunicipio).toString().trim());
-                    System.out.println(getCidade());
                     setArea(Double.parseDouble(linha.get(indiceArea).toString()));
                     setDensidadeDemografica(Double.parseDouble(linha.get(indiceDensidadeDemografica).toString()));
 

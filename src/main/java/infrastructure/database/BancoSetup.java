@@ -52,7 +52,7 @@ public class BancoSetup {
                     fkCidade VARCHAR(100),
                     ano CHAR(4),
                     operadora VARCHAR(100),
-                    domiciliosCobertosPercent DECIMAL(10,2),
+                    domiciliosCobertosPercent DECIMAL(5,2),
                     areaCobertaPercent DECIMAL(5,2),
                     tecnologia VARCHAR(50),
                     FOREIGN KEY (fkCidade) REFERENCES cidade(nomeCidade)
@@ -64,11 +64,8 @@ public class BancoSetup {
                     idEstacoesSMP INT AUTO_INCREMENT PRIMARY KEY,
                     fkCidade VARCHAR(255),
                     operadora VARCHAR(255),
-                    latitude DECIMAL(10,8),
-                    longitude DECIMAL(11,8),
                     codigoIBGE VARCHAR(255),
-                    tecnologia VARCHAR(255),
-                    FOREIGN KEY (fkCidade) REFERENCES cidade(nomeCidade)
+                    tecnologia VARCHAR(255)
                 )
             """);
 
