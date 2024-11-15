@@ -48,7 +48,6 @@ public class ProjecaoPopulacional extends BaseDeDados {
     private void processarEInserirDados(List<List<Object>> dadosExcel, PreparedStatement preparedStatement, BancoOperacoes bancoDeDados) throws SQLException {
         int anoAtual = Year.now().getValue();
 
-        // Cache de índices das colunas
         Map<String, Integer> indiceColunas = new HashMap<>();
         indiceColunas.put("local", obterIndiceColuna(dadosExcel, "local"));
         indiceColunas.put("idade", obterIndiceColuna(dadosExcel, "idade"));
@@ -71,7 +70,6 @@ public class ProjecaoPopulacional extends BaseDeDados {
             }
 
             if (!estado.equals(estadoAtual)) {
-                // Insere projeções acumuladas no banco para o estado anterior
                 if (estadoAtual != null) {
                     for (Map.Entry<Integer, Long> entry : somaProjecoes.entrySet()) {
                         inserirNoBanco(preparedStatement, estadoAtual, entry.getKey(), entry.getValue());
@@ -91,7 +89,6 @@ public class ProjecaoPopulacional extends BaseDeDados {
             }
         }
 
-        // Inserir as projeções para o último estado processado
         for (Map.Entry<Integer, Long> entry : somaProjecoes.entrySet()) {
             inserirNoBanco(preparedStatement, estadoAtual, entry.getKey(), entry.getValue());
             linhasInseridas++;
@@ -129,7 +126,6 @@ public class ProjecaoPopulacional extends BaseDeDados {
 
     private long parseLongWithDot(String numeroEmString) {
         if (numeroEmString != null) {
-            // Remove pontos e vírgulas da string antes de converter para Long
             numeroEmString = numeroEmString.replace(".", "").replace(",", "");
             return Long.parseLong(numeroEmString);
         }

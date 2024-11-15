@@ -11,7 +11,6 @@ public class BancoOperacoes {
     public void conectar() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
 
-        // Conexão inicial sem especificar o banco de dados
         conexao = DriverManager.getConnection(
                 "jdbc:mysql://" + Configuracoes.IP_BANCO.getValor() + ":" + Configuracoes.PORTA_BANCO.getValor() + "?rewriteBatchedStatements=true",
                 Configuracoes.USUARIO.getValor(),
@@ -20,10 +19,8 @@ public class BancoOperacoes {
         conexao.setAutoCommit(false);
         System.out.println("Conexão ao servidor MySQL estabelecida.");
 
-        // Criação do banco de dados, se necessário
         criarBancoSeNaoExistir(Configuracoes.DATABASE.getValor());
 
-        // Conectar novamente, agora especificando o banco de dados
         conexao.close();
         conexao = DriverManager.getConnection(
                 "jdbc:mysql://" + Configuracoes.IP_BANCO.getValor() + ":" + Configuracoes.PORTA_BANCO.getValor() + "/" + Configuracoes.DATABASE.getValor() + "?rewriteBatchedStatements=true",
@@ -58,7 +55,6 @@ public class BancoOperacoes {
         }
     }
 
-    // Método auxiliar para truncar tabelas
     public void truncarTabela(String nomeTabela) throws SQLException {
         try (Statement statement = conexao.createStatement()) {
             String truncateQuery = "TRUNCATE TABLE " + nomeTabela;

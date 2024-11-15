@@ -57,17 +57,23 @@ public class EstacoesSmp extends BaseDeDados {
         for (int i = 1; i < dadosExcel.size(); i++) {
             List<Object> linha = dadosExcel.get(i);
             String[] valores = processarLinha(linha);
+
             if (valores.length < 41) {
                 List<String> listaValores = new ArrayList<>(Arrays.asList(valores));
+
                 while (listaValores.size() < 41) {
                     listaValores.add(0, "");
                 }
+
                 valores = listaValores.toArray(new String[0]);
+
             } else if (valores.length > 41) {
                 List<String> listaValores = new ArrayList<>(Arrays.asList(valores));
+
                 while (listaValores.size() > 41) {
                     listaValores.remove(0); // Remove o elemento do início
                 }
+
                 valores = listaValores.toArray(new String[0]);
             }
 

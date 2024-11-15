@@ -18,13 +18,11 @@ public class ManipularPlanilha implements XSSFSheetXMLHandler.SheetContentsHandl
         this.isProjecao = isProjecao;
     }
 
-    // Inicia a leitura de uma nova linha, criando a lista para armazenar os dados das células
     @Override
     public void startRow(int numeroLinha) {
         linhaAtual = new ArrayList<>();  // Inicializa uma nova linha
     }
 
-    // Processa o conteúdo de cada célula, convertendo o valor para UTF-8 e preenchendo as células vazias se necessário
     @Override
     public void cell(String referenciaCelula, String valorFormatado, XSSFComment comentario) {
         int indiceColuna = new CellReference(referenciaCelula).getCol();
@@ -34,7 +32,6 @@ public class ManipularPlanilha implements XSSFSheetXMLHandler.SheetContentsHandl
             _valorFormatado = corrigirEncoding(valorFormatado, isProjecao);
         }
 
-        // Preenche a linha até a coluna correta
         while (linhaAtual.size() < indiceColuna) {
             linhaAtual.add(null);
         }
@@ -84,7 +81,6 @@ public class ManipularPlanilha implements XSSFSheetXMLHandler.SheetContentsHandl
                 .replace("�?urea - RS", "Âurea - RS");
     }
 
-    // Finaliza a leitura da linha atual, adicionando-a aos dados da planilha se não estiver vazia
     @Override
     public void endRow(int numeroLinha) {
         if (!linhaAtual.isEmpty()) {
