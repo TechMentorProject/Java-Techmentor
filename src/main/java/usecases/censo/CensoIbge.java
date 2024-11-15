@@ -22,15 +22,13 @@ public class CensoIbge {
     private int obterIndiceColuna(List<List<Object>> dadosExcel, String nomeColuna) {
 
         String cabecalho = dadosExcel.get(0).toString();
-        // Remover o BOM (Byte Order Mark) da primeira célula do cabeçalho
         if (cabecalho.length() > 0 && cabecalho.charAt(0) == '\uFEFF') {
-            cabecalho = cabecalho.substring(1); // Remove o Byte Order Mark
+            cabecalho = cabecalho.substring(1);
         }
-
         String[] colunas = cabecalho.split(",");
 
         for (int i = 0; i < colunas.length; i++) {
-            String nomeAtual = colunas[i].trim(); // Remover espaços em branco ao redor
+            String nomeAtual = colunas[i].trim();
             if (nomeAtual.equalsIgnoreCase(nomeColuna)) {
                 return i;
             }
@@ -62,25 +60,23 @@ public class CensoIbge {
                     setArea(Double.parseDouble(linha.get(indiceArea).toString()));
                     setDensidadeDemografica(Double.parseDouble(linha.get(indiceDensidadeDemografica).toString()));
 
-                    guardarValor.setString(1, getCidade());  // Cidade
-                    guardarValor.setDouble(2, getArea());  // Area
-                    guardarValor.setDouble(3, getDensidadeDemografica());  // Densidade demográfica
+                    guardarValor.setString(1, getCidade());
+                    guardarValor.setDouble(2, getArea());
+                    guardarValor.setDouble(3, getDensidadeDemografica());
 
                     guardarValor.addBatch();
 
-                    // A cada 5000 registros, executa o batch
                     if (i % 5000 == 0) {
                         guardarValor.executeBatch();
-                        conexao.commit();  // Commit manual
+                        conexao.commit();
                     }
                 }
             }
 
-            // Executa o batch restante
             guardarValor.executeBatch();
-            conexao.commit();  // Commit final
+            conexao.commit();
         } catch (SQLException e) {
-            conexao.rollback();  // Reverte em caso de erro
+            conexao.rollback();
             loggerInsercoes.gerarLog("❌ Erro ao inserir dados em CENSO: " + e.getMessage() + " - revertendo... ❌");
             throw e;
         }

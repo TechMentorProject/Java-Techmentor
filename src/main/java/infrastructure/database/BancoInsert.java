@@ -86,16 +86,13 @@ public class BancoInsert {
             List<String> valores = Arrays.stream(validacoesLinha.processarLinha(linha)).toList();
             String cidadeOriginal = valores.get(indiceColuna).trim(); // Manter formato original
 
-            // Verifica se o nome da cidade contém o caractere '?'
             if (cidadeOriginal.contains("�?")) {
-                continue; // Pula essa linha
+                continue;
             }
-
             cidadesSet.add(cidadeOriginal);
         }
         return new ArrayList<>(cidadesSet);
     }
-
 
     public void inserirCidades(List<String> cidades) {
         try {
@@ -120,12 +117,11 @@ public class BancoInsert {
 
     public void inserirCidadeComEstado(String cidadeComSigla) {
         try {
-            // Verifica se o nome da cidade contém o caractere '?'
             if (cidadeComSigla.contains("�?")) {
-                return; // Pula a inserção dessa cidade
+                return;
             }
-
             String[] partes = cidadeComSigla.split(" - ");
+
             if (partes.length != 2) {
                 throw new IllegalArgumentException("Formato inválido. Esperado: 'Cidade - Sigla'");
             }

@@ -24,7 +24,6 @@ public class AdicionarArquivoS3 {
         File diretorio = new File(diretorioLogs);
 
         if (diretorio.exists() && diretorio.isDirectory()) {
-            // Chamada recursiva para processar o diretório e suas subpastas
             Path raizPath = Paths.get(diretorioLogs);
             enviarArquivosRecursivamente(s3Provider.getS3Client(), diretorio, nomeBucket, raizPath);
         } else {
@@ -32,15 +31,12 @@ public class AdicionarArquivoS3 {
         }
     }
 
-    // Método auxiliar recursivo para percorrer as pastas e enviar arquivos
     private void enviarArquivosRecursivamente(S3Client s3Client, File diretorio, String nomeBucket, Path raizPath) {
         for (File arquivo : diretorio.listFiles()) {
             if (arquivo.isFile()) {
-                // Cria uma key que preserva a estrutura de pastas em relação ao diretório raiz
                 String relativePath = raizPath.relativize(arquivo.toPath()).toString().replace(File.separator, "/");
                 String key = "logs/" + relativePath;
 
-                // Configura a solicitação de upload
                 PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                         .bucket(nomeBucket)
                         .key(key)
@@ -49,7 +45,6 @@ public class AdicionarArquivoS3 {
                 s3Provider.getS3Client().putObject(putObjectRequest, RequestBody.fromFile(arquivo));
                 System.out.println("Log enviado para o S3");
             } else if (arquivo.isDirectory()) {
-                // Chamada recursiva para processar subdiretórios
                 enviarArquivosRecursivamente(s3Client, arquivo, nomeBucket, raizPath);
             }
         }

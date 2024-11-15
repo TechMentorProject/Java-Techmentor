@@ -1,6 +1,5 @@
 package infrastructure.processing.workbook;
 
-import infrastructure.processing.workbook.ManipularPlanilha;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
@@ -31,10 +30,8 @@ public class ManipularArquivo {
                 XSSFReader leitorExcel = new XSSFReader(pacoteExcel);
                 XMLReader leitorXML = org.apache.poi.util.XMLHelper.newXMLReader();
 
-                // Configuração de tabela de strings com encoding correto
                 ReadOnlySharedStringsTable stringsTable = new ReadOnlySharedStringsTable(pacoteExcel);
 
-                // Manipulador da planilha customizado
                 XSSFSheetXMLHandler manipularPlanilha = new XSSFSheetXMLHandler(
                         leitorExcel.getStylesTable(),
                         stringsTable,
@@ -59,7 +56,6 @@ public class ManipularArquivo {
         return linhasPlanilha;
     }
 
-    // Classe manipuladora que reprocessa cada string
     private static class ManipularPlanilhaCustomizada extends ManipularPlanilha {
 
         public ManipularPlanilhaCustomizada(List<List<Object>> linhasPlanilha, Boolean isProjecao) {
@@ -68,7 +64,6 @@ public class ManipularArquivo {
 
 
         public void cell(String cellReference, String formattedValue) {
-            // Reinterpreta a string com UTF-8, tentando corrigir caracteres estranhos
             if (formattedValue != null) {
                 formattedValue = new String(formattedValue.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
             }

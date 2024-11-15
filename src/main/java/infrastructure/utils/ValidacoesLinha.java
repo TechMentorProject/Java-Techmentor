@@ -1,16 +1,15 @@
 package infrastructure.utils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ValidacoesLinha {
     public boolean algumCampoInvalido(Object... campos) {
         for (Object campo : campos) {
             if (campo == null) {
-                return true; // Se o campo for null, é inválido
+                return true;
             }
             if (campo instanceof String && ((String) campo).isEmpty()) {
-                return true; // Se for uma String vazia, é inválido
+                return true;
             }
         }
         return false;
@@ -36,7 +35,7 @@ public class ValidacoesLinha {
         StringBuilder linha = new StringBuilder();
         for (Object celula : row) {
             if (!linha.isEmpty()) {
-                linha.append(";");  // Adicionar separador
+                linha.append(";");
             }
             linha.append(celula != null ? celula.toString() : "");
         }

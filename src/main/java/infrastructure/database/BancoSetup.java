@@ -2,9 +2,7 @@ package infrastructure.database;
 
 import config.Configuracoes;
 import infrastructure.processing.workbook.ManipularArquivo;
-import infrastructure.processing.workbook.ManipularPlanilha;
 import org.apache.poi.util.IOUtils;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
