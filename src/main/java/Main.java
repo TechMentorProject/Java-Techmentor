@@ -20,7 +20,7 @@ import java.util.List;
 public class Main {
 
     // Modo desenvolvimento e seleção do processo (defina o nome da base para teste)
-    private static final boolean modoDev = true;
+    private static final boolean modoDev = false;
     private static final String nomeDaBaseDeDados = "MUNICIPIO"; // Use "CENSO", "ESTACOES", "MUNICIPIO" ou "PROJECAO"
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
@@ -86,23 +86,25 @@ public class Main {
     }
 
     private static void processarCenso(BancoOperacoes bancoDeDados, ManipularArquivo manipularArquivo, Logger loggerEventos) throws Exception {
+        int linhasInseridas = 0;
         Logger logger = new Logger(Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor(), "insercoes");
         CensoIbge censo = new CensoIbge(logger);
         String diretorioBase = Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor();
         File pasta = new File(diretorioBase);
-        System.out.println("Path completo" + pasta.getAbsolutePath());
         File[] arquivos = pasta.listFiles((dir, nome) -> nome.contains(NomeArquivo.CENSOIBGE.getNome()) && nome.endsWith(".xlsx"));
 
         if (arquivos != null) {
             bancoDeDados.truncarTabela("censoIBGE");
 
+            System.out.println("Inserindo dados no banco...");
             for (File arquivo : arquivos) {
                 List<List<Object>> dados = manipularArquivo.lerPlanilha(arquivo.toString(), true);
-                System.out.println("Inserindo dados do arquivo: " + arquivo.getName());
                 censo.inserirDados(dados, bancoDeDados.getConexao());
-                loggerEventos.gerarLog("✅ Dados de CENSO Inseridos com Sucesso! ✅");
+                linhasInseridas++;
             }
-        }
+            loggerEventos.gerarLog("✅ Dados de CENSO Inseridos com Sucesso! ✅");
+            System.out.println("Linhas inseridas: " + linhasInseridas);
+            System.out.println("Inserção do CensoIBGE concluída com sucesso!");        }
     }
 
     private static void processarEstacoes(BancoOperacoes bancoDeDados, ManipularArquivo manipularArquivo, Logger loggerEventos) throws Exception {

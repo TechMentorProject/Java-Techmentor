@@ -47,7 +47,7 @@ public class AdicionarArquivoS3 {
                         .build();
 
                 s3Provider.getS3Client().putObject(putObjectRequest, RequestBody.fromFile(arquivo));
-                System.out.println("Upload realizado para o arquivo: " + key);
+                System.out.println("Log enviado para o S3");
             } else if (arquivo.isDirectory()) {
                 // Chamada recursiva para processar subdiretórios
                 enviarArquivosRecursivamente(s3Client, arquivo, nomeBucket, raizPath);

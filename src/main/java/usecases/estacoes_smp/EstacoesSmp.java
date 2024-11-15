@@ -19,6 +19,9 @@ public class EstacoesSmp extends BaseDeDados {
     private ValidacoesLinha validacoesLinha;
     private Logger loggerInsercoes;
 
+    private int linhasInseridas;
+    private int linhasRemovidas;
+
     public EstacoesSmp(ValidacoesLinha validacoesLinha, Logger loggerInsercoes) {
         this.validacoesLinha = validacoesLinha;
         this.loggerInsercoes = loggerInsercoes;
@@ -28,13 +31,19 @@ public class EstacoesSmp extends BaseDeDados {
         bancoDeDados.validarConexao();
         bancoDeDados.truncarTabela("estacoesSMP");
 
+        linhasInseridas = 0;
+        linhasRemovidas = 0;
+
         System.out.println("Inserindo dados...");
         loggerInsercoes.gerarLog("💻 Iniciando inserção de dados na tabela estacoesSMP... 💻");
 
         String query = "INSERT INTO estacoesSMP (fkCidade, operadora, codigoIBGE, tecnologia) VALUES (?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = conexao.prepareStatement(query)) {
             processarEInserirDados(dadosExcel, preparedStatement, bancoDeDados);
-            System.out.println("Dados inseridos com sucesso!");
+
+            System.out.println("Linhas inseridas: " + linhasInseridas);
+            System.out.println("Linhas removidas: " + linhasRemovidas);
+            System.out.println("Inserção das EstacoesSMP concluída com sucesso!");
         }
     }
 
@@ -65,11 +74,12 @@ public class EstacoesSmp extends BaseDeDados {
             try {
                 if (valores.length >= 4 && extraindoValoresDoApache(preparedStatement, valores, indiceColunas)) {
                     bancoDeDados.adicionarBatch(preparedStatement, i);
+                    linhasInseridas++;
                 }
             } catch (SQLException e) {
-                System.err.println("Erro ao processar a linha " + i + ": " + e.getMessage());
+                linhasRemovidas++;
             } catch (Exception e) {
-                System.err.println("Erro inesperado na linha " + i + ": " + e.getMessage());
+                linhasRemovidas++;
             }
         }
     }
@@ -148,7 +158,7 @@ public class EstacoesSmp extends BaseDeDados {
 
         return camposProcessados.toArray(new String[0]);
     }
-    
+
     private void guardarValorProBanco(PreparedStatement preparedStatement, String cidade, String operadora, String codigoIBGE, String tecnologia) throws SQLException {
         preparedStatement.setString(1, cidade);
         preparedStatement.setString(2, operadora);

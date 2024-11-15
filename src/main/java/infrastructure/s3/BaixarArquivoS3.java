@@ -23,10 +23,13 @@ public class BaixarArquivoS3 {
         String nomeObjeto;
         Path caminhoObjeto;
 
+
+        int arquivosRemovidos = 0;
+        int arquivosBaixados = 0;
+
         List<Bucket> buckets =  s3Client.listBuckets().buckets();
 
         for (Bucket bucket : buckets) {
-            System.out.println("Bucket: " + bucket.name());
         }
         ListObjectsRequest listObjects = ListObjectsRequest.builder().bucket(nomeBucket).build();
 
@@ -40,16 +43,12 @@ public class BaixarArquivoS3 {
             nomeObjeto = object.key();
             // Concatene corretamente o caminho e o nome do objeto
             caminhoObjeto = Paths.get(caminhoArquivo, nomeObjeto);
-            System.out.println(object.key());
 
             InputStream objectContent = s3Client.getObject(getObjectRequest, ResponseTransformer.toInputStream());
 
-            System.out.println(caminhoObjeto);
             if (Files.exists(caminhoObjeto)) {
-                // Se o arquivo existir, apaga o arquivo
-                System.out.println(caminhoObjeto);
                 Files.delete(caminhoObjeto);
-                System.out.println("Arquivo existente removido: " + caminhoObjeto);
+                arquivosRemovidos++;
             }
 
             // Garanta que os diretórios existam antes de salvar o arquivo
@@ -57,7 +56,9 @@ public class BaixarArquivoS3 {
 
             // Copie o arquivo, substituindo caso já exista
             Files.copy(objectContent, caminhoObjeto, StandardCopyOption.REPLACE_EXISTING);
-            System.out.println("Arquivo baixado: " + caminhoObjeto);
+            arquivosBaixados++;
         }
+        System.out.println("S3 - Total de arquivos removidos: " + arquivosRemovidos);
+        System.out.println("S3 - Total de arquivos baixados: " + arquivosBaixados);
     }
 }

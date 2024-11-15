@@ -36,7 +36,6 @@ public class BancoSetup {
                     regiao VARCHAR(100)
                 )
             """);
-            System.out.println("Tabela 'estado' criada com sucesso.");
 
             stmt.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS cidade (
@@ -131,7 +130,6 @@ public class BancoSetup {
             List<String> cidades = bancoInsert.extrairCidades(dados);
             bancoInsert.inserirCidades(cidades);
 
-            System.out.println("Estrutura do banco de dados criada com sucesso!");
         } catch (SQLException e) {
             System.err.println("Erro ao criar estrutura do banco de dados: " + e.getMessage());
             throw e;

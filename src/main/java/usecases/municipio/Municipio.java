@@ -24,6 +24,10 @@ public class Municipio extends BaseDeDados {
     private ValidacoesLinha validacoesLinha;
     private Logger loggerInsercoes;
 
+    private int linhasInseridas = 0;
+    private int linhasRemovidas = 0;
+
+
     public Municipio(ValidacoesLinha validacoesLinha, Logger loggerInsercoes) {
         this.validacoesLinha = validacoesLinha;
         this.loggerInsercoes = loggerInsercoes;
@@ -41,7 +45,9 @@ public class Municipio extends BaseDeDados {
             processarEInserirDados(dadosExcel, preparedStatement, bancoDeDados);
             preparedStatement.executeBatch();
             conexao.commit();
-            System.out.println("Dados inseridos com sucesso!");
+            System.out.println("Linhas inseridas: " + linhasInseridas);
+            System.out.println("Linhas removidas: " + linhasRemovidas);
+            System.out.println("Inserção do munícipio concluída com sucesso!");
         }
     }
 
@@ -59,9 +65,11 @@ public class Municipio extends BaseDeDados {
             String[] valores = validacoesLinha.processarLinha(linha);
 
             if (!extraindoValoresDoMunicipio(preparedStatement, valores, linha, indiceColunas)) {
+                linhasRemovidas++;
                 continue;
             }
             bancoDeDados.adicionarBatch(preparedStatement, i);
+            linhasInseridas++;
         }
     }
 
@@ -88,7 +96,6 @@ public class Municipio extends BaseDeDados {
         setAno(valores[0]);
         String cidade = formatarCidade(valores[5]);
         if (cidade.contains("�?")) {
-            System.out.println("Cidade contém o caractere '?' e será ignorada: " + cidade);
             return false;
         }
 
@@ -101,8 +108,6 @@ public class Municipio extends BaseDeDados {
         setTecnologia(tecnologiasFormatadas);
 
         if (!verificarCidadeExistente(cidade, preparedStatement.getConnection())) {
-            System.err.println("Erro de FK: Cidade não encontrada na tabela 'cidade' -> " + cidade);
-            loggerInsercoes.gerarLog("Erro de FK: Cidade não encontrada na tabela 'cidade' -> " + cidade);
             return false;
         }
 
@@ -135,8 +140,6 @@ public class Municipio extends BaseDeDados {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Erro ao verificar a cidade: " + e.getMessage());
-            loggerInsercoes.gerarLog("Erro ao verificar a cidade: " + e.getMessage());
         }
         return false;
     }
