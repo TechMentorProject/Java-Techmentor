@@ -5,6 +5,7 @@ import infrastructure.database.BancoOperacoes;
 import infrastructure.database.BancoSetup;
 import infrastructure.logging.Logger;
 import infrastructure.processing.workbook.ManipularArquivo;
+import infrastructure.s3.BaixarArquivoS3;
 import infrastructure.utils.ValidacoesLinha;
 import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.util.IOUtils;
@@ -14,6 +15,7 @@ import usecases.municipio.Municipio;
 import usecases.projecao_populacional.ProjecaoPopulacional;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -27,6 +29,7 @@ public class Main {
         BancoOperacoes bancoDeDados = new BancoOperacoes();
         ManipularArquivo manipularArquivo = new ManipularArquivo();
         ValidacoesLinha validacoesLinha = new ValidacoesLinha();
+        BaixarArquivoS3 baixarArquivoS3 = new BaixarArquivoS3();
         BancoInsert bancoInsert = new BancoInsert(bancoDeDados, validacoesLinha);
         bancoDeDados.conectar();
         BancoSetup bancoSetup = new BancoSetup(bancoDeDados.getConexao(), bancoInsert, manipularArquivo);
@@ -45,7 +48,13 @@ public class Main {
             if (modoDev) {
                 executarProcesso(nomeDaBaseDeDados, bancoDeDados, manipularArquivo, loggerEventos, loggerErros);
             } else {
-                // Executa todos os processos sequencialmente
+                try {
+                    baixarArquivoS3.baixarArquivos(); // Método que encapsula a lógica de download
+                    System.out.println("Arquivos baixados com sucesso do S3.");
+                } catch (IOException e) {
+                    System.out.println("Erro ao baixar arquivos do S3: " + e.getMessage());
+                    loggerErros.gerarLog("❌ Erro ao baixar arquivos do S3. ❌");
+                }
                 executarTodosProcessos(bancoDeDados, manipularArquivo, loggerEventos);
             }
 
