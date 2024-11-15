@@ -46,20 +46,20 @@ public class BancoSetup {
             """);
 
             stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS municipio (
+                CREATE TABLE IF NOT EXISTS baseMunicipio (
                     idMunicipio INT AUTO_INCREMENT PRIMARY KEY,
                     fkCidade VARCHAR(100),
                     ano CHAR(4),
                     operadora VARCHAR(100),
-                    domiciliosCobertosPercent DECIMAL(5,2),
-                    areaCobertaPercent DECIMAL(5,2),
+                    domiciliosCobertosPercentual DECIMAL(5,2),
+                    areaCobertaPercentual DECIMAL(5,2),
                     tecnologia VARCHAR(50),
                     FOREIGN KEY (fkCidade) REFERENCES cidade(nomeCidade)
                 )
             """);
 
             stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS estacoesSMP (
+                CREATE TABLE IF NOT EXISTS baseEstacoesSMP (
                     idEstacoesSMP INT AUTO_INCREMENT PRIMARY KEY,
                     fkCidade VARCHAR(255),
                     operadora VARCHAR(255),
@@ -69,7 +69,7 @@ public class BancoSetup {
             """);
 
             stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS censoIBGE (
+                CREATE TABLE IF NOT EXISTS baseCensoIBGE (
                     idCensoIBGE INT AUTO_INCREMENT PRIMARY KEY,
                     fkCidade VARCHAR(100),
                     area DECIMAL(10,2),
@@ -79,7 +79,7 @@ public class BancoSetup {
             """);
 
             stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS projecaoPopulacional (
+                CREATE TABLE IF NOT EXISTS baseProjecaoPopulacional (
                     idProjecaoPopulacional INT AUTO_INCREMENT PRIMARY KEY,
                     fkEstado VARCHAR(100),
                     ano INT,

@@ -30,18 +30,18 @@ public class ProjecaoPopulacional extends BaseDeDados {
 
     public void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException, ClassNotFoundException {
         bancoDeDados.validarConexao();
-        bancoDeDados.truncarTabela("projecaoPopulacional");
+        bancoDeDados.truncarTabela("baseProjecaoPopulacional");
 
         System.out.println("Inserindo dados...");
         loggerInsercoes.gerarLog("💻 Iniciando inserção de dados na tabela projecaoPopulacional... 💻");
 
-        String query = "INSERT INTO projecaoPopulacional (fkEstado, ano, projecao) VALUES (?, ?, ?)";
+        String query = "INSERT INTO baseProjecaoPopulacional (fkEstado, ano, projecao) VALUES (?, ?, ?)";
         try (PreparedStatement preparedStatement = conexao.prepareStatement(query)) {
             processarEInserirDados(dadosExcel, preparedStatement, bancoDeDados);
             preparedStatement.executeBatch();
             conexao.commit();
             System.out.println("Linhas inseridas: " + linhasInseridas);
-            System.out.println("Inserção da Projeção Populacional concluída com sucesso!");
+            System.out.println("Inserção da baseProjecaoPopulacional concluída com sucesso!");
         }
     }
 
