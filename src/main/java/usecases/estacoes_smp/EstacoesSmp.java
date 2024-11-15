@@ -8,21 +8,16 @@ import usecases.BaseDeDados;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class EstacoesSmp extends BaseDeDados {
 
     private String cidade;
     private String operadora;
-    private long latitude;
-    private long longitude;
     private String codigoIBGE;
     private String tecnologia;
     private ValidacoesLinha validacoesLinha;
     private Logger loggerInsercoes;
-
 
     public EstacoesSmp(ValidacoesLinha validacoesLinha, Logger loggerInsercoes) {
         this.validacoesLinha = validacoesLinha;
@@ -44,32 +39,40 @@ public class EstacoesSmp extends BaseDeDados {
     }
 
     private void processarEInserirDados(List<List<Object>> dadosExcel, PreparedStatement preparedStatement, BancoOperacoes bancoDeDados) {
-        // Cache de índices das colunas para otimizar o código
         Map<String, Integer> indiceColunas = new HashMap<>();
         indiceColunas.put("Municipio", obterIndiceColuna(dadosExcel, "Município-UF"));
-        indiceColunas.put("Operadora", obterIndiceColuna(dadosExcel, "Empresa Fistel"));
-        indiceColunas.put("CodigoIBGE", obterIndiceColuna(dadosExcel, "Código IBGE"));
+        indiceColunas.put("Operadora", obterIndiceColuna(dadosExcel, "Empresa Estação"));
+        indiceColunas.put("CodigoIBGE", obterIndiceColuna(dadosExcel, "Geração"));
         indiceColunas.put("Tecnologia", obterIndiceColuna(dadosExcel, "Tecnologia"));
 
         for (int i = 1; i < dadosExcel.size(); i++) {
             List<Object> linha = dadosExcel.get(i);
             String[] valores = processarLinha(linha);
+            if (valores.length < 41) {
+                List<String> listaValores = new ArrayList<>(Arrays.asList(valores));
+                while (listaValores.size() < 41) {
+                    listaValores.add(0, "");
+                }
+                valores = listaValores.toArray(new String[0]);
+            } else if (valores.length > 41) {
+                List<String> listaValores = new ArrayList<>(Arrays.asList(valores));
+                while (listaValores.size() > 41) {
+                    listaValores.remove(0); // Remove o elemento do início
+                }
+                valores = listaValores.toArray(new String[0]);
+            }
 
             try {
-                // Tenta extrair e inserir os valores; se falhar, loga o erro e continua
-                if (extraindoValoresDoApache(preparedStatement, valores, linha, indiceColunas)) {
+                if (valores.length >= 4 && extraindoValoresDoApache(preparedStatement, valores, indiceColunas)) {
                     bancoDeDados.adicionarBatch(preparedStatement, i);
                 }
             } catch (SQLException e) {
                 System.err.println("Erro ao processar a linha " + i + ": " + e.getMessage());
-                // Opcional: loggerInsercoes.gerarLog("Erro ao processar a linha " + i + ": " + e.getMessage());
             } catch (Exception e) {
                 System.err.println("Erro inesperado na linha " + i + ": " + e.getMessage());
-                // Opcional: loggerInsercoes.gerarLog("Erro inesperado na linha " + i + ": " + e.getMessage());
             }
         }
     }
-
 
     public int obterIndiceColuna(List<List<Object>> dadosExcel, String nomeColuna) {
         if (dadosExcel == null || dadosExcel.isEmpty() || dadosExcel.get(0).isEmpty()) {
@@ -77,8 +80,6 @@ public class EstacoesSmp extends BaseDeDados {
         }
 
         String cabecalho = dadosExcel.get(0).toString();
-
-        // Remover o BOM (Byte Order Mark) da primeira célula do cabeçalho, se presente
         if (cabecalho.charAt(0) == '\uFEFF') {
             cabecalho = cabecalho.substring(1);
         }
@@ -92,14 +93,8 @@ public class EstacoesSmp extends BaseDeDados {
         throw new IllegalArgumentException("Coluna '" + nomeColuna + "' não encontrada no cabeçalho.");
     }
 
-    private boolean extraindoValoresDoApache(PreparedStatement preparedStatement, String[] valores, List<Object> linha, Map<String, Integer> indiceColunas) throws SQLException {
-        if (valores.length < 29) {
-            System.err.println("Linha inválida, ignorando: " + linha);
-            return false;
-        }
-
-        // Aplica o método formatarCidade para remover o sufixo do estado
-        setCidade(formatarCidade(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Municipio") + 2)));
+    private boolean extraindoValoresDoApache(PreparedStatement preparedStatement, String[] valores, Map<String, Integer> indiceColunas) throws SQLException {
+        setCidade(formatarCidade(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Municipio"))));
         if (getCidade().matches("\\d+")) {
             return false;
         }
@@ -120,23 +115,40 @@ public class EstacoesSmp extends BaseDeDados {
         return true;
     }
 
-
     private String formatarCidade(String cidade) {
         if (cidade != null && cidade.contains("-")) {
-            return cidade.split("-")[0].trim(); // Remove o estado após o "-"
+            return cidade.split("-")[0].trim();
         }
         return cidade;
     }
 
     private String[] processarLinha(List<Object> linha) {
-        // Usando StringBuilder para manipulação de strings
-        StringBuilder linhaBuilder = new StringBuilder();
-        for (Object valor : linha) {
-            linhaBuilder.append(valor).append(";");
-        }
-        return linhaBuilder.toString().split(";");
-    }
+        List<String> camposProcessados = new ArrayList<>();
 
+        for (Object valor : linha) {
+            if (valor != null && !valor.toString().isEmpty()) {
+                String valorStr = valor.toString().trim();
+
+                if (valorStr.matches("^00;\\d+$")) {
+                    valorStr = valorStr.substring(3);
+                }
+
+                String[] subCampos = valorStr.split(";");
+                for (String subCampo : subCampos) {
+                    if (!subCampo.trim().isEmpty()) {
+                        camposProcessados.add(subCampo.trim());
+                    } else {
+                        camposProcessados.add("");
+                    }
+                }
+            } else {
+                camposProcessados.add("");
+            }
+        }
+
+        return camposProcessados.toArray(new String[0]);
+    }
+    
     private void guardarValorProBanco(PreparedStatement preparedStatement, String cidade, String operadora, String codigoIBGE, String tecnologia) throws SQLException {
         preparedStatement.setString(1, cidade);
         preparedStatement.setString(2, operadora);
@@ -160,22 +172,6 @@ public class EstacoesSmp extends BaseDeDados {
         this.operadora = operadora;
     }
 
-    public long getLatitude() {
-        return latitude;
-    }
-
-    public void setLatitude(long latitude) {
-        this.latitude = latitude;
-    }
-
-    public long getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(long longitude) {
-        this.longitude = longitude;
-    }
-
     public String getCodigoIBGE() {
         return codigoIBGE;
     }
@@ -190,21 +186,5 @@ public class EstacoesSmp extends BaseDeDados {
 
     public void setTecnologia(String tecnologia) {
         this.tecnologia = tecnologia;
-    }
-
-    public ValidacoesLinha getValidacoesLinha() {
-        return validacoesLinha;
-    }
-
-    public void setValidacoesLinha(ValidacoesLinha validacoesLinha) {
-        this.validacoesLinha = validacoesLinha;
-    }
-
-    public Logger getLoggerInsercoes() {
-        return loggerInsercoes;
-    }
-
-    public void setLoggerInsercoes(Logger loggerInsercoes) {
-        this.loggerInsercoes = loggerInsercoes;
     }
 }

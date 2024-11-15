@@ -1,1 +1,0 @@
-10/11/2024 13:35:20 - Erro SQL: [2021, 11, VIVO, 3G, 2919553, Luís Eduardo Magalhães - BA, BA, Bahia, Nordeste, 77, 96, 277842637689, 96, 426581331893, 22, 43180292928] - Motivo: Cannot add or update a child row: a foreign key constraint fails (`techmentor`.`municipio`, CONSTRAINT `municipio_ibfk_1` FOREIGN KEY (`fkCidade`) REFERENCES `cidade` (`nomeCidade`))

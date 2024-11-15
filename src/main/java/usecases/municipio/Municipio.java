@@ -7,6 +7,7 @@ import usecases.BaseDeDados;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -17,8 +18,8 @@ public class Municipio extends BaseDeDados {
     private String ano;
     private String cidade;
     private String operadora;
-    private int domiciliosCobertosPorcentagem;
-    private int areaCobertaPorcentagem;
+    private Double domiciliosCobertosPorcentagem;
+    private Double areaCobertaPorcentagem;
     private String tecnologia;
     private ValidacoesLinha validacoesLinha;
     private Logger loggerInsercoes;
@@ -45,7 +46,6 @@ public class Municipio extends BaseDeDados {
     }
 
     public void processarEInserirDados(List<List<Object>> dadosExcel, PreparedStatement preparedStatement, BancoOperacoes bancoDeDados) throws SQLException {
-        // Cache de índices das colunas para otimizar
         Map<String, Integer> indiceColunas = new HashMap<>();
         indiceColunas.put("Ano", obterIndiceColuna(dadosExcel, "Ano"));
         indiceColunas.put("Cidade", obterIndiceColuna(dadosExcel, "Município"));
@@ -54,7 +54,7 @@ public class Municipio extends BaseDeDados {
         indiceColunas.put("AreaCoberta", obterIndiceColuna(dadosExcel, "% área coberta"));
         indiceColunas.put("Tecnologia", obterIndiceColuna(dadosExcel, "Tecnologia"));
 
-        for (int i = 1; i < dadosExcel.size(); i++) {  // Ignora o cabeçalho
+        for (int i = 1; i < dadosExcel.size(); i++) {
             List<Object> linha = dadosExcel.get(i);
             String[] valores = validacoesLinha.processarLinha(linha);
 
@@ -80,98 +80,107 @@ public class Municipio extends BaseDeDados {
         throw new IllegalArgumentException("Coluna '" + nomeColuna + "' não encontrada no cabeçalho.");
     }
 
-    private String formatarCidade(String cidade) {
-        if (cidade != null && cidade.contains(" - ")) {
-            return cidade.split(" - ")[0].trim();
-        }
-        return cidade;
-    }
-
     private boolean extraindoValoresDoMunicipio(PreparedStatement preparedStatement, String[] valores, List<Object> linha, Map<String, Integer> indiceColunas) throws SQLException {
-        if (valores.length < 13) {
+        if (valores.length < 16) {
             return false;
         }
 
-        setAno(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Ano")));
-
-        // Aplica o método formatarCidade para remover o sufixo do estado
-        String cidade = formatarCidade(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Cidade")));
-
-        if (cidade != null && cidade.contains("�?")) {
-            System.out.println("Cidade com possível erro de codificação detectada: " + cidade);
-            return false;  // Pula essa linha
+        setAno(valores[0]);
+        String cidade = formatarCidade(valores[5]);
+        if (cidade.contains("�?")) {
+            System.out.println("Cidade contém o caractere '?' e será ignorada: " + cidade);
+            return false;
         }
 
-
+        if (cidade.charAt(0) == '"') {
+            cidade = cidade.substring(1);
+        }
         setCidade(cidade);
+        setOperadora(valores[2]);
+        String tecnologiasFormatadas = formatarTecnologias(valores[3]);
+        setTecnologia(tecnologiasFormatadas);
 
-        setOperadora(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Operadora")));
-
-        String domiciliosCobertosPercentBruto = validacoesLinha.buscarValorValido(valores, indiceColunas.get("DomiciliosCobertos") - 1);
-        if (domiciliosCobertosPercentBruto != null) {
-            setDomiciliosCobertosPorcentagem(Integer.parseInt(domiciliosCobertosPercentBruto));
-        }
-
-        String areaCobertaPercent = validacoesLinha.buscarValorValido(valores, indiceColunas.get("AreaCoberta") - 1);
-        String areaCobertaFormatada = formatarAreaCoberta(areaCobertaPercent);
-        if (areaCobertaFormatada != null) {
-            setAreaCobertaPorcentagem(Integer.parseInt(areaCobertaFormatada));
-        }
-
-        String tecnologiaFormatada = formatarTecnologia(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Tecnologia")));
-        setTecnologia(tecnologiaFormatada);
-
-        if (validacoesLinha.algumCampoInvalido(getAno(), getCidade(), getOperadora(),
-                getDomiciliosCobertosPorcentagem(), getAreaCobertaPorcentagem(), getTecnologia())) {
+        if (!verificarCidadeExistente(cidade, preparedStatement.getConnection())) {
+            System.err.println("Erro de FK: Cidade não encontrada na tabela 'cidade' -> " + cidade);
+            loggerInsercoes.gerarLog("Erro de FK: Cidade não encontrada na tabela 'cidade' -> " + cidade);
             return false;
         }
 
-        if (getAreaCobertaPorcentagem() == 0 || getDomiciliosCobertosPorcentagem() == 0) {
+        Double areaCobertaPercent = combinarValoresComoDouble(valores[12], valores[13]);
+        if (areaCobertaPercent != null) {
+            setAreaCobertaPorcentagem(areaCobertaPercent);
+        }
+
+        Double domiciliosCobertosPercent = combinarValoresComoDouble(valores[14], valores[15]);
+        if (domiciliosCobertosPercent != null) {
+            setDomiciliosCobertosPorcentagem(domiciliosCobertosPercent);
+        }
+
+        if (areaCobertaPercent == null || domiciliosCobertosPercent == null) {
             return false;
         }
 
         guardarValorProBanco(preparedStatement, getAno(), getCidade(), getOperadora(),
-                getDomiciliosCobertosPorcentagem(), getAreaCobertaPorcentagem(), getTecnologia());
+                domiciliosCobertosPercent, areaCobertaPercent, getTecnologia());
 
         return true;
     }
-
-
-
-    private String formatarAreaCoberta(String areaCobertaPercent) {
-        if (areaCobertaPercent != null && areaCobertaPercent.length() >= 2) {
-            return areaCobertaPercent.substring(0, 2);
+    private boolean verificarCidadeExistente(String cidade, Connection conexao) {
+        String query = "SELECT COUNT(*) FROM cidade WHERE nomeCidade = ?";
+        try (PreparedStatement stmt = conexao.prepareStatement(query)) {
+            stmt.setString(1, cidade);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao verificar a cidade: " + e.getMessage());
+            loggerInsercoes.gerarLog("Erro ao verificar a cidade: " + e.getMessage());
         }
-        return areaCobertaPercent;
+        return false;
+    }
+    private String formatarCidade(String cidade) {
+        if (cidade != null && cidade.contains("-")) {
+            return cidade.split("-")[0].trim();
+        }
+        return cidade;
     }
 
-    private void guardarValorProBanco(PreparedStatement guardarValor, String ano, String cidade, String operadora, Integer domiciliosCobertosPercent, Integer areaCobertaFormatada, String tecnologiaFormatada) throws SQLException {
+    private String formatarTecnologias(String tecnologia) {
+        return tecnologia.replaceAll("(\\dG)(?=\\dG)", "$1, ");
+    }
+
+    private Double combinarValoresComoDouble(String parteInteira, String parteDecimal) {
+        try {
+            if (parteInteira == null || parteDecimal == null || parteInteira.isEmpty() || parteDecimal.isEmpty()) {
+                return null;
+            }
+            String parteDecimalTruncada;
+
+            if (parteDecimal.contains("E")) {
+                String parteDecimalSemVirgula = parteDecimal.replace(",", "").replace(".", "");
+                parteDecimalTruncada = parteDecimalSemVirgula.substring(0, 2);
+            } else {
+                parteDecimalTruncada = parteDecimal.length() > 2 ? parteDecimal.substring(0, 2) : parteDecimal;
+            }
+
+            String valorFormatado = String.format("%s.%s", parteInteira, parteDecimalTruncada);
+
+            return Double.parseDouble(valorFormatado);
+        } catch (NumberFormatException | StringIndexOutOfBoundsException e) {
+            return null;
+        }
+    }
+
+    private void guardarValorProBanco(PreparedStatement guardarValor, String ano, String cidade, String operadora,
+                                      Double domiciliosCobertosPercent, Double areaCobertaPercent, String tecnologia) throws SQLException {
         guardarValor.setString(1, ano);
         guardarValor.setString(2, cidade);
-        System.out.println(cidade);
         guardarValor.setString(3, operadora);
-        guardarValor.setInt(4, domiciliosCobertosPercent);
-        guardarValor.setInt(5, areaCobertaFormatada);
-        guardarValor.setString(6, tecnologiaFormatada);
-    }
-
-    private String formatarTecnologia(String tecnologia) {
-        if (tecnologia == null || tecnologia.isEmpty() || tecnologia.equalsIgnoreCase("Todas")) {
-            return "2G, 3G, 4G, 5G";
-        }
-
-        String[] possiveisTecnologias = {"2G", "3G", "4G", "5G"};
-        StringBuilder tecnologiasFormatadas = new StringBuilder();
-
-        for (String tech : possiveisTecnologias) {
-            if (tecnologia.toUpperCase().contains(tech.toUpperCase())) {
-                if (tecnologiasFormatadas.length() > 0) {
-                    tecnologiasFormatadas.append(", ");
-                }
-                tecnologiasFormatadas.append(tech);
-            }
-        }
-        return tecnologiasFormatadas.length() == 0 ? null : tecnologiasFormatadas.toString();
+        guardarValor.setDouble(4, areaCobertaPercent);
+        guardarValor.setDouble(5, domiciliosCobertosPercent);
+        guardarValor.setString(6, tecnologia);
     }
 
     public String getAno() {
@@ -198,19 +207,19 @@ public class Municipio extends BaseDeDados {
         this.operadora = operadora;
     }
 
-    public int getDomiciliosCobertosPorcentagem() {
+    public Double getDomiciliosCobertosPorcentagem() {
         return domiciliosCobertosPorcentagem;
     }
 
-    public void setDomiciliosCobertosPorcentagem(int domiciliosCobertosPorcentagem) {
+    public void setDomiciliosCobertosPorcentagem(Double domiciliosCobertosPorcentagem) {
         this.domiciliosCobertosPorcentagem = domiciliosCobertosPorcentagem;
     }
 
-    public int getAreaCobertaPorcentagem() {
+    public Double getAreaCobertaPorcentagem() {
         return areaCobertaPorcentagem;
     }
 
-    public void setAreaCobertaPorcentagem(int areaCobertaPorcentagem) {
+    public void setAreaCobertaPorcentagem(Double areaCobertaPorcentagem) {
         this.areaCobertaPorcentagem = areaCobertaPorcentagem;
     }
 
@@ -220,21 +229,5 @@ public class Municipio extends BaseDeDados {
 
     public void setTecnologia(String tecnologia) {
         this.tecnologia = tecnologia;
-    }
-
-    public ValidacoesLinha getValidacoesLinha() {
-        return validacoesLinha;
-    }
-
-    public void setValidacoesLinha(ValidacoesLinha validacoesLinha) {
-        this.validacoesLinha = validacoesLinha;
-    }
-
-    public Logger getLoggerInsercoes() {
-        return loggerInsercoes;
-    }
-
-    public void setLoggerInsercoes(Logger loggerInsercoes) {
-        this.loggerInsercoes = loggerInsercoes;
     }
 }

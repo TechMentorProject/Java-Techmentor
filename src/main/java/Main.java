@@ -6,6 +6,7 @@ import infrastructure.database.BancoSetup;
 import infrastructure.logging.Logger;
 import infrastructure.processing.workbook.ManipularArquivo;
 import infrastructure.utils.ValidacoesLinha;
+import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.util.IOUtils;
 import usecases.censo.CensoIbge;
 import usecases.estacoes_smp.EstacoesSmp;
@@ -19,8 +20,8 @@ import java.util.List;
 public class Main {
 
     // Modo desenvolvimento e seleção do processo (defina o nome da base para teste)
-    private static final boolean modoDev = false;
-    private static final String nomeDaBaseDeDados = "CENSO"; // Use "CENSO", "ESTACOES", "MUNICIPIO" ou "PROJECAO"
+    private static final boolean modoDev = true;
+    private static final String nomeDaBaseDeDados = "MUNICIPIO"; // Use "CENSO", "ESTACOES", "MUNICIPIO" ou "PROJECAO"
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
         BancoOperacoes bancoDeDados = new BancoOperacoes();
@@ -34,7 +35,10 @@ public class Main {
 
         try {
             // Configura o limite de memória do Apache POI
-            IOUtils.setByteArrayMaxOverride(250_000_000);
+            IOUtils.setByteArrayMaxOverride(900_000_000);
+            ZipSecureFile.setMaxEntrySize(900_000_000);
+            ZipSecureFile.setMinInflateRatio(0.0);
+
             bancoSetup.criarEstruturaBanco();
 
             // Se estiver em modoDev, executa apenas o processo especificado
@@ -86,6 +90,7 @@ public class Main {
         CensoIbge censo = new CensoIbge(logger);
         String diretorioBase = Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor();
         File pasta = new File(diretorioBase);
+        System.out.println("Path completo" + pasta.getAbsolutePath());
         File[] arquivos = pasta.listFiles((dir, nome) -> nome.contains(NomeArquivo.CENSOIBGE.getNome()) && nome.endsWith(".xlsx"));
 
         if (arquivos != null) {
@@ -106,7 +111,7 @@ public class Main {
         EstacoesSmp estacoesSmp = new EstacoesSmp(validacoesLinha, logger);
         String nomeArquivo = NomeArquivo.ESTACOES_SMP.getNome();
         String caminhoArquivo = Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor() + "/" + nomeArquivo;
-        List<List<Object>> dados = manipularArquivo.lerPlanilha(caminhoArquivo, false);
+        List<List<Object>> dados = manipularArquivo.lerPlanilha(caminhoArquivo, true);
 
         estacoesSmp.inserirDadosComTratamento(dados, bancoDeDados.getConexao(), bancoDeDados);
         loggerEventos.gerarLog("✅ Dados de ESTAÇÕES Inseridos com Sucesso! ✅");
