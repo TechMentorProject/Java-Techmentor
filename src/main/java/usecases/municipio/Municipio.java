@@ -35,19 +35,19 @@ public class Municipio extends BaseDeDados {
 
     public void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException, ClassNotFoundException {
         bancoDeDados.validarConexao();
-        bancoDeDados.truncarTabela("municipio");
+        bancoDeDados.truncarTabela("baseMunicipio");
 
         System.out.println("Inserindo dados...");
         loggerInsercoes.gerarLog("💻 Iniciando inserção de dados na tabela municipio... 💻");
 
-        String query = "INSERT INTO municipio (ano, fkCidade, operadora, domiciliosCobertosPercent, areaCobertaPercent, tecnologia) VALUES (?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO baseMunicipio (ano, fkCidade, operadora, domiciliosCobertosPercentual, areaCobertaPercentual, tecnologia) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = conexao.prepareStatement(query)) {
             processarEInserirDados(dadosExcel, preparedStatement, bancoDeDados);
             preparedStatement.executeBatch();
             conexao.commit();
             System.out.println("Linhas inseridas: " + linhasInseridas);
             System.out.println("Linhas removidas: " + linhasRemovidas);
-            System.out.println("Inserção do munícipio concluída com sucesso!");
+            System.out.println("Inserção da baseMunícipio concluída com sucesso!");
         }
     }
 

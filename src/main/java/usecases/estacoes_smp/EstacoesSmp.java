@@ -29,7 +29,7 @@ public class EstacoesSmp extends BaseDeDados {
 
     public void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException, ClassNotFoundException {
         bancoDeDados.validarConexao();
-        bancoDeDados.truncarTabela("estacoesSMP");
+        bancoDeDados.truncarTabela("baseEstacoesSMP");
 
         linhasInseridas = 0;
         linhasRemovidas = 0;
@@ -37,13 +37,13 @@ public class EstacoesSmp extends BaseDeDados {
         System.out.println("Inserindo dados...");
         loggerInsercoes.gerarLog("💻 Iniciando inserção de dados na tabela estacoesSMP... 💻");
 
-        String query = "INSERT INTO estacoesSMP (fkCidade, operadora, codigoIBGE, tecnologia) VALUES (?, ?, ?, ?)";
+        String query = "INSERT INTO baseEstacoesSMP (fkCidade, operadora, codigoIBGE, tecnologia) VALUES (?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = conexao.prepareStatement(query)) {
             processarEInserirDados(dadosExcel, preparedStatement, bancoDeDados);
 
             System.out.println("Linhas inseridas: " + linhasInseridas);
             System.out.println("Linhas removidas: " + linhasRemovidas);
-            System.out.println("Inserção das EstacoesSMP concluída com sucesso!");
+            System.out.println("Inserção da baseEstacoesSMP concluída com sucesso!");
         }
     }
 

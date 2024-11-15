@@ -22,7 +22,7 @@ import java.util.List;
 public class Main {
 
     // Modo desenvolvimento e seleção do processo (defina o nome da base para teste)
-    private static final boolean modoDev = false;
+    private static final boolean modoDev = true;
     private static final String nomeDaBaseDeDados = "MUNICIPIO"; // Use "CENSO", "ESTACOES", "MUNICIPIO" ou "PROJECAO"
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
@@ -103,7 +103,7 @@ public class Main {
         File[] arquivos = pasta.listFiles((dir, nome) -> nome.contains(NomeArquivo.CENSOIBGE.getNome()) && nome.endsWith(".xlsx"));
 
         if (arquivos != null) {
-            bancoDeDados.truncarTabela("censoIBGE");
+            bancoDeDados.truncarTabela("baseCensoIBGE");
 
             System.out.println("Inserindo dados no banco...");
             for (File arquivo : arquivos) {
@@ -113,7 +113,7 @@ public class Main {
             }
             loggerEventos.gerarLog("✅ Dados de CENSO Inseridos com Sucesso! ✅");
             System.out.println("Linhas inseridas: " + linhasInseridas);
-            System.out.println("Inserção do CensoIBGE concluída com sucesso!");        }
+            System.out.println("Inserção da baseCensoIBGE concluída com sucesso!");        }
     }
 
     private static void processarEstacoes(BancoOperacoes bancoDeDados, ManipularArquivo manipularArquivo, Logger loggerEventos) throws Exception {

@@ -43,7 +43,7 @@ public class CensoIbge {
             throw new SQLException("Conexão com o banco de dados não foi estabelecida.");
         }
 
-        String query = "INSERT INTO censoIBGE (fkCidade, area, densidadeDemografica) VALUES (?, ?, ?)";
+        String query = "INSERT INTO baseCensoIBGE (fkCidade, area, densidadeDemografica) VALUES (?, ?, ?)";
 
         try (PreparedStatement guardarValor = conexao.prepareStatement(query)) {
 
