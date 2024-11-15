@@ -9,7 +9,6 @@ public class BancoOperacoes {
     private Connection conexao;
 
     public void conectar() throws ClassNotFoundException, SQLException {
-        System.out.println("Conectando ao servidor MySQL...");
         Class.forName("com.mysql.cj.jdbc.Driver");
 
         // Conexão inicial sem especificar o banco de dados
@@ -32,14 +31,13 @@ public class BancoOperacoes {
                 Configuracoes.SENHA.getValor()
         );
         conexao.setAutoCommit(false);
-        System.out.println("Conectado ao banco de dados " + Configuracoes.DATABASE.getValor() + ".");
     }
 
     private void criarBancoSeNaoExistir(String nomeBanco) throws SQLException {
         try (Statement stmt = conexao.createStatement()) {
             String sql = "CREATE DATABASE IF NOT EXISTS " + nomeBanco;
             stmt.executeUpdate(sql);
-            System.out.println("Banco de dados '" + nomeBanco + "' criado/verificado com sucesso.");
+            System.out.println("Banco de dados '" + nomeBanco + "' criado / verificado com sucesso.");
         }
     }
 
@@ -47,8 +45,10 @@ public class BancoOperacoes {
         if (conexao != null && !conexao.isClosed()) {
             conexao.close();
             System.out.println("Conexão fechada.");
+            System.out.println("-----------------------------------------");
         } else {
             System.out.println("A conexão já está fechada ou é nula.");
+            System.out.println("-----------------------------------------");
         }
     }
 
@@ -60,11 +60,11 @@ public class BancoOperacoes {
 
     // Método auxiliar para truncar tabelas
     public void truncarTabela(String nomeTabela) throws SQLException {
-        System.out.println("Truncando a tabela " + nomeTabela + "...");
         try (Statement statement = conexao.createStatement()) {
             String truncateQuery = "TRUNCATE TABLE " + nomeTabela;
             statement.executeUpdate(truncateQuery);
-            System.out.println("Tabela truncada com sucesso!");
+            System.out.println("-----------------------------------------");
+            System.out.println("Tabela " + nomeTabela + " truncada com sucesso!");
         }
     }
 

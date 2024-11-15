@@ -21,6 +21,8 @@ public class ProjecaoPopulacional extends BaseDeDados {
     private ValidacoesLinha validacoesLinha;
     private Logger loggerInsercoes;
 
+    int linhasInseridas = 0;
+
     public ProjecaoPopulacional(ValidacoesLinha validacoesLinha, Logger loggerInsercoes) {
         this.validacoesLinha = validacoesLinha;
         this.loggerInsercoes = loggerInsercoes;
@@ -38,7 +40,8 @@ public class ProjecaoPopulacional extends BaseDeDados {
             processarEInserirDados(dadosExcel, preparedStatement, bancoDeDados);
             preparedStatement.executeBatch();
             conexao.commit();
-            System.out.println("Dados inseridos com sucesso!");
+            System.out.println("Linhas inseridas: " + linhasInseridas);
+            System.out.println("Inserção da Projeção Populacional concluída com sucesso!");
         }
     }
 
@@ -91,6 +94,7 @@ public class ProjecaoPopulacional extends BaseDeDados {
         // Inserir as projeções para o último estado processado
         for (Map.Entry<Integer, Long> entry : somaProjecoes.entrySet()) {
             inserirNoBanco(preparedStatement, estadoAtual, entry.getKey(), entry.getValue());
+            linhasInseridas++;
         }
     }
 

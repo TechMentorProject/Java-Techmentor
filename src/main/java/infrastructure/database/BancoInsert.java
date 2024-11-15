@@ -122,7 +122,6 @@ public class BancoInsert {
         try {
             // Verifica se o nome da cidade contém o caractere '?'
             if (cidadeComSigla.contains("�?")) {
-                System.out.println("Cidade contém o caractere '?' e será ignorada: " + cidadeComSigla);
                 return; // Pula a inserção dessa cidade
             }
 

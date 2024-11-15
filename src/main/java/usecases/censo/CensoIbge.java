@@ -15,7 +15,6 @@ public class CensoIbge {
     private Double densidadeDemografica;
     private Logger loggerInsercoes;
 
-
     public CensoIbge(Logger loggerInsercoes) {
         this.loggerInsercoes = loggerInsercoes;
     }
@@ -40,7 +39,6 @@ public class CensoIbge {
     }
 
     public void inserirDados(List<List<Object>> dadosExcel, Connection conexao) throws SQLException {
-
         if (conexao == null) {
             throw new SQLException("Conexão com o banco de dados não foi estabelecida.");
         }
@@ -49,7 +47,6 @@ public class CensoIbge {
 
         try (PreparedStatement guardarValor = conexao.prepareStatement(query)) {
 
-            System.out.println("Inserindo dados no banco...");
             loggerInsercoes.gerarLog("💻 Iniciando inserção de dados na tabela censoIBGE... 💻");
 
             int indiceMunicipio = obterIndiceColuna(dadosExcel, "Município");
@@ -69,7 +66,7 @@ public class CensoIbge {
                     guardarValor.setDouble(2, getArea());  // Area
                     guardarValor.setDouble(3, getDensidadeDemografica());  // Densidade demográfica
 
-                    guardarValor.addBatch();  // Adicionando ao batch
+                    guardarValor.addBatch();
 
                     // A cada 5000 registros, executa o batch
                     if (i % 5000 == 0) {
@@ -82,8 +79,6 @@ public class CensoIbge {
             // Executa o batch restante
             guardarValor.executeBatch();
             conexao.commit();  // Commit final
-            System.out.println("Todos os dados foram inseridos.");
-
         } catch (SQLException e) {
             conexao.rollback();  // Reverte em caso de erro
             loggerInsercoes.gerarLog("❌ Erro ao inserir dados em CENSO: " + e.getMessage() + " - revertendo... ❌");
