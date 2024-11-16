@@ -1,10 +1,8 @@
-package usecases.projecao_populacional;
+package application.baseDeDados;
 
+import application.BaseDeDados;
 import infrastructure.database.BancoOperacoes;
 import infrastructure.logging.Logger;
-import infrastructure.utils.ValidacoesLinha;
-import usecases.BaseDeDados;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -18,14 +16,11 @@ public class ProjecaoPopulacional extends BaseDeDados {
     private String estado;
     private int ano;
     private long projecao;
-    private ValidacoesLinha validacoesLinha;
-    private Logger loggerInsercoes;
 
     int linhasInseridas = 0;
 
-    public ProjecaoPopulacional(ValidacoesLinha validacoesLinha, Logger loggerInsercoes) {
-        this.validacoesLinha = validacoesLinha;
-        this.loggerInsercoes = loggerInsercoes;
+    public ProjecaoPopulacional(Logger logger) {
+        this.loggerInsercoes = logger;
     }
 
     public void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException, ClassNotFoundException {
@@ -61,9 +56,9 @@ public class ProjecaoPopulacional extends BaseDeDados {
 
         for (int i = 5; i < dadosExcel.size(); i++) {
             List<Object> linha = dadosExcel.get(i);
-            String[] valores = validacoesLinha.processarLinha(linha);
+            String[] valores = processarLinha(linha);
 
-            String estado = validacoesLinha.buscarValorValido(valores, indiceColunas.get("local")).replace(".", "");
+            String estado = buscarValorValido(valores, indiceColunas.get("local")).replace(".", "");
 
             if (estado == null || contemPalavrasProibidas(estado, linha)) {
                 continue;
@@ -79,11 +74,11 @@ public class ProjecaoPopulacional extends BaseDeDados {
                 estadoAtual = estado;
             }
 
-            int idade = Integer.parseInt(validacoesLinha.buscarValorValido(valores, indiceColunas.get("idade")));
+            int idade = Integer.parseInt(buscarValorValido(valores, indiceColunas.get("idade")));
             if (idade >= 0 && idade <= 90) {
                 for (int j = 0; j < 5; j++) {
                     int ano = anoAtual + j;
-                    long projecaoAno = parseLongWithDot(validacoesLinha.buscarValorValido(valores, indiceColunas.get(String.valueOf(ano))));
+                    long projecaoAno = parseLongWithDot(buscarValorValido(valores, indiceColunas.get(String.valueOf(ano))));
                     somaProjecoes.put(ano, somaProjecoes.getOrDefault(ano, 0L) + projecaoAno);
                 }
             }
@@ -166,14 +161,6 @@ public class ProjecaoPopulacional extends BaseDeDados {
 
     public void setProjecao(long projecao) {
         this.projecao = projecao;
-    }
-
-    public ValidacoesLinha getValidacoesLinha() {
-        return validacoesLinha;
-    }
-
-    public void setValidacoesLinha(ValidacoesLinha validacoesLinha) {
-        this.validacoesLinha = validacoesLinha;
     }
 
     public Logger getLoggerInsercoes() {

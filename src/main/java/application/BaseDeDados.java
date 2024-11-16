@@ -1,8 +1,19 @@
-package infrastructure.utils;
+package application;
 
+import infrastructure.database.BancoOperacoes;
+import infrastructure.logging.Logger;
+
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
-public class ValidacoesLinha {
+public abstract class BaseDeDados {
+
+    protected Logger loggerInsercoes;
+
+    public abstract int obterIndiceColuna(List<List<Object>> dadosExcel, String nomeColuna);
+    public abstract void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException, ClassNotFoundException;
+
     public boolean algumCampoInvalido(Object... campos) {
         for (Object campo : campos) {
             if (campo == null) {
@@ -31,17 +42,6 @@ public class ValidacoesLinha {
         return linha.toString();
     }
 
-    public String buscarValorValido(List<Object> row) {
-        StringBuilder linha = new StringBuilder();
-        for (Object celula : row) {
-            if (!linha.isEmpty()) {
-                linha.append(";");
-            }
-            linha.append(celula != null ? celula.toString() : "");
-        }
-        return linha.toString();
-    }
-
     public String buscarValorValido(String[] valores, int index) {
         if (index < valores.length) {
             String valor = valores[index];
@@ -51,4 +51,5 @@ public class ValidacoesLinha {
         }
         return null;
     }
+
 }

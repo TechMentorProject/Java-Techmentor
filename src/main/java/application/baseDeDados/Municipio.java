@@ -1,9 +1,8 @@
-package usecases.municipio;
+package application.baseDeDados;
 
+import application.BaseDeDados;
 import infrastructure.database.BancoOperacoes;
 import infrastructure.logging.Logger;
-import infrastructure.utils.ValidacoesLinha;
-import usecases.BaseDeDados;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -21,16 +20,12 @@ public class Municipio extends BaseDeDados {
     private Double domiciliosCobertosPorcentagem;
     private Double areaCobertaPorcentagem;
     private String tecnologia;
-    private ValidacoesLinha validacoesLinha;
-    private Logger loggerInsercoes;
 
     private int linhasInseridas = 0;
     private int linhasRemovidas = 0;
 
-
-    public Municipio(ValidacoesLinha validacoesLinha, Logger loggerInsercoes) {
-        this.validacoesLinha = validacoesLinha;
-        this.loggerInsercoes = loggerInsercoes;
+    public Municipio(Logger logger) {
+        this.loggerInsercoes = logger;
     }
 
     public void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException, ClassNotFoundException {
@@ -62,7 +57,7 @@ public class Municipio extends BaseDeDados {
 
         for (int i = 1; i < dadosExcel.size(); i++) {
             List<Object> linha = dadosExcel.get(i);
-            String[] valores = validacoesLinha.processarLinha(linha);
+            String[] valores = processarLinha(linha);
 
             if (!extraindoValoresDoMunicipio(preparedStatement, valores, linha, indiceColunas)) {
                 linhasRemovidas++;

@@ -1,17 +1,17 @@
 package infrastructure.database;
 
-import infrastructure.utils.ValidacoesLinha;
+import application.BaseDeDados;
 import java.sql.*;
 import java.util.*;
 
 public class BancoInsert {
 
     private final BancoOperacoes bancoOperacoes;
-    private final ValidacoesLinha validacoesLinha;
+    private BaseDeDados baseDeDados;
 
-    public BancoInsert(BancoOperacoes bancoOperacoes, ValidacoesLinha validacoesLinha) {
+    public BancoInsert(BancoOperacoes bancoOperacoes, BaseDeDados baseDeDados) {
         this.bancoOperacoes = bancoOperacoes;
-        this.validacoesLinha = validacoesLinha;
+        this.baseDeDados = baseDeDados;
     }
 
     public void inserirDadosIniciais() throws SQLException {
@@ -83,7 +83,7 @@ public class BancoInsert {
 
         for (int i = 1; i < dadosExcel.size(); i++) {
             List<Object> linha = dadosExcel.get(i);
-            List<String> valores = Arrays.stream(validacoesLinha.processarLinha(linha)).toList();
+            List<String> valores = Arrays.stream(baseDeDados.processarLinha(linha)).toList();
             String cidadeOriginal = valores.get(indiceColuna).trim(); // Manter formato original
 
             if (cidadeOriginal.contains("�?")) {
@@ -150,7 +150,6 @@ public class BancoInsert {
             System.err.println("Erro ao inserir cidade com estado: " + e.getMessage());
         }
     }
-
 
     private String limparSigla(String sigla) {
         return sigla.replaceAll("[^A-Za-z]", "").toUpperCase();
