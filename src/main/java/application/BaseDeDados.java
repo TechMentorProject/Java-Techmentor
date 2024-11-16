@@ -1,4 +1,4 @@
-package usecases;
+package application;
 
 import infrastructure.database.BancoOperacoes;
 

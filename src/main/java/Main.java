@@ -9,10 +9,10 @@ import infrastructure.s3.BaixarArquivoS3;
 import infrastructure.utils.ValidacoesLinha;
 import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.util.IOUtils;
-import usecases.censo.CensoIbge;
-import usecases.estacoes_smp.EstacoesSmp;
-import usecases.municipio.Municipio;
-import usecases.projecao_populacional.ProjecaoPopulacional;
+import application.baseDeDados.CensoIbge;
+import application.baseDeDados.EstacoesSmp;
+import application.baseDeDados.Municipio;
+import application.baseDeDados.ProjecaoPopulacional;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,7 +44,6 @@ public class Main {
 
             bancoSetup.criarEstruturaBanco();
 
-            // Se estiver em modoDev, executa apenas o processo especificado
             if (modoDev) {
                 executarProcesso(nomeDaBaseDeDados, bancoDeDados, manipularArquivo, loggerEventos, loggerErros);
             } else {

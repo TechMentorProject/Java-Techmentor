@@ -1,4 +1,4 @@
-package usecases.censo;
+package application.baseDeDados;
 
 import infrastructure.logging.Logger;
 

@@ -1,9 +1,9 @@
-package usecases.projecao_populacional;
+package application.baseDeDados;
 
+import application.BaseDeDados;
 import infrastructure.database.BancoOperacoes;
 import infrastructure.logging.Logger;
 import infrastructure.utils.ValidacoesLinha;
-import usecases.BaseDeDados;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
