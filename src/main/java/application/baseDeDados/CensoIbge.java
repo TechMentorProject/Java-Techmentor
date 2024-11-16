@@ -1,25 +1,25 @@
 package application.baseDeDados;
 
+import application.BaseDeDados;
+import infrastructure.database.BancoOperacoes;
 import infrastructure.logging.Logger;
-
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
-public class CensoIbge {
+public class CensoIbge extends BaseDeDados {
 
     private String cidade;
     private Double area;
     private Double densidadeDemografica;
     private Logger loggerInsercoes;
 
-    public CensoIbge(Logger loggerInsercoes) {
-        this.loggerInsercoes = loggerInsercoes;
+    public CensoIbge(Logger logger) {
+        this.loggerInsercoes = logger;
     }
 
-    private int obterIndiceColuna(List<List<Object>> dadosExcel, String nomeColuna) {
+    public int obterIndiceColuna(List<List<Object>> dadosExcel, String nomeColuna) {
 
         String cabecalho = dadosExcel.get(0).toString();
         if (cabecalho.length() > 0 && cabecalho.charAt(0) == '\uFEFF') {
@@ -36,7 +36,7 @@ public class CensoIbge {
         throw new IllegalArgumentException("Coluna '" + nomeColuna + "' não encontrada no cabeçalho.");
     }
 
-    public void inserirDados(List<List<Object>> dadosExcel, Connection conexao) throws SQLException {
+    public void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoOperacoes) throws SQLException {
         if (conexao == null) {
             throw new SQLException("Conexão com o banco de dados não foi estabelecida.");
         }

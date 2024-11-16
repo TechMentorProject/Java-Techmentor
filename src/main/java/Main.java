@@ -1,3 +1,4 @@
+import application.BaseDeDados;
 import config.Configuracoes;
 import config.NomeArquivo;
 import infrastructure.database.BancoInsert;
@@ -6,7 +7,6 @@ import infrastructure.database.BancoSetup;
 import infrastructure.logging.Logger;
 import infrastructure.processing.workbook.ManipularArquivo;
 import infrastructure.s3.BaixarArquivoS3;
-import infrastructure.utils.ValidacoesLinha;
 import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.util.IOUtils;
 import application.baseDeDados.CensoIbge;
@@ -23,14 +23,15 @@ public class Main {
 
     // Modo desenvolvimento e seleção do processo (defina o nome da base para teste)
     private static final boolean modoDev = true;
-    private static final String nomeDaBaseDeDados = "MUNICIPIO"; // Use "CENSO", "ESTACOES", "MUNICIPIO" ou "PROJECAO"
+    private static final String nomeDaBaseDeDados = "ESTACOES"; // Use "CENSO", "ESTACOES", "MUNICIPIO" ou "PROJECAO"
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
         BancoOperacoes bancoDeDados = new BancoOperacoes();
         ManipularArquivo manipularArquivo = new ManipularArquivo();
-        ValidacoesLinha validacoesLinha = new ValidacoesLinha();
         BaixarArquivoS3 baixarArquivoS3 = new BaixarArquivoS3();
-        BancoInsert bancoInsert = new BancoInsert(bancoDeDados, validacoesLinha);
+        Logger logger = new Logger(Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor(), "insercoes");
+        BaseDeDados baseDeDados = new Municipio(logger);
+        BancoInsert bancoInsert = new BancoInsert(bancoDeDados, baseDeDados);
         bancoDeDados.conectar();
         BancoSetup bancoSetup = new BancoSetup(bancoDeDados.getConexao(), bancoInsert, manipularArquivo);
         Logger loggerEventos = Logger.getLoggerEventos();
@@ -94,8 +95,8 @@ public class Main {
     }
 
     private static void processarCenso(BancoOperacoes bancoDeDados, ManipularArquivo manipularArquivo, Logger loggerEventos) throws Exception {
-        int linhasInseridas = 0;
         Logger logger = new Logger(Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor(), "insercoes");
+        int linhasInseridas = 0;
         CensoIbge censo = new CensoIbge(logger);
         String diretorioBase = Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor();
         File pasta = new File(diretorioBase);
@@ -107,7 +108,7 @@ public class Main {
             System.out.println("Inserindo dados no banco...");
             for (File arquivo : arquivos) {
                 List<List<Object>> dados = manipularArquivo.lerPlanilha(arquivo.toString(), true);
-                censo.inserirDados(dados, bancoDeDados.getConexao());
+                censo.inserirDadosComTratamento(dados, bancoDeDados.getConexao(), bancoDeDados);
                 linhasInseridas++;
             }
             loggerEventos.gerarLog("✅ Dados de CENSO Inseridos com Sucesso! ✅");
@@ -116,9 +117,8 @@ public class Main {
     }
 
     private static void processarEstacoes(BancoOperacoes bancoDeDados, ManipularArquivo manipularArquivo, Logger loggerEventos) throws Exception {
-        ValidacoesLinha validacoesLinha = new ValidacoesLinha();
         Logger logger = new Logger(Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor(), "insercoes");
-        EstacoesSmp estacoesSmp = new EstacoesSmp(validacoesLinha, logger);
+        EstacoesSmp estacoesSmp = new EstacoesSmp(logger);
         String nomeArquivo = NomeArquivo.ESTACOES_SMP.getNome();
         String caminhoArquivo = Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor() + "/" + nomeArquivo;
         List<List<Object>> dados = manipularArquivo.lerPlanilha(caminhoArquivo, true);
@@ -128,9 +128,8 @@ public class Main {
     }
 
     private static void processarMunicipio(BancoOperacoes bancoDeDados, ManipularArquivo manipularArquivo, Logger loggerEventos) throws Exception {
-        ValidacoesLinha validacoesLinha = new ValidacoesLinha();
         Logger logger = new Logger(Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor(), "insercoes");
-        Municipio municipio = new Municipio(validacoesLinha, logger);
+        Municipio municipio = new Municipio(logger);
         String nomeArquivo = NomeArquivo.MUNICIPIO.getNome();
         String caminhoArquivo = Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor() + "/" + nomeArquivo;
         List<List<Object>> dados = manipularArquivo.lerPlanilha(caminhoArquivo, false);
@@ -140,9 +139,8 @@ public class Main {
     }
 
     private static void processarProjecao(BancoOperacoes bancoDeDados, ManipularArquivo manipularArquivo, Logger loggerEventos) throws Exception {
-        ValidacoesLinha validacoesLinha = new ValidacoesLinha();
         Logger logger = new Logger(Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor(), "insercoes");
-        ProjecaoPopulacional projecaoPopulacional = new ProjecaoPopulacional(validacoesLinha, logger);
+        ProjecaoPopulacional projecaoPopulacional = new ProjecaoPopulacional(logger);
         String nomeArquivo = NomeArquivo.PROJECAO.getNome();
         String caminhoArquivo = Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor() + "/" + nomeArquivo;
         List<List<Object>> dados = manipularArquivo.lerPlanilha(caminhoArquivo, true);

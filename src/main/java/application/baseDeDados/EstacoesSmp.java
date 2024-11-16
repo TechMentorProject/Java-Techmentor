@@ -3,7 +3,6 @@ package application.baseDeDados;
 import application.BaseDeDados;
 import infrastructure.database.BancoOperacoes;
 import infrastructure.logging.Logger;
-import infrastructure.utils.ValidacoesLinha;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,15 +15,12 @@ public class EstacoesSmp extends BaseDeDados {
     private String operadora;
     private String codigoIBGE;
     private String tecnologia;
-    private ValidacoesLinha validacoesLinha;
-    private Logger loggerInsercoes;
 
     private int linhasInseridas;
     private int linhasRemovidas;
 
-    public EstacoesSmp(ValidacoesLinha validacoesLinha, Logger loggerInsercoes) {
-        this.validacoesLinha = validacoesLinha;
-        this.loggerInsercoes = loggerInsercoes;
+    public EstacoesSmp(Logger logger) {
+        this.loggerInsercoes = logger;
     }
 
     public void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException, ClassNotFoundException {
@@ -110,16 +106,16 @@ public class EstacoesSmp extends BaseDeDados {
     }
 
     private boolean extraindoValoresDoApache(PreparedStatement preparedStatement, String[] valores, Map<String, Integer> indiceColunas) throws SQLException {
-        setCidade(formatarCidade(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Municipio"))));
+        setCidade(formatarCidade(buscarValorValido(valores, indiceColunas.get("Municipio"))));
         if (getCidade().matches("\\d+")) {
             return false;
         }
 
-        setOperadora(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Operadora")));
-        setCodigoIBGE(validacoesLinha.buscarValorValido(valores, indiceColunas.get("CodigoIBGE")));
-        setTecnologia(validacoesLinha.buscarValorValido(valores, indiceColunas.get("Tecnologia")));
+        setOperadora(buscarValorValido(valores, indiceColunas.get("Operadora")));
+        setCodigoIBGE(buscarValorValido(valores, indiceColunas.get("CodigoIBGE")));
+        setTecnologia(buscarValorValido(valores, indiceColunas.get("Tecnologia")));
 
-        if (validacoesLinha.algumCampoInvalido(
+        if (algumCampoInvalido(
                 getCidade(),
                 getOperadora(),
                 getCodigoIBGE(),
@@ -138,7 +134,8 @@ public class EstacoesSmp extends BaseDeDados {
         return cidade;
     }
 
-    private String[] processarLinha(List<Object> linha) {
+    @Override
+    public String[] processarLinha(List<Object> linha) {
         List<String> camposProcessados = new ArrayList<>();
 
         for (Object valor : linha) {
