@@ -1,110 +1,138 @@
 package infrastructure.database;
 
+import config.Configuracoes;
+import infrastructure.processing.workbook.ManipularArquivo;
+import org.apache.poi.util.IOUtils;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 
 public class BancoSetup {
 
     private final Connection conexao;
+    private BancoInsert bancoInsert;
+    private ManipularArquivo manipularArquivo;
 
-    public BancoSetup(Connection conexao) {
+    public BancoSetup(Connection conexao, BancoInsert bancoInsert, ManipularArquivo manipularArquivo) {
         this.conexao = conexao;
+        this.bancoInsert = bancoInsert;
+        this.manipularArquivo = manipularArquivo;
     }
 
     public void criarEstruturaBanco() throws SQLException {
-        try (Statement techmentor = conexao.createStatement()) {
-            // Criação das tabelas
-            techmentor.executeUpdate("""
+
+        try (Statement stmt = conexao.createStatement()) {
+
+            stmt.executeUpdate("CREATE DATABASE IF NOT EXISTS " + Configuracoes.DATABASE.getValor());
+            stmt.executeUpdate("USE " + Configuracoes.DATABASE.getValor());
+
+            stmt.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS estado (
-                    idEstado INT AUTO_INCREMENT PRIMARY KEY,
-                    regiao VARCHAR(100),
-                    UF CHAR(2)
+                    nomeEstado VARCHAR(100) PRIMARY KEY,
+                    sigla char(2),
+                    regiao VARCHAR(100)
                 )
             """);
 
-            techmentor.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS municipio (
+            stmt.executeUpdate("""
+                CREATE TABLE IF NOT EXISTS cidade (
+                    nomeCidade VARCHAR(100) PRIMARY KEY,
+                    fkEstado VARCHAR(100),
+                    FOREIGN KEY (fkEstado) REFERENCES estado(nomeEstado)
+                )
+            """);
+
+            stmt.executeUpdate("""
+                CREATE TABLE IF NOT EXISTS baseMunicipio (
                     idMunicipio INT AUTO_INCREMENT PRIMARY KEY,
+                    fkCidade VARCHAR(100),
                     ano CHAR(4),
-                    cidade VARCHAR(100),
                     operadora VARCHAR(100),
-                    domiciliosCobertosPercent DECIMAL(10,2),
-                    areaCobertaPercent DECIMAL(5,2),
-                    tecnologia VARCHAR(50)
+                    domiciliosCobertosPercentual DECIMAL(5,2),
+                    areaCobertaPercentual DECIMAL(5,2),
+                    tecnologia VARCHAR(50),
+                    FOREIGN KEY (fkCidade) REFERENCES cidade(nomeCidade)
                 )
             """);
 
-            techmentor.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS estacoesSMP (
+            stmt.executeUpdate("""
+                CREATE TABLE IF NOT EXISTS baseEstacoesSMP (
                     idEstacoesSMP INT AUTO_INCREMENT PRIMARY KEY,
-                    cidade VARCHAR(255),
+                    fkCidade VARCHAR(255),
                     operadora VARCHAR(255),
-                    latitude BIGINT,
-                    longitude BIGINT,
                     codigoIBGE VARCHAR(255),
                     tecnologia VARCHAR(255)
                 )
             """);
 
-            techmentor.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS censoIBGE (
+            stmt.executeUpdate("""
+                CREATE TABLE IF NOT EXISTS baseCensoIBGE (
                     idCensoIBGE INT AUTO_INCREMENT PRIMARY KEY,
-                    cidade VARCHAR(100),
+                    fkCidade VARCHAR(100),
                     area DECIMAL(10,2),
-                    densidadeDemografica DECIMAL(10,2)
+                    densidadeDemografica DECIMAL(10,2),
+                    FOREIGN KEY (fkCidade) REFERENCES cidade(nomeCidade)
                 )
             """);
 
-            techmentor.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS projecaoPopulacional (
+            stmt.executeUpdate("""
+                CREATE TABLE IF NOT EXISTS baseProjecaoPopulacional (
                     idProjecaoPopulacional INT AUTO_INCREMENT PRIMARY KEY,
-                    estado VARCHAR(100),
+                    fkEstado VARCHAR(100),
                     ano INT,
-                    projecao INT
+                    projecao INT,
+                    FOREIGN KEY (fkEstado) REFERENCES estado(nomeEstado)
                 )
             """);
 
-            techmentor.executeUpdate("""
+            stmt.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS empresa (
-                    idEmpresa INT AUTO_INCREMENT PRIMARY KEY,
+                    cnpj VARCHAR(20) PRIMARY KEY NOT NULL UNIQUE,
                     nomeEmpresa VARCHAR(100) NOT NULL,
                     nomeResponsavel VARCHAR(100),
-                    cnpj VARCHAR(20) NOT NULL UNIQUE,
                     emailResponsavel VARCHAR(100) NOT NULL,
                     senha VARCHAR(100) NOT NULL
                 )
             """);
 
-            techmentor.executeUpdate("""
+            stmt.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS cargo (
-                    idCargo INT AUTO_INCREMENT PRIMARY KEY,
-                    nomeCargo VARCHAR(100) NOT NULL,
-                    salario DECIMAL(10,2) NOT NULL,
-                    idEmpresa INT,
-                    FOREIGN KEY (idEmpresa) REFERENCES empresa(idEmpresa)
+                    nomeCargo VARCHAR(100) PRIMARY KEY NOT NULL,
+                    acessos VARCHAR(100),
+                    fkCnpj VARCHAR(20),
+                    FOREIGN KEY (fkCnpj) REFERENCES empresa(cnpj)
                 )
             """);
 
-            techmentor.executeUpdate("""
+            stmt.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS usuario (
-                    idUsuario INT AUTO_INCREMENT PRIMARY KEY,
+                    cpf VARCHAR(20) PRIMARY KEY,
                     email VARCHAR(100),
                     nomeUsuario VARCHAR(100),
-                    cpf VARCHAR(20),
                     senha VARCHAR(100),
-                    idEmpresa INT,
-                    idCargo INT,
-                    FOREIGN KEY (idEmpresa) REFERENCES empresa(idEmpresa),
-                    FOREIGN KEY (idCargo) REFERENCES cargo(idCargo)
+                    fkCnpj VARCHAR(20),
+                    fkNomeCargo VARCHAR(100),
+                    FOREIGN KEY (fkCnpj) REFERENCES empresa(cnpj),
+                    FOREIGN KEY (fkNomeCargo) REFERENCES cargo(nomeCargo)
                 )
             """);
+            bancoInsert.inserirDadosIniciais();
+            IOUtils.setByteArrayMaxOverride(250_000_000);
 
-            // Ajustes de charset para compatibilidade UTF-8
-            techmentor.executeUpdate("ALTER TABLE municipio CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
-            techmentor.executeUpdate("ALTER TABLE projecaoPopulacional CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+            String nomeArquivo = "Meu_Municipio_Cobertura.xlsx";
+            String caminhoArquivo = Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor() + "/" + nomeArquivo;
 
-            System.out.println("Estrutura do banco de dados criada com sucesso!");
+            List<List<Object>> dados = manipularArquivo.lerPlanilha(caminhoArquivo, false);
+
+            List<String> cidades = bancoInsert.extrairCidades(dados);
+            bancoInsert.inserirCidades(cidades);
+
+        } catch (SQLException e) {
+            System.err.println("Erro ao criar estrutura do banco de dados: " + e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }

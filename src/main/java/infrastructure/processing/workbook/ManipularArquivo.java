@@ -1,15 +1,16 @@
 package infrastructure.processing.workbook;
 
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.eventusermodel.XSSFSheetXMLHandler;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,18 +18,56 @@ public class ManipularArquivo {
 
     public List<List<Object>> lerPlanilha(String caminhoArquivo, Boolean isProjecao) throws Exception {
         List<List<Object>> linhasPlanilha = new ArrayList<>();
+        File tempFile = null;
 
-        try (OPCPackage pacoteExcel = OPCPackage.open(new BufferedInputStream(new FileInputStream(caminhoArquivo)))) {
+        try (InputStream arquivoOriginal = new FileInputStream(caminhoArquivo)) {
+            tempFile = File.createTempFile("arquivo_temp", ".xlsx");
+            try (OutputStream tempOut = new FileOutputStream(tempFile)) {
+                arquivoOriginal.transferTo(tempOut);
+            }
 
-            XSSFReader leitorExcel = new XSSFReader(pacoteExcel);
-            XMLReader leitorXML = org.apache.poi.util.XMLHelper.newXMLReader();
-            XSSFSheetXMLHandler manipularPlanilha = new XSSFSheetXMLHandler(leitorExcel.getStylesTable(), new ReadOnlySharedStringsTable(pacoteExcel), new ManipularPlanilha(linhasPlanilha, isProjecao), false);
+            try (OPCPackage pacoteExcel = OPCPackage.open(tempFile)) {
+                XSSFReader leitorExcel = new XSSFReader(pacoteExcel);
+                XMLReader leitorXML = org.apache.poi.util.XMLHelper.newXMLReader();
 
-            try (InputStream fluxoFolha = leitorExcel.getSheetsData().next()) {
-                leitorXML.setContentHandler(manipularPlanilha);
-                leitorXML.parse(new InputSource(fluxoFolha));
+                ReadOnlySharedStringsTable stringsTable = new ReadOnlySharedStringsTable(pacoteExcel);
+
+                XSSFSheetXMLHandler manipularPlanilha = new XSSFSheetXMLHandler(
+                        leitorExcel.getStylesTable(),
+                        stringsTable,
+                        new ManipularPlanilhaCustomizada(linhasPlanilha, isProjecao),
+                        false
+                );
+
+                try (InputStream fluxoFolha = leitorExcel.getSheetsData().next();
+                     Reader readerUTF8 = new InputStreamReader(fluxoFolha, StandardCharsets.UTF_8)) {
+                    leitorXML.setContentHandler(manipularPlanilha);
+                    leitorXML.parse(new InputSource(readerUTF8));
+                }
+            }
+        } catch (InvalidFormatException | SAXException | IOException e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            if (tempFile != null && tempFile.exists()) {
+                tempFile.delete();
             }
         }
         return linhasPlanilha;
+    }
+
+    private static class ManipularPlanilhaCustomizada extends ManipularPlanilha {
+
+        public ManipularPlanilhaCustomizada(List<List<Object>> linhasPlanilha, Boolean isProjecao) {
+            super(linhasPlanilha, isProjecao);
+        }
+
+
+        public void cell(String cellReference, String formattedValue) {
+            if (formattedValue != null) {
+                formattedValue = new String(formattedValue.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
+            }
+            super.cell(cellReference, formattedValue, null);
+        }
     }
 }
