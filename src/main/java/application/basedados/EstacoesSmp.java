@@ -1,4 +1,4 @@
-package application.baseDeDados;
+package application.basedados;
 
 import application.BaseDeDados;
 import infrastructure.database.BancoOperacoes;
@@ -13,7 +13,7 @@ public class EstacoesSmp extends BaseDeDados {
 
     private String cidade;
     private String operadora;
-    private String codigoIBGE;
+    private String codigoIbge;
     private String tecnologia;
 
     private int linhasInseridas;
@@ -43,7 +43,7 @@ public class EstacoesSmp extends BaseDeDados {
         }
     }
 
-    private void processarEInserirDados(List<List<Object>> dadosExcel, PreparedStatement preparedStatement, BancoOperacoes bancoDeDados) {
+    public void processarEInserirDados(List<List<Object>> dadosExcel, PreparedStatement preparedStatement, BancoOperacoes bancoDeDados) {
         Map<String, Integer> indiceColunas = new HashMap<>();
         indiceColunas.put("Municipio", obterIndiceColuna(dadosExcel, "Município-UF"));
         indiceColunas.put("Operadora", obterIndiceColuna(dadosExcel, "Empresa Estação"));
@@ -74,7 +74,7 @@ public class EstacoesSmp extends BaseDeDados {
             }
 
             try {
-                if (valores.length >= 4 && extraindoValoresDoApache(preparedStatement, valores, indiceColunas)) {
+                if (valores.length >= 4 && extrairValoresDasEstacoes(preparedStatement, valores, indiceColunas)) {
                     bancoDeDados.adicionarBatch(preparedStatement, i);
                     linhasInseridas++;
                 }
@@ -105,25 +105,25 @@ public class EstacoesSmp extends BaseDeDados {
         throw new IllegalArgumentException("Coluna '" + nomeColuna + "' não encontrada no cabeçalho.");
     }
 
-    private boolean extraindoValoresDoApache(PreparedStatement preparedStatement, String[] valores, Map<String, Integer> indiceColunas) throws SQLException {
+    private boolean extrairValoresDasEstacoes(PreparedStatement preparedStatement, String[] valores, Map<String, Integer> indiceColunas) throws SQLException {
         setCidade(formatarCidade(buscarValorValido(valores, indiceColunas.get("Municipio"))));
         if (getCidade().matches("\\d+")) {
             return false;
         }
 
         setOperadora(buscarValorValido(valores, indiceColunas.get("Operadora")));
-        setCodigoIBGE(buscarValorValido(valores, indiceColunas.get("CodigoIBGE")));
+        setCodigoIbge(buscarValorValido(valores, indiceColunas.get("CodigoIBGE")));
         setTecnologia(buscarValorValido(valores, indiceColunas.get("Tecnologia")));
 
         if (algumCampoInvalido(
                 getCidade(),
                 getOperadora(),
-                getCodigoIBGE(),
+                getCodigoIbge(),
                 getTecnologia()
         )) {
             return false;
         }
-        guardarValorProBanco(preparedStatement, getCidade(), getOperadora(), getCodigoIBGE(), getTecnologia());
+        guardarValorParaOBanco(preparedStatement);
         return true;
     }
 
@@ -162,11 +162,11 @@ public class EstacoesSmp extends BaseDeDados {
         return camposProcessados.toArray(new String[0]);
     }
 
-    private void guardarValorProBanco(PreparedStatement preparedStatement, String cidade, String operadora, String codigoIBGE, String tecnologia) throws SQLException {
-        preparedStatement.setString(1, cidade);
-        preparedStatement.setString(2, operadora);
-        preparedStatement.setString(3, codigoIBGE);
-        preparedStatement.setString(4, tecnologia);
+    public void guardarValorParaOBanco(PreparedStatement preparedStatement) throws SQLException {
+        preparedStatement.setString(1, getCidade());
+        preparedStatement.setString(2, getOperadora());
+        preparedStatement.setString(3, getCodigoIbge());
+        preparedStatement.setString(4, getTecnologia());
     }
 
     public String getCidade() {
@@ -185,12 +185,12 @@ public class EstacoesSmp extends BaseDeDados {
         this.operadora = operadora;
     }
 
-    public String getCodigoIBGE() {
-        return codigoIBGE;
+    public String getCodigoIbge() {
+        return codigoIbge;
     }
 
-    public void setCodigoIBGE(String codigoIBGE) {
-        this.codigoIBGE = codigoIBGE;
+    public void setCodigoIbge(String codigoIbge) {
+        this.codigoIbge = codigoIbge;
     }
 
     public String getTecnologia() {

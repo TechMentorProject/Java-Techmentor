@@ -9,10 +9,10 @@ import infrastructure.processing.workbook.ManipularArquivo;
 import infrastructure.s3.BaixarArquivoS3;
 import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.util.IOUtils;
-import application.baseDeDados.CensoIbge;
-import application.baseDeDados.EstacoesSmp;
-import application.baseDeDados.Municipio;
-import application.baseDeDados.ProjecaoPopulacional;
+import application.basedados.CensoIbge;
+import application.basedados.EstacoesSmp;
+import application.basedados.Municipio;
+import application.basedados.ProjecaoPopulacional;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +23,7 @@ public class Main {
 
     // Modo desenvolvimento e seleção do processo (defina o nome da base para teste)
     private static final boolean modoDev = true;
-    private static final String nomeDaBaseDeDados = "ESTACOES"; // Use "CENSO", "ESTACOES", "MUNICIPIO" ou "PROJECAO"
+    private static final String nomeDaBaseDeDados = "PROJECAO"; // Use "CENSO", "ESTACOES", "MUNICIPIO" ou "PROJECAO"
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
         BancoOperacoes bancoDeDados = new BancoOperacoes();
@@ -49,7 +49,9 @@ public class Main {
                 executarProcesso(nomeDaBaseDeDados, bancoDeDados, manipularArquivo, loggerEventos, loggerErros);
             } else {
                 try {
-                    baixarArquivoS3.baixarArquivos(); // Método que encapsula a lógica de download
+                    if(!Configuracoes.AMBIENTE.getValor().equals("DEV")) {
+                        baixarArquivoS3.baixarArquivos();
+                    }
                     System.out.println("Arquivos baixados com sucesso do S3.");
                 } catch (IOException e) {
                     System.out.println("Erro ao baixar arquivos do S3: " + e.getMessage());

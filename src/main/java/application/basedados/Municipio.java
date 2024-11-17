@@ -1,4 +1,4 @@
-package application.baseDeDados;
+package application.basedados;
 
 import application.BaseDeDados;
 import infrastructure.database.BancoOperacoes;
@@ -59,7 +59,7 @@ public class Municipio extends BaseDeDados {
             List<Object> linha = dadosExcel.get(i);
             String[] valores = processarLinha(linha);
 
-            if (!extraindoValoresDoMunicipio(preparedStatement, valores, linha, indiceColunas)) {
+            if (!extrairValoresDoMunicipio(preparedStatement, valores, linha, indiceColunas)) {
                 linhasRemovidas++;
                 continue;
             }
@@ -83,7 +83,7 @@ public class Municipio extends BaseDeDados {
         throw new IllegalArgumentException("Coluna '" + nomeColuna + "' não encontrada no cabeçalho.");
     }
 
-    private boolean extraindoValoresDoMunicipio(PreparedStatement preparedStatement, String[] valores, List<Object> linha, Map<String, Integer> indiceColunas) throws SQLException {
+    private boolean extrairValoresDoMunicipio(PreparedStatement preparedStatement, String[] valores, List<Object> linha, Map<String, Integer> indiceColunas) throws SQLException {
         if (valores.length < 16) {
             return false;
         }
@@ -120,8 +120,7 @@ public class Municipio extends BaseDeDados {
             return false;
         }
 
-        guardarValorProBanco(preparedStatement, getAno(), getCidade(), getOperadora(),
-                domiciliosCobertosPercent, areaCobertaPercent, getTecnologia());
+        guardarValorParaOBanco(preparedStatement);
 
         return true;
     }
@@ -171,14 +170,13 @@ public class Municipio extends BaseDeDados {
         }
     }
 
-    private void guardarValorProBanco(PreparedStatement guardarValor, String ano, String cidade, String operadora,
-                                      Double domiciliosCobertosPercent, Double areaCobertaPercent, String tecnologia) throws SQLException {
-        guardarValor.setString(1, ano);
-        guardarValor.setString(2, cidade);
-        guardarValor.setString(3, operadora);
-        guardarValor.setDouble(4, areaCobertaPercent);
-        guardarValor.setDouble(5, domiciliosCobertosPercent);
-        guardarValor.setString(6, tecnologia);
+    public void guardarValorParaOBanco(PreparedStatement preparedStatement) throws SQLException {
+        preparedStatement.setString(1, getAno());
+        preparedStatement.setString(2, getCidade());
+        preparedStatement.setString(3, getOperadora());
+        preparedStatement.setDouble(4, getAreaCobertaPorcentagem());
+        preparedStatement.setDouble(5, getDomiciliosCobertosPorcentagem());
+        preparedStatement.setString(6, getTecnologia());
     }
 
     public String getAno() {
@@ -193,9 +191,7 @@ public class Municipio extends BaseDeDados {
         return cidade;
     }
 
-    public void setCidade(String cidade) {
-        this.cidade = cidade;
-    }
+    public void setCidade(String cidade) { this.cidade = cidade; }
 
     public String getOperadora() {
         return operadora;
@@ -209,17 +205,13 @@ public class Municipio extends BaseDeDados {
         return domiciliosCobertosPorcentagem;
     }
 
-    public void setDomiciliosCobertosPorcentagem(Double domiciliosCobertosPorcentagem) {
-        this.domiciliosCobertosPorcentagem = domiciliosCobertosPorcentagem;
-    }
+    public void setDomiciliosCobertosPorcentagem(Double domiciliosCobertosPorcentagem) { this.domiciliosCobertosPorcentagem = domiciliosCobertosPorcentagem; }
 
     public Double getAreaCobertaPorcentagem() {
         return areaCobertaPorcentagem;
     }
 
-    public void setAreaCobertaPorcentagem(Double areaCobertaPorcentagem) {
-        this.areaCobertaPorcentagem = areaCobertaPorcentagem;
-    }
+    public void setAreaCobertaPorcentagem(Double areaCobertaPorcentagem) { this.areaCobertaPorcentagem = areaCobertaPorcentagem; }
 
     public String getTecnologia() {
         return tecnologia;

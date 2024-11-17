@@ -1,4 +1,4 @@
-package application.baseDeDados;
+package application.basedados;
 
 import application.BaseDeDados;
 import infrastructure.database.BancoOperacoes;
@@ -40,7 +40,7 @@ public class ProjecaoPopulacional extends BaseDeDados {
         }
     }
 
-    private void processarEInserirDados(List<List<Object>> dadosExcel, PreparedStatement preparedStatement, BancoOperacoes bancoDeDados) throws SQLException {
+    public void processarEInserirDados(List<List<Object>> dadosExcel, PreparedStatement preparedStatement, BancoOperacoes bancoDeDados) throws SQLException {
         int anoAtual = Year.now().getValue();
 
         Map<String, Integer> indiceColunas = new HashMap<>();
@@ -67,7 +67,11 @@ public class ProjecaoPopulacional extends BaseDeDados {
             if (!estado.equals(estadoAtual)) {
                 if (estadoAtual != null) {
                     for (Map.Entry<Integer, Long> entry : somaProjecoes.entrySet()) {
-                        inserirNoBanco(preparedStatement, estadoAtual, entry.getKey(), entry.getValue());
+                        setEstado(estadoAtual);
+                        setAno(entry.getKey());
+                        setProjecao(entry.getValue());
+                        linhasInseridas++;
+                        guardarValorParaOBanco(preparedStatement);
                     }
                     somaProjecoes.clear();
                 }
@@ -78,16 +82,20 @@ public class ProjecaoPopulacional extends BaseDeDados {
             if (idade >= 0 && idade <= 90) {
                 for (int j = 0; j < 5; j++) {
                     int ano = anoAtual + j;
-                    long projecaoAno = parseLongWithDot(buscarValorValido(valores, indiceColunas.get(String.valueOf(ano))));
+                    long projecaoAno = filtrarLongComPonto(buscarValorValido(valores, indiceColunas.get(String.valueOf(ano))));
                     somaProjecoes.put(ano, somaProjecoes.getOrDefault(ano, 0L) + projecaoAno);
                 }
             }
         }
 
         for (Map.Entry<Integer, Long> entry : somaProjecoes.entrySet()) {
-            inserirNoBanco(preparedStatement, estadoAtual, entry.getKey(), entry.getValue());
+            setEstado(estadoAtual);
+            setAno(entry.getKey());
+            setProjecao(entry.getValue());
+            guardarValorParaOBanco(preparedStatement);
             linhasInseridas++;
         }
+
     }
 
     public int obterIndiceColuna(List<List<Object>> dadosExcel, String nomeColuna) {
@@ -119,7 +127,7 @@ public class ProjecaoPopulacional extends BaseDeDados {
                 || linhaLowerCase.toString().contains("sudeste") || linhaLowerCase.toString().contains("nordeste");
     }
 
-    private long parseLongWithDot(String numeroEmString) {
+    private long filtrarLongComPonto(String numeroEmString) {
         if (numeroEmString != null) {
             numeroEmString = numeroEmString.replace(".", "").replace(",", "");
             return Long.parseLong(numeroEmString);
@@ -127,12 +135,7 @@ public class ProjecaoPopulacional extends BaseDeDados {
         return 0;
     }
 
-    private void inserirNoBanco(PreparedStatement preparedStatement, String estado, int ano, long projecao) throws SQLException {
-
-        setEstado(estado);
-        setAno(ano);
-        setProjecao(projecao);
-
+    public void guardarValorParaOBanco(PreparedStatement preparedStatement) throws SQLException {
         preparedStatement.setString(1, getEstado());
         preparedStatement.setInt(2, getAno());
         preparedStatement.setLong(3, getProjecao());
@@ -163,11 +166,4 @@ public class ProjecaoPopulacional extends BaseDeDados {
         this.projecao = projecao;
     }
 
-    public Logger getLoggerInsercoes() {
-        return loggerInsercoes;
-    }
-
-    public void setLoggerInsercoes(Logger loggerInsercoes) {
-        this.loggerInsercoes = loggerInsercoes;
-    }
 }
