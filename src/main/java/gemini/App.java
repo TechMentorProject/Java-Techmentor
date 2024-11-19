@@ -12,9 +12,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.charset.StandardCharsets;
+import java.io.PrintStream;
 
 public class App {
     public static void main(String[] args) throws IOException {
+        // Configurar o console para UTF-8
         System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
 
         try (VertexAI vertexAi = new VertexAI("projeto-teste-gemini-441423", "us-central1")) {
@@ -59,16 +62,17 @@ public class App {
 
             StringBuilder fullResponse = new StringBuilder();
 
-
+            // Iterar pelas respostas
             responseStream.stream().forEach(response -> {
                 response.getCandidatesList().forEach(candidate -> {
                     candidate.getContent().getPartsList().forEach(part -> {
-                        String decodedText = new String(part.getText().getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
-                        fullResponse.append(decodedText);
+                        // Apenas adicione o texto diretamente
+                        fullResponse.append(part.getText());
                     });
                 });
             });
 
+            // Exibir o texto completo
             System.out.println(fullResponse.toString());
         }
     }
