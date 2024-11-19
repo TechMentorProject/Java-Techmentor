@@ -1,0 +1,4 @@
+package slack;
+
+public class SlackNotifier {
+}
