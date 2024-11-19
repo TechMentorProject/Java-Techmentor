@@ -15,15 +15,19 @@ import java.util.List;
 
 public class BaixarArquivoS3 {
 
-    public S3Provider s3Provider;
+    private final S3Client s3Client;
+
+    public BaixarArquivoS3(S3Client s3Client) {
+        this.s3Client = s3Client;
+    }
 
     public void baixarArquivos() throws IOException {
-
-        S3Client s3Client = s3Provider.getS3Client();
         String nomeBucket = Configuracoes.NOME_BUCKET_S3.getValor();
         String caminhoArquivo = Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor();
         String nomeObjeto;
         Path caminhoObjeto;
+
+
 
         int arquivosRemovidos = 0;
         int arquivosBaixados = 0;

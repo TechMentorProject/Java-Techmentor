@@ -1,9 +1,7 @@
 package application.basedados;
-
 import application.BaseDeDados;
 import infrastructure.database.BancoOperacoes;
 import infrastructure.logging.Logger;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -32,6 +30,8 @@ public class CensoIbge extends BaseDeDados {
 
             preparedStatement.executeBatch();
             conexao.commit();
+
+            loggerInsercoes.gerarLog("✅ Inserção de dados concluída com sucesso! ✅");
         }
     }
 
@@ -49,10 +49,11 @@ public class CensoIbge extends BaseDeDados {
                 if (valores.length >= 3 && extrairValoresDoCenso(preparedStatement, valores, indiceColunas)) {
                     preparedStatement.addBatch();
                 }
+
             } catch (SQLException e) {
-                loggerInsercoes.gerarLog("❌ Erro SQL ao processar linha: " + e.getMessage());
+                loggerInsercoes.gerarLog("❌ Erro SQL ao processar linha " + i + ": " + e.getMessage());
             } catch (Exception e) {
-                loggerInsercoes.gerarLog("❌ Erro geral ao processar linha: " + e.getMessage());
+                loggerInsercoes.gerarLog("❌ Erro geral ao processar linha " + i + ": " + e.getMessage());
             }
         }
     }
@@ -63,8 +64,13 @@ public class CensoIbge extends BaseDeDados {
             return false;
         }
 
-        setArea(Double.parseDouble(buscarValorValido(valores, indiceColunas.get("Area"))));
-        setDensidadeDemografica(Double.parseDouble(buscarValorValido(valores, indiceColunas.get("DensidadeDemografica"))));
+        try {
+            setArea(Double.parseDouble(buscarValorValido(valores, indiceColunas.get("Area"))));
+            setDensidadeDemografica(Double.parseDouble(buscarValorValido(valores, indiceColunas.get("DensidadeDemografica"))));
+        } catch (NumberFormatException e) {
+            loggerInsercoes.gerarLog("⚠️ Valores inválidos para conversão numérica: " + e.getMessage());
+            return false;
+        }
 
         if (algumCampoInvalido(getCidade(), getArea(), getDensidadeDemografica())) {
             return false;
@@ -75,7 +81,7 @@ public class CensoIbge extends BaseDeDados {
     }
 
     public void guardarValorParaOBanco(PreparedStatement preparedStatement) throws SQLException {
-        preparedStatement.setString(1, getCidade());
+        preparedStatement.setString(1, getCidade().trim());
         preparedStatement.setDouble(2, getArea());
         preparedStatement.setDouble(3, getDensidadeDemografica());
     }
@@ -90,9 +96,9 @@ public class CensoIbge extends BaseDeDados {
             cabecalho = cabecalho.substring(1);
         }
 
-        String[] colunas = cabecalho.split(";");
+        String[] colunas = cabecalho.split(",");
         for (int i = 0; i < colunas.length; i++) {
-            if (colunas[i].trim().contains(nomeColuna)) {
+            if (colunas[i].trim().equalsIgnoreCase(nomeColuna)) {
                 return i;
             }
         }

@@ -53,7 +53,7 @@ public class BancoSetup {
                     areaCobertaPercentual DECIMAL(5,2),
                     tecnologia VARCHAR(50),
                     FOREIGN KEY (fkCidade) REFERENCES cidade(nomeCidade)
-                )
+                ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
             """);
 
             stmt.executeUpdate("""
@@ -83,7 +83,7 @@ public class BancoSetup {
                     ano INT,
                     projecao INT,
                     FOREIGN KEY (fkEstado) REFERENCES estado(nomeEstado)
-                )
+                  ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
             """);
 
             stmt.executeUpdate("""

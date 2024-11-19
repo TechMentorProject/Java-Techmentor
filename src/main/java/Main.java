@@ -7,12 +7,14 @@ import infrastructure.database.BancoSetup;
 import infrastructure.logging.Logger;
 import infrastructure.processing.workbook.ManipularArquivo;
 import infrastructure.s3.BaixarArquivoS3;
+import infrastructure.s3.S3Provider;
 import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.util.IOUtils;
 import application.basedados.CensoIbge;
 import application.basedados.EstacoesSmp;
 import application.basedados.Municipio;
 import application.basedados.ProjecaoPopulacional;
+import software.amazon.awssdk.services.s3.S3Client;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,12 +25,11 @@ public class Main {
 
     // Modo desenvolvimento e seleção do processo (defina o nome da base para teste)
     private static final boolean modoDev = true;
-    private static final String nomeDaBaseDeDados = "PROJECAO"; // Use "CENSO", "ESTACOES", "MUNICIPIO" ou "PROJECAO"
+    private static final String nomeDaBaseDeDados = "CENSO"; // Use "CENSO", "ESTACOES", "MUNICIPIO" ou "PROJECAO"
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
         BancoOperacoes bancoDeDados = new BancoOperacoes();
         ManipularArquivo manipularArquivo = new ManipularArquivo();
-        BaixarArquivoS3 baixarArquivoS3 = new BaixarArquivoS3();
         Logger logger = new Logger(Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor(), "insercoes");
         BaseDeDados baseDeDados = new Municipio(logger);
         BancoInsert bancoInsert = new BancoInsert(bancoDeDados, baseDeDados);
@@ -50,6 +51,8 @@ public class Main {
             } else {
                 try {
                     if(!Configuracoes.AMBIENTE.getValor().equals("DEV")) {
+                        S3Client s3Client = new S3Provider().getS3Client();
+                        BaixarArquivoS3 baixarArquivoS3 = new BaixarArquivoS3(s3Client);
                         baixarArquivoS3.baixarArquivos();
                     }
                     System.out.println("Arquivos baixados com sucesso do S3.");
