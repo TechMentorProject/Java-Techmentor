@@ -12,8 +12,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.charset.StandardCharsets;
-import java.io.PrintStream;
 
 public class App {
     public static void main(String[] args) throws IOException {
