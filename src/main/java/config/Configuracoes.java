@@ -9,9 +9,9 @@ public enum Configuracoes {
     USUARIO("root"),
     SENHA("root"),
     NOME_BUCKET_S3("techmentor-bucket"),
-    CAMINHO_DIRETORIO_RAIZ("C:\\Users\\mathe\\Documents\\Techmentor\\Base de dados"),
+    CAMINHO_DIRETORIO_RAIZ("/app/base-dados"),
     DIRETORIO_LOGS("app/logs/LogsTechMentor"),
-    AMBIENTE("DEV");
+    AMBIENTE("PROD");
 
     // Propriedade para armazenar o valor
     private final String valor;
@@ -23,7 +23,7 @@ public enum Configuracoes {
 
     // Método para obter o valor
     public String getValor() {
-        return valor;
+        return System.getenv(name()) != null ? System.getenv(name()) : valor;
     }
 }
 

@@ -26,7 +26,7 @@ import static com.mysql.cj.conf.PropertyKey.logger;
 public class Main {
 
     // Modo desenvolvimento e seleção do processo (defina o nome da base para teste)
-    private static final boolean modoDev = true;
+    private static final boolean modoDev = false;
     private static final String nomeDaBaseDeDados = "CENSO"; // Use "CENSO", "ESTACOES", "MUNICIPIO" ou "PROJECAO"
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
@@ -45,22 +45,23 @@ public class Main {
             ZipSecureFile.setMaxEntrySize(900_000_000);
             ZipSecureFile.setMinInflateRatio(0.0);
 
-            bancoSetup.criarEstruturaBanco();
-
             if (modoDev) {
+                bancoSetup.criarEstruturaBanco();
                 executarProcesso(nomeDaBaseDeDados, bancoDeDados, manipularArquivo, logger.getLoggerEventos(), logger.getLoggerErros());
             } else {
                 try {
+                    System.out.println("Ambiente configurado: " + Configuracoes.AMBIENTE.getValor());
                     if(!Configuracoes.AMBIENTE.getValor().equals("DEV")) {
                         S3Client s3Client = new S3Provider().getS3Client();
                         BaixarArquivoS3 baixarArquivoS3 = new BaixarArquivoS3(s3Client);
                         baixarArquivoS3.baixarArquivos();
+                        System.out.println("Arquivos baixados com sucesso do S3.");
                     }
-                    System.out.println("Arquivos baixados com sucesso do S3.");
                 } catch (IOException e) {
                     System.out.println("Erro ao baixar arquivos do S3: " + e.getMessage());
                     logger.getLoggerErros().gerarLog("❌ Erro ao baixar arquivos do S3. ❌");
                 }
+                bancoSetup.criarEstruturaBanco();
                 executarTodosProcessos(bancoDeDados, manipularArquivo, logger.getLoggerEventos());
             }
 
