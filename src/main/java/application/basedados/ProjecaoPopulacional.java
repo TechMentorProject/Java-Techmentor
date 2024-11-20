@@ -20,7 +20,7 @@ public class ProjecaoPopulacional extends BaseDeDados {
     int linhasInseridas = 0;
 
     public ProjecaoPopulacional(Logger logger) {
-        this.loggerInsercoes = logger;
+        this.logger = logger;
     }
 
     public void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException, ClassNotFoundException {
@@ -28,7 +28,7 @@ public class ProjecaoPopulacional extends BaseDeDados {
         bancoDeDados.truncarTabela("baseProjecaoPopulacional");
 
         System.out.println("Inserindo dados...");
-        loggerInsercoes.gerarLog("💻 Iniciando inserção de dados na tabela projecaoPopulacional... 💻");
+        logger.getLoggerEventos().gerarLog("💻 Iniciando inserção de dados na tabela projecaoPopulacional... 💻");
 
         String query = "INSERT INTO baseProjecaoPopulacional (fkEstado, ano, projecao) VALUES (?, ?, ?)";
         try (PreparedStatement preparedStatement = conexao.prepareStatement(query)) {

@@ -16,13 +16,13 @@ public class CensoIbge extends BaseDeDados {
     private Double densidadeDemografica;
 
     public CensoIbge(Logger logger) {
-        this.loggerInsercoes = logger;
+        this.logger = logger;
     }
 
     public void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException, ClassNotFoundException {
         bancoDeDados.validarConexao();
 
-        loggerInsercoes.gerarLog("💻 Iniciando inserção de dados na tabela censoIBGE... 💻");
+        logger.getLoggerEventos().gerarLog("Iniciando inserção de dados na tabela censoIBGE... ");
 
         String query = "INSERT INTO baseCensoIBGE (fkCidade, area, densidadeDemografica) VALUES (?, ?, ?)";
         try (PreparedStatement preparedStatement = conexao.prepareStatement(query)) {
@@ -31,7 +31,7 @@ public class CensoIbge extends BaseDeDados {
             preparedStatement.executeBatch();
             conexao.commit();
 
-            loggerInsercoes.gerarLog("✅ Inserção de dados concluída com sucesso! ✅");
+            logger.getLoggerInsercoes().gerarLog("Inserção de dados concluída com sucesso!");
         }
     }
 
@@ -51,9 +51,9 @@ public class CensoIbge extends BaseDeDados {
                 }
 
             } catch (SQLException e) {
-                loggerInsercoes.gerarLog("❌ Erro SQL ao processar linha " + i + ": " + e.getMessage());
+                logger.getLoggerErros().gerarLog("❌ Erro SQL ao processar linha " + i + ": " + e.getMessage());
             } catch (Exception e) {
-                loggerInsercoes.gerarLog("❌ Erro geral ao processar linha " + i + ": " + e.getMessage());
+                logger.getLoggerErros().gerarLog("❌ Erro geral ao processar linha " + i + ": " + e.getMessage());
             }
         }
     }
@@ -68,7 +68,7 @@ public class CensoIbge extends BaseDeDados {
             setArea(Double.parseDouble(buscarValorValido(valores, indiceColunas.get("Area"))));
             setDensidadeDemografica(Double.parseDouble(buscarValorValido(valores, indiceColunas.get("DensidadeDemografica"))));
         } catch (NumberFormatException e) {
-            loggerInsercoes.gerarLog("⚠️ Valores inválidos para conversão numérica: " + e.getMessage());
+            logger.gerarLog("⚠️ Valores inválidos para conversão numérica: " + e.getMessage());
             return false;
         }
 

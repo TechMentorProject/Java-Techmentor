@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
+import static com.mysql.cj.conf.PropertyKey.logger;
+
 public class Main {
 
     // Modo desenvolvimento e seleção do processo (defina o nome da base para teste)
@@ -35,8 +37,7 @@ public class Main {
         BancoInsert bancoInsert = new BancoInsert(bancoDeDados, baseDeDados);
         bancoDeDados.conectar();
         BancoSetup bancoSetup = new BancoSetup(bancoDeDados.getConexao(), bancoInsert, manipularArquivo);
-        Logger loggerEventos = Logger.getLoggerEventos();
-        Logger loggerErros = Logger.getLoggerErros();
+
 
         try {
             // Configura o limite de memória do Apache POI
@@ -47,7 +48,7 @@ public class Main {
             bancoSetup.criarEstruturaBanco();
 
             if (modoDev) {
-                executarProcesso(nomeDaBaseDeDados, bancoDeDados, manipularArquivo, loggerEventos, loggerErros);
+                executarProcesso(nomeDaBaseDeDados, bancoDeDados, manipularArquivo, logger.getLoggerEventos(), logger.getLoggerErros());
             } else {
                 try {
                     if(!Configuracoes.AMBIENTE.getValor().equals("DEV")) {
@@ -58,14 +59,14 @@ public class Main {
                     System.out.println("Arquivos baixados com sucesso do S3.");
                 } catch (IOException e) {
                     System.out.println("Erro ao baixar arquivos do S3: " + e.getMessage());
-                    loggerErros.gerarLog("❌ Erro ao baixar arquivos do S3. ❌");
+                    logger.getLoggerErros().gerarLog("❌ Erro ao baixar arquivos do S3. ❌");
                 }
-                executarTodosProcessos(bancoDeDados, manipularArquivo, loggerEventos);
+                executarTodosProcessos(bancoDeDados, manipularArquivo, logger.getLoggerEventos());
             }
 
         } catch (SQLException | ClassNotFoundException e) {
             System.out.println("Erro: " + e.getMessage());
-            loggerErros.gerarLog("❌ Erro durante o processamento. ❌");
+            logger.getLoggerErros().gerarLog("❌ Erro durante o processamento. ❌");
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
