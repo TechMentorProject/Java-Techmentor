@@ -25,7 +25,7 @@ public class Municipio extends BaseDeDados {
     private int linhasRemovidas = 0;
 
     public Municipio(Logger logger) {
-        this.loggerInsercoes = logger;
+        this.logger = logger;
     }
 
     public void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException, ClassNotFoundException {
@@ -33,7 +33,7 @@ public class Municipio extends BaseDeDados {
         bancoDeDados.truncarTabela("baseMunicipio");
 
         System.out.println("Inserindo dados...");
-        loggerInsercoes.gerarLog("💻 Iniciando inserção de dados na tabela municipio... 💻");
+        logger.getLoggerEventos().gerarLog("💻 Iniciando inserção de dados na tabela municipio... 💻");
 
         String query = "INSERT INTO baseMunicipio (ano, fkCidade, operadora, domiciliosCobertosPercentual, areaCobertaPercentual, tecnologia) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = conexao.prepareStatement(query)) {

@@ -11,10 +11,10 @@ import java.nio.file.Paths;
 
 public class AdicionarArquivoS3 {
 
-   private final S3Provider s3Provider;
+   private final S3Client s3Client;
 
-    public AdicionarArquivoS3(S3Provider s3Provider) {
-        this.s3Provider = s3Provider;
+    public AdicionarArquivoS3( S3Client s3Client) {
+        this.s3Client = s3Client;
     }
 
     public void adicionarLogsS3() {
@@ -25,7 +25,7 @@ public class AdicionarArquivoS3 {
 
         if (diretorio.exists() && diretorio.isDirectory()) {
             Path raizPath = Paths.get(diretorioLogs);
-            enviarArquivosRecursivamente(s3Provider.getS3Client(), diretorio, nomeBucket, raizPath);
+            enviarArquivosRecursivamente(s3Client, diretorio, nomeBucket, raizPath);
         } else {
             System.out.println("O diretório de logs não existe ou não é um diretório válido.");
         }
@@ -42,8 +42,7 @@ public class AdicionarArquivoS3 {
                         .key(key)
                         .build();
 
-                s3Provider.getS3Client().putObject(putObjectRequest, RequestBody.fromFile(arquivo));
-                System.out.println("Log enviado para o S3");
+                s3Client.putObject(putObjectRequest, RequestBody.fromFile(arquivo));
             } else if (arquivo.isDirectory()) {
                 enviarArquivosRecursivamente(s3Client, arquivo, nomeBucket, raizPath);
             }

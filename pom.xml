@@ -33,7 +33,7 @@
                     <createDependencyReducedPom>false</createDependencyReducedPom> <!-- Isso impede a criação de um POM reduzido -->
                     <transformers>
                         <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                            <mainClass>MainExecutor</mainClass> <!-- Altere para o nome correto da sua classe principal -->
+                            <mainClass>Main</mainClass> <!-- Altere para o nome correto da sua classe principal -->
                         </transformer>
                     </transformers>
                 </configuration>
