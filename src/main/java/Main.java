@@ -7,35 +7,37 @@ import infrastructure.database.BancoSetup;
 import infrastructure.logging.Logger;
 import infrastructure.processing.workbook.ManipularArquivo;
 import infrastructure.s3.BaixarArquivoS3;
+import infrastructure.s3.S3Provider;
 import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.util.IOUtils;
 import application.basedados.CensoIbge;
 import application.basedados.EstacoesSmp;
 import application.basedados.Municipio;
 import application.basedados.ProjecaoPopulacional;
+import software.amazon.awssdk.services.s3.S3Client;
 
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
+import static com.mysql.cj.conf.PropertyKey.logger;
+
 public class Main {
 
     // Modo desenvolvimento e seleção do processo (defina o nome da base para teste)
-    private static final boolean modoDev = true;
-    private static final String nomeDaBaseDeDados = "PROJECAO"; // Use "CENSO", "ESTACOES", "MUNICIPIO" ou "PROJECAO"
+    private static final boolean modoDev = false;
+    private static final String nomeDaBaseDeDados = "CENSO"; // Use "CENSO", "ESTACOES", "MUNICIPIO" ou "PROJECAO"
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
         BancoOperacoes bancoDeDados = new BancoOperacoes();
         ManipularArquivo manipularArquivo = new ManipularArquivo();
-        BaixarArquivoS3 baixarArquivoS3 = new BaixarArquivoS3();
         Logger logger = new Logger(Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor(), "insercoes");
         BaseDeDados baseDeDados = new Municipio(logger);
         BancoInsert bancoInsert = new BancoInsert(bancoDeDados, baseDeDados);
         bancoDeDados.conectar();
         BancoSetup bancoSetup = new BancoSetup(bancoDeDados.getConexao(), bancoInsert, manipularArquivo);
-        Logger loggerEventos = Logger.getLoggerEventos();
-        Logger loggerErros = Logger.getLoggerErros();
+
 
         try {
             // Configura o limite de memória do Apache POI
@@ -43,26 +45,29 @@ public class Main {
             ZipSecureFile.setMaxEntrySize(900_000_000);
             ZipSecureFile.setMinInflateRatio(0.0);
 
-            bancoSetup.criarEstruturaBanco();
-
             if (modoDev) {
-                executarProcesso(nomeDaBaseDeDados, bancoDeDados, manipularArquivo, loggerEventos, loggerErros);
+                bancoSetup.criarEstruturaBanco();
+                executarProcesso(nomeDaBaseDeDados, bancoDeDados, manipularArquivo, logger.getLoggerEventos(), logger.getLoggerErros());
             } else {
                 try {
+                    System.out.println("Ambiente configurado: " + Configuracoes.AMBIENTE.getValor());
                     if(!Configuracoes.AMBIENTE.getValor().equals("DEV")) {
+                        S3Client s3Client = new S3Provider().getS3Client();
+                        BaixarArquivoS3 baixarArquivoS3 = new BaixarArquivoS3(s3Client);
                         baixarArquivoS3.baixarArquivos();
+                        System.out.println("Arquivos baixados com sucesso do S3.");
                     }
-                    System.out.println("Arquivos baixados com sucesso do S3.");
                 } catch (IOException e) {
                     System.out.println("Erro ao baixar arquivos do S3: " + e.getMessage());
-                    loggerErros.gerarLog("❌ Erro ao baixar arquivos do S3. ❌");
+                    logger.getLoggerErros().gerarLog("❌ Erro ao baixar arquivos do S3. ❌");
                 }
-                executarTodosProcessos(bancoDeDados, manipularArquivo, loggerEventos);
+                bancoSetup.criarEstruturaBanco();
+                executarTodosProcessos(bancoDeDados, manipularArquivo, logger.getLoggerEventos());
             }
 
         } catch (SQLException | ClassNotFoundException e) {
             System.out.println("Erro: " + e.getMessage());
-            loggerErros.gerarLog("❌ Erro durante o processamento. ❌");
+            logger.getLoggerErros().gerarLog("❌ Erro durante o processamento. ❌");
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {

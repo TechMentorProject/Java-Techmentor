@@ -10,7 +10,7 @@ import java.util.List;
 
 public abstract class BaseDeDados {
 
-    protected Logger loggerInsercoes;
+    protected Logger logger;
 
     public abstract int obterIndiceColuna(List<List<Object>> dadosExcel, String nomeColuna);
     public abstract void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException, ClassNotFoundException;

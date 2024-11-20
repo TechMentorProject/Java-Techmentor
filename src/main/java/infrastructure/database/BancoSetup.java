@@ -83,7 +83,7 @@ public class BancoSetup {
                     ano INT,
                     projecao INT,
                     FOREIGN KEY (fkEstado) REFERENCES estado(nomeEstado)
-                )
+                  )
             """);
 
             stmt.executeUpdate("""
