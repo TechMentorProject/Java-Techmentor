@@ -26,8 +26,8 @@ import static com.mysql.cj.conf.PropertyKey.logger;
 public class Main {
 
     // Modo desenvolvimento e seleção do processo (defina o nome da base para teste)
-    private static final boolean modoDev = false;
-    private static final String nomeDaBaseDeDados = "CENSO"; // Use "CENSO", "ESTACOES", "MUNICIPIO" ou "PROJECAO"
+    private static final boolean modoDev = true;
+    private static final String nomeDaBaseDeDados = "MUNICIPIO"; // Use "CENSO", "ESTACOES", "MUNICIPIO" ou "PROJECAO"
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
         BancoOperacoes bancoDeDados = new BancoOperacoes();

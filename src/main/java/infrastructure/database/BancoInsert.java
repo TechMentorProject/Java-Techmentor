@@ -79,30 +79,48 @@ public class BancoInsert {
 
     public List<String> extrairCidades(List<List<Object>> dadosExcel) {
         Set<String> cidadesSet = new HashSet<>();
-        Integer indiceColuna = obterIndiceColuna(dadosExcel, "Município");
+        Integer indiceColunaCidadeEstado = obterIndiceColuna(dadosExcel, "Município");
 
         for (int i = 1; i < dadosExcel.size(); i++) {
             List<Object> linha = dadosExcel.get(i);
             List<String> valores = Arrays.stream(baseDeDados.processarLinha(linha)).toList();
-            String cidadeOriginal = valores.get(indiceColuna).trim(); // Manter formato original
 
-            if (cidadeOriginal.contains("�?")) {
+            String cidadeEstadoOriginal = valores.get(indiceColunaCidadeEstado).trim();
+
+            if (cidadeEstadoOriginal.contains("�?")) {
                 continue;
             }
-            cidadesSet.add(cidadeOriginal);
+
+            cidadesSet.add(cidadeEstadoOriginal);
         }
+
         return new ArrayList<>(cidadesSet);
     }
 
-    public void inserirCidades(List<String> cidades) {
+    public int obterIndiceColuna(List<List<Object>> dadosExcel, String nomeColuna) {
+        String cabecalho = dadosExcel.get(0).get(0).toString();
+        if (cabecalho.length() > 0 && cabecalho.charAt(0) == '\uFEFF') {
+            cabecalho = cabecalho.substring(1);
+        }
+
+        String[] colunas = cabecalho.split(";");
+        for (int i = 0; i < colunas.length; i++) {
+            if (colunas[i].trim().equalsIgnoreCase(nomeColuna)) {
+                return i;
+            }
+        }
+        throw new IllegalArgumentException("Coluna '" + nomeColuna + "' não encontrada no cabeçalho.");
+    }
+    public void inserirCidades(List<String> cidadesComSigla) {
         try {
             bancoOperacoes.validarConexao();
             Connection conexao = bancoOperacoes.getConexao();
             conexao.setAutoCommit(false);
 
-            for (String cidadeComSigla : cidades) {
+            for (String cidadeComSigla : cidadesComSigla) {
                 inserirCidadeComEstado(cidadeComSigla);
             }
+
             conexao.commit();
             System.out.println("Todas as cidades foram inseridas com sucesso!");
         } catch (Exception e) {
@@ -117,32 +135,24 @@ public class BancoInsert {
 
     public void inserirCidadeComEstado(String cidadeComSigla) {
         try {
-            if (cidadeComSigla.contains("�?")) {
-                return;
-            }
             String[] partes = cidadeComSigla.split(" - ");
-
             if (partes.length != 2) {
                 throw new IllegalArgumentException("Formato inválido. Esperado: 'Cidade - Sigla'");
             }
 
-            String cidadeParaInsercao = partes[0].trim();
-            if (cidadeParaInsercao.charAt(0) == '"') {
-                cidadeParaInsercao = cidadeParaInsercao.substring(1);
+            String nomeCidade = partes[0].trim();
+            String siglaEstado = limparSigla(partes[1].trim());
+
+            String nomeEstado = buscarFkEstado(siglaEstado);
+            if (nomeEstado == null) {
+                throw new SQLException("Estado com sigla '" + siglaEstado + "' não encontrado.");
             }
-            String cidadeParaComparacao = cidadeParaInsercao.toLowerCase();
-            String sigla = limparSigla(partes[1].trim());
 
-            if (!cidadeJaExiste(cidadeParaComparacao, sigla)) {
-                String nomeEstado = buscarFkEstado(sigla);
-                if (nomeEstado == null) {
-                    throw new SQLException("Estado com sigla '" + sigla + "' não encontrado.");
-                }
-
-                String sqlInsert = "INSERT IGNORE INTO cidade (nomeCidade, fkEstado) VALUES (?, ?)";
+            if (!cidadeJaExiste(nomeCidade, nomeEstado)) {
+                String sqlInsert = "INSERT INTO cidade (nomeCidade, fkEstado) VALUES (?, ?)";
                 try (PreparedStatement stmt = bancoOperacoes.getConexao().prepareStatement(sqlInsert)) {
-                    stmt.setString(1, cidadeParaInsercao);  // Insere apenas o nome da cidade
-                    stmt.setString(2, nomeEstado);          // Insere a chave estrangeira do estado
+                    stmt.setString(1, nomeCidade);
+                    stmt.setString(2, nomeEstado); // Utilizar nomeEstado como FK
                     stmt.executeUpdate();
                 }
             }
@@ -151,15 +161,16 @@ public class BancoInsert {
         }
     }
 
+
     private String limparSigla(String sigla) {
         return sigla.replaceAll("[^A-Za-z]", "").toUpperCase();
     }
 
-    private boolean cidadeJaExiste(String nomeCidade, String sigla) throws SQLException {
+    private boolean cidadeJaExiste(String nomeCidade, String nomeEstado) throws SQLException {
         String sqlVerifica = "SELECT COUNT(*) FROM cidade WHERE LOWER(nomeCidade) = LOWER(?) AND fkEstado = ?";
         try (PreparedStatement stmt = bancoOperacoes.getConexao().prepareStatement(sqlVerifica)) {
             stmt.setString(1, nomeCidade);
-            stmt.setString(2, sigla);
+            stmt.setString(2, nomeEstado); // Verificar pela FK nomeEstado
             try (ResultSet rs = stmt.executeQuery()) {
                 rs.next();
                 return rs.getInt(1) > 0;
@@ -167,19 +178,6 @@ public class BancoInsert {
         }
     }
 
-    private int obterIndiceColuna(List<List<Object>> dadosExcel, String nomeColuna) {
-        String cabecalho = dadosExcel.get(0).get(0).toString();
-        if (cabecalho.length() > 0 && cabecalho.charAt(0) == '\uFEFF') {
-            cabecalho = cabecalho.substring(1);
-        }
-        String[] colunas = cabecalho.split(";");
-        for (int i = 0; i < colunas.length; i++) {
-            if (colunas[i].trim().equalsIgnoreCase(nomeColuna)) {
-                return i;
-            }
-        }
-        throw new IllegalArgumentException("Coluna '" + nomeColuna + "' não encontrada no cabeçalho.");
-    }
     public String buscarFkEstado(String sigla) throws SQLException {
         String sql = "SELECT nomeEstado FROM estado WHERE sigla = ?";
 
@@ -193,4 +191,5 @@ public class BancoInsert {
         }
         return null;
     }
+
 }
