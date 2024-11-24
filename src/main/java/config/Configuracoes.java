@@ -11,7 +11,7 @@ public enum Configuracoes {
     NOME_BUCKET_S3("techmentor-bucket"),
     CAMINHO_DIRETORIO_RAIZ("/app/base-dados"),
     DIRETORIO_LOGS("app/logs/LogsTechMentor"),
-    AMBIENTE("PROD");
+    AMBIENTE("DEV");
 
     // Propriedade para armazenar o valor
     private final String valor;

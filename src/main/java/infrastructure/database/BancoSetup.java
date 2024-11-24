@@ -37,8 +37,9 @@ public class BancoSetup {
 
             stmt.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS cidade (
-                    nomeCidade VARCHAR(100) PRIMARY KEY,
+                    nomeCidade VARCHAR(100),
                     fkEstado VARCHAR(100),
+                    UNIQUE(nomeCidade, fkEstado),
                     FOREIGN KEY (fkEstado) REFERENCES estado(nomeEstado)
                 )
             """);
