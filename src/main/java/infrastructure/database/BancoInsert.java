@@ -169,6 +169,9 @@ public class BancoInsert {
     private boolean cidadeJaExiste(String nomeCidade, String nomeEstado) throws SQLException {
         String sqlVerifica = "SELECT COUNT(*) FROM cidade WHERE LOWER(nomeCidade) = LOWER(?) AND fkEstado = ?";
         try (PreparedStatement stmt = bancoOperacoes.getConexao().prepareStatement(sqlVerifica)) {
+            if (nomeCidade.startsWith("\"")) {
+                nomeCidade = nomeCidade.substring(1); // Remove a primeira aspa
+            }
             stmt.setString(1, nomeCidade);
             stmt.setString(2, nomeEstado); // Verificar pela FK nomeEstado
             try (ResultSet rs = stmt.executeQuery()) {
