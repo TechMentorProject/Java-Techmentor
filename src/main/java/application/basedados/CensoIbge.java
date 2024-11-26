@@ -4,6 +4,7 @@ import infrastructure.database.BancoOperacoes;
 import infrastructure.logging.Logger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -60,10 +61,14 @@ public class CensoIbge extends BaseDeDados {
 
     private boolean extrairValoresDoCenso(PreparedStatement preparedStatement, String[] valores, Map<String, Integer> indiceColunas) throws SQLException {
         setCidade(buscarValorValido(valores, indiceColunas.get("Municipio")));
+
         if (getCidade().isEmpty() || getCidade().matches("\\d+")) {
             return false;
         }
-
+        if (!cidadeExisteNoBanco(getCidade(), preparedStatement.getConnection())) {
+            logger.getLoggerErros().gerarLog("⚠️ Cidade não encontrada no banco: " + getCidade());
+            return false;
+        }
         try {
             setArea(Double.parseDouble(buscarValorValido(valores, indiceColunas.get("Area"))));
             setDensidadeDemografica(Double.parseDouble(buscarValorValido(valores, indiceColunas.get("DensidadeDemografica"))));
@@ -78,6 +83,19 @@ public class CensoIbge extends BaseDeDados {
 
         guardarValorParaOBanco(preparedStatement);
         return true;
+    }
+
+    private boolean cidadeExisteNoBanco(String cidade, Connection conexao) throws SQLException {
+        String query = "SELECT COUNT(1) FROM cidade WHERE nomeCidade = ?";
+        try (PreparedStatement stmt = conexao.prepareStatement(query)) {
+            stmt.setString(1, cidade.trim());
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        }
+        return false;
     }
 
     public void guardarValorParaOBanco(PreparedStatement preparedStatement) throws SQLException {

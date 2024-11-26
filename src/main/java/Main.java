@@ -26,8 +26,8 @@ import static com.mysql.cj.conf.PropertyKey.logger;
 public class Main {
 
     // Modo desenvolvimento e seleção do processo (defina o nome da base para teste)
-    private static final boolean modoDev = true;
-    private static final String nomeDaBaseDeDados = "MUNICIPIO"; // Use "CENSO", "ESTACOES", "MUNICIPIO" ou "PROJECAO"
+    private static final boolean modoDev = false;
+    private static final String nomeDaBaseDeDados = "CENSO"; // Use "CENSO", "ESTACOES", "MUNICIPIO" ou "PROJECAO"
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
         BancoOperacoes bancoDeDados = new BancoOperacoes();
@@ -105,22 +105,35 @@ public class Main {
         Logger logger = new Logger(Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor(), "insercoes");
         int linhasInseridas = 0;
         CensoIbge censo = new CensoIbge(logger);
-        String diretorioBase = Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor();
-        File pasta = new File(diretorioBase);
-        File[] arquivos = pasta.listFiles((dir, nome) -> nome.contains(NomeArquivo.CENSOIBGE.getNome()) && nome.endsWith(".xlsx"));
+        String diretorioBase = Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor() + "/Censo";
+        File pastaBase = new File(diretorioBase);
 
-        if (arquivos != null) {
-            bancoDeDados.truncarTabela("baseCensoIBGE");
+        if (!pastaBase.isDirectory()) {
+            throw new IllegalArgumentException("O caminho base não é um diretório válido: " + diretorioBase);
+        }
 
-            System.out.println("Inserindo dados no banco...");
-            for (File arquivo : arquivos) {
-                List<List<Object>> dados = manipularArquivo.lerPlanilha(arquivo.toString(), true);
+        bancoDeDados.truncarTabela("baseCensoIBGE");
+
+        System.out.println("Inserindo dados no banco...");
+        processarDiretorios(pastaBase, bancoDeDados, manipularArquivo, censo, loggerEventos, linhasInseridas);
+        System.out.println("Linhas inseridas: " + linhasInseridas);
+        System.out.println("Inserção da baseCensoIBGE concluída com sucesso!");
+    }
+
+    private static void processarDiretorios(File pasta, BancoOperacoes bancoDeDados, ManipularArquivo manipularArquivo, CensoIbge censo, Logger loggerEventos, int linhasInseridas) throws Exception {
+        File[] conteudo = pasta.listFiles();
+        if (conteudo == null) return;
+
+        for (File arquivoOuDiretorio : conteudo) {
+            if (arquivoOuDiretorio.isDirectory()) {
+                processarDiretorios(arquivoOuDiretorio, bancoDeDados, manipularArquivo, censo, loggerEventos, linhasInseridas);
+            } else if (arquivoOuDiretorio.isFile() && arquivoOuDiretorio.getName().contains(NomeArquivo.CENSOIBGE.getNome()) && arquivoOuDiretorio.getName().endsWith(".xlsx")) {
+                List<List<Object>> dados = manipularArquivo.lerPlanilha(arquivoOuDiretorio.toString(), true);
                 censo.inserirDadosComTratamento(dados, bancoDeDados.getConexao(), bancoDeDados);
                 linhasInseridas++;
             }
-            loggerEventos.gerarLog("✅ Dados de CENSO Inseridos com Sucesso! ✅");
-            System.out.println("Linhas inseridas: " + linhasInseridas);
-            System.out.println("Inserção da baseCensoIBGE concluída com sucesso!");        }
+        }
+        loggerEventos.gerarLog("✅ Diretório processado: " + pasta.getAbsolutePath());
     }
 
     private static void processarEstacoes(BancoOperacoes bancoDeDados, ManipularArquivo manipularArquivo, Logger loggerEventos) throws Exception {
