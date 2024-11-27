@@ -7,7 +7,7 @@ public enum Configuracoes {
     PORTA_BANCO("3306"),
     DATABASE("techmentor"),
     USUARIO("root"),
-    SENHA("root"),
+    SENHA("Kodol@te2403"),
     NOME_BUCKET_S3("techmentor-bucket"),
     CAMINHO_DIRETORIO_RAIZ("C:\\Users\\mathe\\Documents\\Techmentor\\Base de dados"),
     DIRETORIO_LOGS("app/logs/LogsTechMentor"),

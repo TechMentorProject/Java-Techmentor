@@ -117,6 +117,23 @@ public class BancoSetup {
                     FOREIGN KEY (fkNomeCargo) REFERENCES cargo(nomeCargo)
                 )
             """);
+
+            stmt.executeUpdate("""
+                CREATE TABLE IF NOT EXISTS notificacao (
+                    texto VARCHAR(150),
+                    dataCriacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    fkCnpj VARCHAR(20),
+                    FOREIGN KEY (fkCnpj) REFERENCES empresa(cnpj)
+                )
+            """);
+
+            stmt.executeUpdate("""
+               CREATE TABLE IF NOT EXISTS gemini (
+                   	idPrompt INT PRIMARY KEY AUTO_INCREMENT,
+                  	promptEnviado VARCHAR (300),
+                    respostaGemini VARCHAR (3000)
+                )
+            """);
             bancoInsert.inserirDadosIniciais();
             IOUtils.setByteArrayMaxOverride(250_000_000);
 
