@@ -78,6 +78,9 @@ public class EstacoesSmp extends BaseDeDados {
                     bancoDeDados.adicionarBatch(preparedStatement, i);
                     linhasInseridas++;
                 }
+                else {
+                    linhasRemovidas++;
+                }
             } catch (SQLException e) {
                 linhasRemovidas++;
             } catch (Exception e) {

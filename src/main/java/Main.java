@@ -24,8 +24,9 @@ import java.util.List;
 public class Main {
 
     // Modo desenvolvimento e seleção do processo (defina o nome da base para teste)
-    private static final boolean modoDev = false;
-    private static final String nomeDaBaseDeDados = "CENSO"; // Use "CENSO", "ESTACOES", "MUNICIPIO" ou "PROJECAO"
+    private static final boolean modoDev = true;
+    private static Integer linhasCensoIbge = 0;
+    private static final String nomeDaBaseDeDados = "ESTACOES"; // Use "CENSO", "ESTACOES", "MUNICIPIO" ou "PROJECAO"
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
         BancoOperacoes bancoDeDados = new BancoOperacoes();
@@ -101,7 +102,6 @@ public class Main {
 
     private static void processarCenso(BancoOperacoes bancoDeDados, ManipularArquivo manipularArquivo, Logger loggerEventos) throws Exception {
         Logger logger = new Logger(Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor(), "insercoes");
-        int linhasInseridas = 0;
         CensoIbge censo = new CensoIbge(logger);
         String diretorioBase = Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor() + "/Censo";
         File pastaBase = new File(diretorioBase);
@@ -113,22 +113,22 @@ public class Main {
         bancoDeDados.truncarTabela("baseCensoIBGE");
 
         System.out.println("Inserindo dados no banco...");
-        processarDiretorios(pastaBase, bancoDeDados, manipularArquivo, censo, loggerEventos, linhasInseridas);
-        System.out.println("Linhas inseridas: " + linhasInseridas);
+        processarDiretorios(pastaBase, bancoDeDados, manipularArquivo, censo, loggerEventos);
+        System.out.println("Linhas inseridas: " + linhasCensoIbge);
         System.out.println("Inserção da baseCensoIBGE concluída com sucesso!");
-    }
 
-    private static void processarDiretorios(File pasta, BancoOperacoes bancoDeDados, ManipularArquivo manipularArquivo, CensoIbge censo, Logger loggerEventos, int linhasInseridas) throws Exception {
+    }
+    private static void processarDiretorios(File pasta, BancoOperacoes bancoDeDados, ManipularArquivo manipularArquivo, CensoIbge censo, Logger loggerEventos) throws Exception {
         File[] conteudo = pasta.listFiles();
         if (conteudo == null) return;
 
         for (File arquivoOuDiretorio : conteudo) {
             if (arquivoOuDiretorio.isDirectory()) {
-                processarDiretorios(arquivoOuDiretorio, bancoDeDados, manipularArquivo, censo, loggerEventos, linhasInseridas);
+                processarDiretorios(arquivoOuDiretorio, bancoDeDados, manipularArquivo, censo, loggerEventos);
             } else if (arquivoOuDiretorio.isFile() && arquivoOuDiretorio.getName().contains(NomeArquivo.CENSOIBGE.getNome()) && arquivoOuDiretorio.getName().endsWith(".xlsx")) {
                 List<List<Object>> dados = manipularArquivo.lerPlanilha(arquivoOuDiretorio.toString(), true);
                 censo.inserirDadosComTratamento(dados, bancoDeDados.getConexao(), bancoDeDados);
-                linhasInseridas++;
+                linhasCensoIbge++;
             }
         }
         loggerEventos.gerarLog("✅ Diretório processado: " + pasta.getAbsolutePath());
