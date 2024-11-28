@@ -105,6 +105,7 @@ public class App {
             preparedStatement.setString(2, resposta);
 
             int rowsInserted = preparedStatement.executeUpdate();
+            conexao.commit();
             if (rowsInserted > 0) {
                 System.out.println("Dados inseridos no banco com sucesso!");
             }
