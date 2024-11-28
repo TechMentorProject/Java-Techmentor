@@ -27,8 +27,6 @@ public class BaixarArquivoS3 {
         String nomeObjeto;
         Path caminhoObjeto;
 
-
-
         int arquivosRemovidos = 0;
         int arquivosBaixados = 0;
 
@@ -36,12 +34,18 @@ public class BaixarArquivoS3 {
         List<S3Object> objects = s3Client.listObjects(listObjects).contents();
 
         for (S3Object object : objects) {
+            nomeObjeto = object.key();
+
+            if (nomeObjeto.equals("logs") || nomeObjeto.startsWith("logs/")) {
+                System.out.println("Ignorando: " + nomeObjeto);
+                continue;
+            }
+
             GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                     .bucket(nomeBucket)
-                    .key(object.key())
+                    .key(nomeObjeto)
                     .build();
 
-            nomeObjeto = object.key();
             caminhoObjeto = Paths.get(caminhoArquivo, nomeObjeto);
 
             InputStream objectContent = s3Client.getObject(getObjectRequest, ResponseTransformer.toInputStream());
