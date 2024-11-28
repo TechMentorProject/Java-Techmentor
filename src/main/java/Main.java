@@ -6,7 +6,7 @@ import infrastructure.database.BancoOperacoes;
 import infrastructure.database.BancoSetup;
 import infrastructure.logging.Logger;
 import infrastructure.processing.workbook.ManipularArquivo;
-import infrastructure.s3.BaixarArquivoS3;
+import infrastructure.s3.OperacoesS3;
 import infrastructure.s3.S3Provider;
 import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.util.IOUtils;
@@ -21,13 +21,12 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-import static com.mysql.cj.conf.PropertyKey.logger;
-
 public class Main {
 
     // Modo desenvolvimento e seleção do processo (defina o nome da base para teste)
-    private static final boolean modoDev = false;
-    private static final String nomeDaBaseDeDados = "CENSO"; // Use "CENSO", "ESTACOES", "MUNICIPIO" ou "PROJECAO"
+    private static final boolean modoDev = true;
+    private static Integer linhasCensoIbge = 0;
+    private static final String nomeDaBaseDeDados = "ESTACOES"; // Use "CENSO", "ESTACOES", "MUNICIPIO" ou "PROJECAO"
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
         BancoOperacoes bancoDeDados = new BancoOperacoes();
@@ -53,8 +52,8 @@ public class Main {
                     System.out.println("Ambiente configurado: " + Configuracoes.AMBIENTE.getValor());
                     if(!Configuracoes.AMBIENTE.getValor().equals("DEV")) {
                         S3Client s3Client = new S3Provider().getS3Client();
-                        BaixarArquivoS3 baixarArquivoS3 = new BaixarArquivoS3(s3Client);
-                        baixarArquivoS3.baixarArquivos();
+                        OperacoesS3 operacoesS3 = new OperacoesS3(s3Client);
+                        operacoesS3.baixarArquivos();
                         System.out.println("Arquivos baixados com sucesso do S3.");
                     }
                 } catch (IOException e) {
@@ -103,7 +102,6 @@ public class Main {
 
     private static void processarCenso(BancoOperacoes bancoDeDados, ManipularArquivo manipularArquivo, Logger loggerEventos) throws Exception {
         Logger logger = new Logger(Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor(), "insercoes");
-        int linhasInseridas = 0;
         CensoIbge censo = new CensoIbge(logger);
         String diretorioBase = Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor() + "/Censo";
         File pastaBase = new File(diretorioBase);
@@ -115,22 +113,22 @@ public class Main {
         bancoDeDados.truncarTabela("baseCensoIBGE");
 
         System.out.println("Inserindo dados no banco...");
-        processarDiretorios(pastaBase, bancoDeDados, manipularArquivo, censo, loggerEventos, linhasInseridas);
-        System.out.println("Linhas inseridas: " + linhasInseridas);
+        processarDiretorios(pastaBase, bancoDeDados, manipularArquivo, censo, loggerEventos);
+        System.out.println("Linhas inseridas: " + linhasCensoIbge);
         System.out.println("Inserção da baseCensoIBGE concluída com sucesso!");
-    }
 
-    private static void processarDiretorios(File pasta, BancoOperacoes bancoDeDados, ManipularArquivo manipularArquivo, CensoIbge censo, Logger loggerEventos, int linhasInseridas) throws Exception {
+    }
+    private static void processarDiretorios(File pasta, BancoOperacoes bancoDeDados, ManipularArquivo manipularArquivo, CensoIbge censo, Logger loggerEventos) throws Exception {
         File[] conteudo = pasta.listFiles();
         if (conteudo == null) return;
 
         for (File arquivoOuDiretorio : conteudo) {
             if (arquivoOuDiretorio.isDirectory()) {
-                processarDiretorios(arquivoOuDiretorio, bancoDeDados, manipularArquivo, censo, loggerEventos, linhasInseridas);
+                processarDiretorios(arquivoOuDiretorio, bancoDeDados, manipularArquivo, censo, loggerEventos);
             } else if (arquivoOuDiretorio.isFile() && arquivoOuDiretorio.getName().contains(NomeArquivo.CENSOIBGE.getNome()) && arquivoOuDiretorio.getName().endsWith(".xlsx")) {
                 List<List<Object>> dados = manipularArquivo.lerPlanilha(arquivoOuDiretorio.toString(), true);
                 censo.inserirDadosComTratamento(dados, bancoDeDados.getConexao(), bancoDeDados);
-                linhasInseridas++;
+                linhasCensoIbge++;
             }
         }
         loggerEventos.gerarLog("✅ Diretório processado: " + pasta.getAbsolutePath());
