@@ -6,7 +6,7 @@ import infrastructure.database.BancoOperacoes;
 import infrastructure.database.BancoSetup;
 import infrastructure.logging.Logger;
 import infrastructure.processing.workbook.ManipularArquivo;
-import infrastructure.s3.BaixarArquivoS3;
+import infrastructure.s3.OperacoesS3;
 import infrastructure.s3.S3Provider;
 import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.util.IOUtils;
@@ -20,8 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
-
-import static com.mysql.cj.conf.PropertyKey.logger;
 
 public class Main {
 
@@ -53,8 +51,8 @@ public class Main {
                     System.out.println("Ambiente configurado: " + Configuracoes.AMBIENTE.getValor());
                     if(!Configuracoes.AMBIENTE.getValor().equals("DEV")) {
                         S3Client s3Client = new S3Provider().getS3Client();
-                        BaixarArquivoS3 baixarArquivoS3 = new BaixarArquivoS3(s3Client);
-                        baixarArquivoS3.baixarArquivos();
+                        OperacoesS3 operacoesS3 = new OperacoesS3(s3Client);
+                        operacoesS3.baixarArquivos();
                         System.out.println("Arquivos baixados com sucesso do S3.");
                     }
                 } catch (IOException e) {

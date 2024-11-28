@@ -1,7 +1,7 @@
 package infrastructure.logging;
 
 import config.Configuracoes;
-import infrastructure.s3.AdicionarArquivoS3;
+import infrastructure.s3.OperacoesS3;
 import infrastructure.s3.S3Provider;
 import software.amazon.awssdk.services.s3.S3Client;
 
@@ -65,8 +65,8 @@ public class Logger {
 
             if (!Configuracoes.AMBIENTE.getValor().equals("DEV")) {
                 S3Client s3Client = new S3Provider().getS3Client();
-                AdicionarArquivoS3 adicionarArquivoS3 = new AdicionarArquivoS3(s3Client);
-                adicionarArquivoS3.adicionarLogsS3();
+                OperacoesS3 operacoesS3 = new OperacoesS3(s3Client);
+                operacoesS3.adicionarLogsS3();
             }
         } catch (IOException e) {
             e.printStackTrace();
