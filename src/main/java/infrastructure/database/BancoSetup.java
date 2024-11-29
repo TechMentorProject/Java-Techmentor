@@ -130,6 +130,7 @@ public class BancoSetup {
                      fkCnpj VARCHAR(20),
                      FOREIGN KEY (fkCnpj) REFERENCES empresa(cnpj));
                     """);
+
             bancoInsert.inserirDadosIniciais();
             IOUtils.setByteArrayMaxOverride(250_000_000);
 
