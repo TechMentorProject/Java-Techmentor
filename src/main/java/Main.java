@@ -25,8 +25,7 @@ public class Main {
 
     // Modo desenvolvimento e seleção do processo (defina o nome da base para teste)
     private static final boolean modoDev = true;
-    private static Integer linhasCensoIbge = 0;
-    private static final String nomeDaBaseDeDados = "ESTACOES"; // Use "CENSO", "ESTACOES", "MUNICIPIO" ou "PROJECAO"
+    private static final String nomeDaBaseDeDados = "CENSO"; // Use "CENSO", "ESTACOES", "MUNICIPIO" ou "PROJECAO"
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
         BancoOperacoes bancoDeDados = new BancoOperacoes();
@@ -114,7 +113,8 @@ public class Main {
 
         System.out.println("Inserindo dados no banco...");
         processarDiretorios(pastaBase, bancoDeDados, manipularArquivo, censo, loggerEventos);
-        System.out.println("Linhas inseridas: " + linhasCensoIbge);
+        System.out.println("Linhas inseridas: " + CensoIbge.getLinhasInseridasCenso());
+        System.out.println("Linhas removidas: " + CensoIbge.getLinhasNaoInseridasCenso());
         System.out.println("Inserção da baseCensoIBGE concluída com sucesso!");
 
     }
@@ -128,7 +128,6 @@ public class Main {
             } else if (arquivoOuDiretorio.isFile() && arquivoOuDiretorio.getName().contains(NomeArquivo.CENSOIBGE.getNome()) && arquivoOuDiretorio.getName().endsWith(".xlsx")) {
                 List<List<Object>> dados = manipularArquivo.lerPlanilha(arquivoOuDiretorio.toString(), true);
                 censo.inserirDadosComTratamento(dados, bancoDeDados.getConexao(), bancoDeDados);
-                linhasCensoIbge++;
             }
         }
         loggerEventos.gerarLog("✅ Diretório processado: " + pasta.getAbsolutePath());
