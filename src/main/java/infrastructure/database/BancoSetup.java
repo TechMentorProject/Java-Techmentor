@@ -93,7 +93,8 @@ public class BancoSetup {
                     nomeEmpresa VARCHAR(100) NOT NULL,
                     nomeResponsavel VARCHAR(100),
                     emailResponsavel VARCHAR(100) NOT NULL,
-                    senha VARCHAR(100) NOT NULL
+                    senha VARCHAR(100) NOT NULL,
+                    webhook VARCHAR(100)
                 )
             """);
 
@@ -112,12 +113,23 @@ public class BancoSetup {
                     email VARCHAR(100),
                     nomeUsuario VARCHAR(100),
                     senha VARCHAR(100),
+                    imagemPerfil VARCHAR(100),
                     fkCnpj VARCHAR(20),
                     fkNomeCargo VARCHAR(100),
                     FOREIGN KEY (fkCnpj) REFERENCES empresa(cnpj),
                     FOREIGN KEY (fkNomeCargo) REFERENCES cargo(nomeCargo)
                 )
             """);
+
+            stmt.executeUpdate("""
+                 CREATE TABLE IF NOT EXISTS notificacao (
+                     texto VARCHAR(150),
+                     dataCriacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+                     paraEmpresa bool,
+                     statusEnviada bool,
+                     fkCnpj VARCHAR(20),
+                     FOREIGN KEY (fkCnpj) REFERENCES empresa(cnpj));
+                    """);
             bancoInsert.inserirDadosIniciais();
             IOUtils.setByteArrayMaxOverride(250_000_000);
 
