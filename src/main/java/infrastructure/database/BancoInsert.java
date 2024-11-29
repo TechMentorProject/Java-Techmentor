@@ -90,10 +90,9 @@ public class BancoInsert {
             if (cidadeEstadoOriginal.contains("�?")) {
                 continue;
             }
-
+            
             cidadesSet.add(cidadeEstadoOriginal);
         }
-
         return new ArrayList<>(cidadesSet);
     }
 
@@ -151,8 +150,11 @@ public class BancoInsert {
             if (!cidadeJaExiste(nomeCidade, nomeEstado)) {
                 String sqlInsert = "INSERT INTO cidade (nomeCidade, fkEstado) VALUES (?, ?)";
                 try (PreparedStatement stmt = bancoOperacoes.getConexao().prepareStatement(sqlInsert)) {
+                    if (nomeCidade.startsWith("\"")) {
+                        nomeCidade = nomeCidade.substring(1);
+                    }
                     stmt.setString(1, nomeCidade);
-                    stmt.setString(2, nomeEstado); // Utilizar nomeEstado como FK
+                    stmt.setString(2, nomeEstado);
                     stmt.executeUpdate();
                 }
             }
@@ -160,7 +162,6 @@ public class BancoInsert {
             System.err.println("Erro ao inserir cidade com estado: " + e.getMessage());
         }
     }
-
 
     private String limparSigla(String sigla) {
         return sigla.replaceAll("[^A-Za-z]", "").toUpperCase();
@@ -170,10 +171,10 @@ public class BancoInsert {
         String sqlVerifica = "SELECT COUNT(*) FROM cidade WHERE LOWER(nomeCidade) = LOWER(?) AND fkEstado = ?";
         try (PreparedStatement stmt = bancoOperacoes.getConexao().prepareStatement(sqlVerifica)) {
             if (nomeCidade.startsWith("\"")) {
-                nomeCidade = nomeCidade.substring(1); // Remove a primeira aspa
+                nomeCidade = nomeCidade.substring(1);
             }
             stmt.setString(1, nomeCidade);
-            stmt.setString(2, nomeEstado); // Verificar pela FK nomeEstado
+            stmt.setString(2, nomeEstado);
             try (ResultSet rs = stmt.executeQuery()) {
                 rs.next();
                 return rs.getInt(1) > 0;
@@ -194,5 +195,4 @@ public class BancoInsert {
         }
         return null;
     }
-
 }
