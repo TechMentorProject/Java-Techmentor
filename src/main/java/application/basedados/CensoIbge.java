@@ -15,6 +15,8 @@ public class CensoIbge extends BaseDeDados {
     private String cidade;
     private Double area;
     private Double densidadeDemografica;
+    private static Integer linhasNaoInseridasCenso = 0;
+    private static Integer linhasInseridasCenso = 0;
 
     public CensoIbge(Logger logger) {
         this.logger = logger;
@@ -49,6 +51,9 @@ public class CensoIbge extends BaseDeDados {
             try {
                 if (valores.length >= 3 && extrairValoresDoCenso(preparedStatement, valores, indiceColunas)) {
                     preparedStatement.addBatch();
+                    linhasInseridasCenso ++;
+                } else {
+                    linhasNaoInseridasCenso ++;
                 }
 
             } catch (SQLException e) {
@@ -134,4 +139,12 @@ public class CensoIbge extends BaseDeDados {
     public Double getDensidadeDemografica() { return densidadeDemografica; }
 
     public void setDensidadeDemografica(Double densidadeDemografica) { this.densidadeDemografica = densidadeDemografica; }
+
+    public static Integer getLinhasNaoInseridasCenso() {
+        return linhasNaoInseridasCenso;
+    }
+
+    public static Integer getLinhasInseridasCenso() {
+        return linhasInseridasCenso;
+    }
 }
