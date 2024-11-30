@@ -31,7 +31,9 @@ public class BancoSetup {
                 CREATE TABLE IF NOT EXISTS estado (
                     nomeEstado VARCHAR(100) PRIMARY KEY,
                     sigla char(2),
-                    regiao VARCHAR(100)
+                    regiao VARCHAR(100),
+                    qtdAntenas int,
+                    maiorOperadora varchar(100)
                 )
             """);
 
