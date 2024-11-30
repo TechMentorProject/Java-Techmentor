@@ -96,6 +96,7 @@ public class BancoSetup {
                     nomeResponsavel VARCHAR(100),
                     emailResponsavel VARCHAR(100) NOT NULL,
                     senha VARCHAR(100) NOT NULL,
+                    imagemPerfil VARCHAR(255),
                     webhook VARCHAR(100)
                 )
             """);
@@ -115,7 +116,7 @@ public class BancoSetup {
                     email VARCHAR(100),
                     nomeUsuario VARCHAR(100),
                     senha VARCHAR(100),
-                    imagemPerfil VARCHAR(100),
+                    imagemPerfil VARCHAR(255)
                     fkCnpj VARCHAR(20),
                     fkNomeCargo VARCHAR(100),
                     FOREIGN KEY (fkCnpj) REFERENCES empresa(cnpj),
