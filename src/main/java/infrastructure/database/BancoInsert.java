@@ -67,8 +67,6 @@ public class BancoInsert {
                     }
                 }
             } catch (SQLException e) {
-                System.err.println("Erro ao inserir dados iniciais: " + e.getMessage());
-                throw e;
             }
         } catch (Exception e) {
             System.err.println("Erro inesperado: " + e.getMessage());
@@ -159,7 +157,6 @@ public class BancoInsert {
                 }
             }
         } catch (Exception e) {
-            System.err.println("Erro ao inserir cidade com estado: " + e.getMessage());
         }
     }
 

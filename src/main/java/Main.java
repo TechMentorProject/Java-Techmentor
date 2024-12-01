@@ -103,7 +103,6 @@ public class Main {
     }
 
     private static void processarCenso(BancoOperacoes bancoDeDados, ManipularArquivo manipularArquivo, Logger loggerEventos) throws Exception {
-        Logger logger = new Logger(Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor(), "insercoes");
         CensoIbge censo = new CensoIbge();
         String diretorioBase = Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor() + "/Censo";
         File pastaBase = new File(diretorioBase);
