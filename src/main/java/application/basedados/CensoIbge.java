@@ -1,7 +1,6 @@
 package application.basedados;
 import application.BaseDeDados;
 import infrastructure.database.BancoOperacoes;
-import infrastructure.logging.Logger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,14 +17,8 @@ public class CensoIbge extends BaseDeDados {
     private static Integer linhasNaoInseridasCenso = 0;
     private static Integer linhasInseridasCenso = 0;
 
-    public CensoIbge(Logger logger) {
-        this.logger = logger;
-    }
-
     public void inserirDadosComTratamento(List<List<Object>> dadosExcel, Connection conexao, BancoOperacoes bancoDeDados) throws SQLException, ClassNotFoundException {
         bancoDeDados.validarConexao();
-
-        logger.getLoggerEventos().gerarLog("Iniciando inserção de dados na tabela censoIBGE... ");
 
         String query = "INSERT INTO baseCensoIBGE (fkCidade, area, densidadeDemografica) VALUES (?, ?, ?)";
         try (PreparedStatement preparedStatement = conexao.prepareStatement(query)) {
@@ -34,7 +27,6 @@ public class CensoIbge extends BaseDeDados {
             preparedStatement.executeBatch();
             conexao.commit();
 
-            logger.getLoggerInsercoes().gerarLog("Inserção de dados concluída com sucesso!");
         }
     }
 
@@ -57,9 +49,9 @@ public class CensoIbge extends BaseDeDados {
                 }
 
             } catch (SQLException e) {
-                logger.getLoggerErros().gerarLog("❌ Erro SQL ao processar linha " + i + ": " + e.getMessage());
+                System.out.println("❌ Erro SQL ao processar o arquivo: " + e.getMessage());
             } catch (Exception e) {
-                logger.getLoggerErros().gerarLog("❌ Erro geral ao processar linha " + i + ": " + e.getMessage());
+                System.out.println("❌ Erro geral ao processar o arquivo: " + e.getMessage());
             }
         }
     }
@@ -71,14 +63,12 @@ public class CensoIbge extends BaseDeDados {
             return false;
         }
         if (!cidadeExisteNoBanco(getCidade(), preparedStatement.getConnection())) {
-            logger.getLoggerErros().gerarLog("⚠️ Cidade não encontrada no banco: " + getCidade());
             return false;
         }
         try {
             setArea(Double.parseDouble(buscarValorValido(valores, indiceColunas.get("Area"))));
             setDensidadeDemografica(Double.parseDouble(buscarValorValido(valores, indiceColunas.get("DensidadeDemografica"))));
         } catch (NumberFormatException e) {
-            logger.gerarLog("⚠️ Valores inválidos para conversão numérica: " + e.getMessage());
             return false;
         }
 
