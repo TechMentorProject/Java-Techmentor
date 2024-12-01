@@ -153,7 +153,6 @@ public class App {
     private static List<String> gerarPrompts(Connection conexao) throws SQLException {
         List<String> prompts = new ArrayList<>();
 
-        // Cria declarações de statement para consultar as tabelas do banco de dados
         try (
                 Statement stmtEstado = conexao.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
                 Statement stmtCidade = conexao.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
@@ -166,40 +165,60 @@ public class App {
                 ResultSet rsBaseProjecao = stmtBaseProjecao.executeQuery("SELECT * FROM baseProjecaoPopulacional");
                 ResultSet rsEstacoesSMP = stmtEstacoesSMP.executeQuery("SELECT * FROM baseEstacoesSMP");
         ) {
-            // Conta o número de linhas em cada tabela
-            Integer countEstado = contarLinhas(rsEstado);
-            Integer countCidade = contarLinhas(rsCidade);
-            Integer countBaseMunicipio = contarLinhas(rsBaseMunicipio);
-            Integer countBaseProjecao = contarLinhas(rsBaseProjecao);
-            Integer countEstacoesSMP = contarLinhas(rsEstacoesSMP);
-
-            // Exibe o número de linhas em cada tabela
-            System.out.println("Linhas retornadas:");
-            System.out.println("Tabela estado: " + countEstado);
-            System.out.println("Tabela cidade: " + countCidade);
-            System.out.println("Tabela baseMunicipio: " + countBaseMunicipio);
-            System.out.println("Tabela baseProjecaoPopulacional: " + countBaseProjecao);
-            System.out.println("Tabela baseEstacoesSMP: " + countEstacoesSMP);
-
-            // Gera prompts baseados nas informações das tabelas
+            // Prompts gerados
             while (rsEstado.next() && rsCidade.next() && rsBaseMunicipio.next() && rsBaseProjecao.next() && rsEstacoesSMP.next()) {
+
+                // Prompt 1: Menor conectividade por região
                 String regiao = rsEstado.getString("regiao");
                 String estado = rsEstado.getString("nomeEstado");
                 String cidade = rsCidade.getString("nomeCidade");
-                String crescimento = rsBaseProjecao.getInt("projecao") + " habitantes";
-                String conectividade = rsBaseMunicipio.getDouble("domiciliosCobertosPercentual") + "%";
-
-                String prompt = String.format(
-                        "Menor conectividade dentro da região %s do estado %s e cidade %s, com maior crescimento populacional (%s) e pouca conectividade (%s).",
-                        regiao, estado, cidade, crescimento, conectividade
+                Double conectividade = rsBaseMunicipio.getDouble("domiciliosCobertosPercentual");
+                String prompt1 = String.format(
+                        "A região %s do estado %s tem baixa conectividade na cidade %s com apenas %.2f%% de cobertura.",
+                        regiao, estado, cidade, conectividade
                 );
-                prompts.add(prompt);
+                prompts.add(prompt1);
+
+                // Prompt 2: Crescimento populacional e conectividade
+                Integer crescimentoPopulacional = rsBaseProjecao.getInt("projecao");
+                String prompt2 = String.format(
+                        "A cidade %s no estado %s está projetada para crescer em %d habitantes e possui conectividade de %.2f%%.",
+                        cidade, estado, crescimentoPopulacional, conectividade
+                );
+                prompts.add(prompt2);
+
+                // Prompt 3: Comparação de tecnologias (4G x 5G)
+                String tecnologia = rsEstacoesSMP.getString("tecnologia");
+                String operadora = rsEstacoesSMP.getString("operadora");
+                String prompt3 = String.format(
+                        "A cidade %s no estado %s possui infraestrutura de %s fornecida pela operadora %s.",
+                        cidade, estado, tecnologia, operadora
+                );
+                prompts.add(prompt3);
+
+                // Prompt 4: Menor número de operadoras
+                Integer qtdOperadoras = rsEstacoesSMP.getInt("idEstacoesSMP");
+                String prompt4 = String.format(
+                        "A cidade %s no estado %s apresenta o menor número de operadoras atuantes, com apenas %d estações.",
+                        cidade, estado, qtdOperadoras
+                );
+                prompts.add(prompt4);
+
+                // Prompt 5: Decisão de investimento em estados com baixa conectividade
+                if (conectividade < 30) {
+                    String prompt5 = String.format(
+                            "O estado %s, cidade %s, com %.2f%% de conectividade, deve ser considerado para investimentos futuros.",
+                            estado, cidade, conectividade
+                    );
+                    prompts.add(prompt5);
+                }
             }
         }
 
         return prompts;
     }
-    
+
+
     // Metodo para contar o número de linhas em um ResultSet
     private static Integer contarLinhas(ResultSet resultSet) throws SQLException {
         Integer count = 0;
