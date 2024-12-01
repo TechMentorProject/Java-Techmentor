@@ -6,6 +6,7 @@ import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,8 +15,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
-public class OperacoesS3 {
+public class OperacoesS3 implements Closeable {
 
     private final S3Client s3Client;
 
@@ -26,45 +30,67 @@ public class OperacoesS3 {
     public void baixarArquivos() throws IOException {
         String nomeBucket = Configuracoes.NOME_BUCKET_S3.getValor();
         String caminhoArquivo = Configuracoes.CAMINHO_DIRETORIO_RAIZ.getValor();
-        String nomeObjeto;
-        Path caminhoObjeto;
 
-        int arquivosRemovidos = 0;
-        int arquivosBaixados = 0;
+        String continuationToken = null;
+        ExecutorService executor = Executors.newFixedThreadPool(10); // 10 threads
 
-        ListObjectsRequest listObjects = ListObjectsRequest.builder().bucket(nomeBucket).build();
-        List<S3Object> objects = s3Client.listObjects(listObjects).contents();
-
-        for (S3Object object : objects) {
-            nomeObjeto = object.key();
-
-            if (nomeObjeto.equals("logs") || nomeObjeto.startsWith("logs/")) {
-                System.out.println("Ignorando: " + nomeObjeto);
-                continue;
-            }
-
-            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+        do {
+            ListObjectsV2Request.Builder listObjectsBuilder = ListObjectsV2Request.builder()
                     .bucket(nomeBucket)
-                    .key(nomeObjeto)
-                    .build();
+                    .maxKeys(1000);
 
-            caminhoObjeto = Paths.get(caminhoArquivo, nomeObjeto);
-
-            try (InputStream objectContent = s3Client.getObject(getObjectRequest, ResponseTransformer.toInputStream())) {
-                if (Files.exists(caminhoObjeto)) {
-                    Files.delete(caminhoObjeto);
-                    arquivosRemovidos++;
-                }
-
-                Files.createDirectories(caminhoObjeto.getParent());
-                Files.copy(objectContent, caminhoObjeto, StandardCopyOption.REPLACE_EXISTING);
-                arquivosBaixados++;
+            if (continuationToken != null) {
+                listObjectsBuilder.continuationToken(continuationToken);
             }
-        }
 
-        System.out.println("-----------------------------------------");
-        System.out.println("S3 - Total de arquivos removidos: " + arquivosRemovidos);
-        System.out.println("S3 - Total de arquivos baixados: " + arquivosBaixados);
+            ListObjectsV2Response listObjectsResponse = s3Client.listObjectsV2(listObjectsBuilder.build());
+            continuationToken = listObjectsResponse.nextContinuationToken();
+
+            List<S3Object> objects = listObjectsResponse.contents();
+
+            for (S3Object object : objects) {
+                executor.submit(() -> {
+                    try {
+                        String nomeObjeto = object.key();
+
+                        // Ignorar diretórios chamados "logs" ou seus conteúdos
+                        if (nomeObjeto.startsWith("logs/")) {
+                            return; // Ignorar objetos ou diretórios dentro de "logs/"
+                        }
+
+                        // Filtrar apenas arquivos com extensão ".xlsx"
+                        if (!nomeObjeto.endsWith(".xlsx")) {
+                            return; // Ignorar arquivos que não sejam ".xlsx"
+                        }
+
+                        Path caminhoObjeto = Paths.get(caminhoArquivo, nomeObjeto);
+
+                        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                                .bucket(nomeBucket)
+                                .key(nomeObjeto)
+                                .build();
+
+                        try (InputStream objectContent = s3Client.getObject(getObjectRequest, ResponseTransformer.toInputStream())) {
+                            Files.createDirectories(caminhoObjeto.getParent());
+                            Files.copy(objectContent, caminhoObjeto, StandardCopyOption.REPLACE_EXISTING);
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Erro ao processar arquivo: " + object.key());
+                        e.printStackTrace();
+                    }
+                });
+            }
+        } while (continuationToken != null);
+
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 
     public void adicionarLogsS3() {
@@ -98,5 +124,12 @@ public class OperacoesS3 {
             }
         }
     }
-}
 
+    @Override
+    public void close() {
+        // Fechar o cliente S3 para liberar recursos
+        if (s3Client != null) {
+            s3Client.close();
+        }
+    }
+}
