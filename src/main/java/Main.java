@@ -4,6 +4,7 @@ import config.NomeArquivo;
 import infrastructure.database.BancoInsert;
 import infrastructure.database.BancoOperacoes;
 import infrastructure.database.BancoSetup;
+import infrastructure.database.Performance;
 import infrastructure.logging.Logger;
 import infrastructure.processing.workbook.ManipularArquivo;
 import infrastructure.s3.OperacoesS3;
@@ -62,6 +63,8 @@ public class Main {
                 bancoSetup.criarEstruturaBanco();
                 executarTodosProcessos(bancoDeDados, manipularArquivo, logger.getLoggerEventos());
             }
+            Performance performance = new Performance(); 
+            performance.calcularQtdAntenasEBuscarMaiorOperadora(bancoDeDados);
 
         } catch (SQLException | ClassNotFoundException e) {
             System.out.println("Erro: " + e.getMessage());
