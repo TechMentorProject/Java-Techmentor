@@ -31,7 +31,7 @@ public class BancoSetup {
                 CREATE TABLE IF NOT EXISTS estado (
                     nomeEstado VARCHAR(100) PRIMARY KEY,
                     sigla char(2),
-                    regiao VARCHAR(100),
+                    regiao VARCHAR(25),
                     qtdAntenas int,
                     maiorOperadora varchar(100)
                 )
@@ -39,7 +39,7 @@ public class BancoSetup {
 
             stmt.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS cidade (
-                    nomeCidade VARCHAR(100),
+                    nomeCidade VARCHAR(100) PRIMARY KEY,
                     fkEstado VARCHAR(100),
                     UNIQUE(nomeCidade, fkEstado),
                     FOREIGN KEY (fkEstado) REFERENCES estado(nomeEstado)
@@ -51,10 +51,10 @@ public class BancoSetup {
                     idMunicipio INT AUTO_INCREMENT PRIMARY KEY,
                     fkCidade VARCHAR(100),
                     ano CHAR(4),
-                    operadora VARCHAR(100),
+                    operadora VARCHAR(25),
                     domiciliosCobertosPercentual DECIMAL(5,2),
                     areaCobertaPercentual DECIMAL(5,2),
-                    tecnologia VARCHAR(50),
+                    tecnologia VARCHAR(15),
                     FOREIGN KEY (fkCidade) REFERENCES cidade(nomeCidade)
                 )
             """);
@@ -62,10 +62,11 @@ public class BancoSetup {
             stmt.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS baseEstacoesSMP (
                     idEstacoesSMP INT AUTO_INCREMENT PRIMARY KEY,
-                    fkCidade VARCHAR(255),
-                    operadora VARCHAR(255),
-                    codigoIBGE VARCHAR(255),
-                    tecnologia VARCHAR(255)
+                    fkCidade VARCHAR(100),
+                    operadora VARCHAR(25),
+                    codigoIBGE VARCHAR(25),
+                    tecnologia VARCHAR(25),
+                    FOREIGN KEY (fkCidade) REFERENCES cidade (nomeCidade)
                 )
             """);
 
@@ -91,12 +92,13 @@ public class BancoSetup {
 
             stmt.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS empresa (
-                    cnpj VARCHAR(20) PRIMARY KEY NOT NULL UNIQUE,
+                    cnpj VARCHAR(20) PRIMARY KEY,
                     nomeEmpresa VARCHAR(100) NOT NULL,
                     nomeResponsavel VARCHAR(100),
                     emailResponsavel VARCHAR(100) NOT NULL,
                     senha VARCHAR(100) NOT NULL,
-                    webhook VARCHAR(100)
+                    webhook VARCHAR(100),
+                    imagemPerfil VARCHAR(200)
                 )
             """);
 
@@ -124,14 +126,25 @@ public class BancoSetup {
             """);
 
             stmt.executeUpdate("""
+                CREATE TABLE IF NOT EXISTS historico (
+                     idHistorico INT AUTO_INCREMENT,
+                     dataAcesso DATE,
+                     fkCpf VARCHAR(20),
+                     PRIMARY KEY (idHistorico, fkCpf),
+                     FOREIGN KEY (fkCpf) REFERENCES usuario (cpf)
+                 );
+            """);
+
+            stmt.executeUpdate("""
                  CREATE TABLE IF NOT EXISTS notificacao (
+                     idNotificacao INT PRIMARY KEY AUTO_INCREMENT,
                      texto VARCHAR(150),
                      dataCriacao DATETIME DEFAULT CURRENT_TIMESTAMP,
                      paraEmpresa bool,
                      statusEnviada bool,
                      fkCnpj VARCHAR(20),
                      FOREIGN KEY (fkCnpj) REFERENCES empresa(cnpj));
-                    """);
+                 """);
 
             bancoInsert.inserirDadosIniciais();
             IOUtils.setByteArrayMaxOverride(250_000_000);
