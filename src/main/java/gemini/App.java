@@ -97,7 +97,7 @@ public class App {
                     String respostaCompleta = fullResponse.toString();
 
                     // Gera um prompt que pede para o Gemini resumir a resposta
-                    String resumoPrompt = "Resuma o texto a seguir em no máximo 500 caracteres, mantendo os valores chave de informações: " + respostaCompleta;
+                    String resumoPrompt = "Resuma o texto a seguir em no máximo 500 caracteres, mantendo os valores chave de informações, e faça sugestões de ações que devem ser tomadas em relação as mesmas: " + respostaCompleta;
 
                     // Cria o conteúdo a ser gerado para o resumo
                     var resumoContent = ContentMaker.fromMultiModalData(resumoPrompt);
@@ -154,70 +154,77 @@ public class App {
         List<String> prompts = new ArrayList<>();
 
         try (
-                Statement stmtEstado = conexao.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-                Statement stmtCidade = conexao.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
                 Statement stmtBaseMunicipio = conexao.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
                 Statement stmtBaseProjecao = conexao.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
                 Statement stmtEstacoesSMP = conexao.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-                ResultSet rsEstado = stmtEstado.executeQuery("SELECT * FROM estado");
-                ResultSet rsCidade = stmtCidade.executeQuery("SELECT * FROM cidade");
-                ResultSet rsBaseMunicipio = stmtBaseMunicipio.executeQuery("SELECT * FROM baseMunicipio");
-                ResultSet rsBaseProjecao = stmtBaseProjecao.executeQuery("SELECT * FROM baseProjecaoPopulacional");
-                ResultSet rsEstacoesSMP = stmtEstacoesSMP.executeQuery("SELECT * FROM baseEstacoesSMP");
-        ) {
-            // Prompts gerados
-            while (rsEstado.next() && rsCidade.next() && rsBaseMunicipio.next() && rsBaseProjecao.next() && rsEstacoesSMP.next()) {
 
-                // Prompt 1: Menor conectividade por região
-                String regiao = rsEstado.getString("regiao");
-                String estado = rsEstado.getString("nomeEstado");
-                String cidade = rsCidade.getString("nomeCidade");
-                Double conectividade = rsBaseMunicipio.getDouble("domiciliosCobertosPercentual");
+                // Consulta para cidade com menor conectividade
+                ResultSet rsMenorConectividade = stmtBaseMunicipio.executeQuery(
+                        "SELECT cidade.nomeCidade, estado.nomeEstado, baseMunicipio.domiciliosCobertosPercentual " +
+                                "FROM baseMunicipio " +
+                                "INNER JOIN cidade ON baseMunicipio.fkCidade = cidade.nomeCidade " +
+                                "INNER JOIN estado ON cidade.fkEstado = estado.nomeEstado " +
+                                "ORDER BY domiciliosCobertosPercentual ASC LIMIT 1"
+                );
+
+                // Consulta para estado com menor população
+                ResultSet rsMenorPopulacao = stmtBaseProjecao.executeQuery(
+                        "SELECT estado.nomeEstado, baseProjecaoPopulacional.ano, baseProjecaoPopulacional.projecao " +
+                                "FROM baseProjecaoPopulacional " +
+                                "INNER JOIN estado ON baseProjecaoPopulacional.fkEstado = estado.nomeEstado " +
+                                "ORDER BY projecao ASC LIMIT 1"
+                );
+
+                // Consulta para cidade com menor infraestrutura tecnológica
+                ResultSet rsMenorInfraestrutura = stmtEstacoesSMP.executeQuery(
+                        "SELECT cidade.nomeCidade, estado.nomeEstado, baseEstacoesSMP.tecnologia, COUNT(baseEstacoesSMP.tecnologia) AS qtdEstacoes " +
+                                "FROM baseEstacoesSMP " +
+                                "INNER JOIN cidade ON baseEstacoesSMP.fkCidade = cidade.nomeCidade " +
+                                "INNER JOIN estado ON cidade.fkEstado = estado.nomeEstado " +
+                                "GROUP BY cidade.nomeCidade, estado.nomeEstado, baseEstacoesSMP.tecnologia " +
+                                "ORDER BY qtdEstacoes ASC LIMIT 1"
+                );
+        ) {
+            // Processar os resultados para conectividade
+            if (rsMenorConectividade.next()) {
+                String cidade = rsMenorConectividade.getString("nomeCidade");
+                String estado = rsMenorConectividade.getString("nomeEstado");
+                double conectividade = rsMenorConectividade.getDouble("domiciliosCobertosPercentual");
                 String prompt1 = String.format(
-                        "A região %s do estado %s tem baixa conectividade na cidade %s com apenas %.2f%% de cobertura.",
-                        regiao, estado, cidade, conectividade
+                        "Dados identificados: Cidade: %s, Estado: %s, Conectividade: %.2f%%.",
+                        cidade, estado, conectividade
                 );
                 prompts.add(prompt1);
+            }
 
-                // Prompt 2: Crescimento populacional e conectividade
-                Integer crescimentoPopulacional = rsBaseProjecao.getInt("projecao");
+            // Processar os resultados para população
+            if (rsMenorPopulacao.next()) {
+                String estado = rsMenorPopulacao.getString("nomeEstado");
+                int projecao = rsMenorPopulacao.getInt("projecao");
+                int ano = rsMenorPopulacao.getInt("ano");
                 String prompt2 = String.format(
-                        "A cidade %s no estado %s está projetada para crescer em %d habitantes e possui conectividade de %.2f%%.",
-                        cidade, estado, crescimentoPopulacional, conectividade
+                        "Dados identificados: Estado: %s, População projetada: %d, Ano: %d.",
+                        estado, projecao, ano
                 );
                 prompts.add(prompt2);
+            }
 
-                // Prompt 3: Comparação de tecnologias (4G x 5G)
-                String tecnologia = rsEstacoesSMP.getString("tecnologia");
-                String operadora = rsEstacoesSMP.getString("operadora");
+            // Processar os resultados para infraestrutura tecnológica
+            if (rsMenorInfraestrutura.next()) {
+                String cidade = rsMenorInfraestrutura.getString("nomeCidade");
+                String estado = rsMenorInfraestrutura.getString("nomeEstado");
+                String tecnologia = rsMenorInfraestrutura.getString("tecnologia");
+                int qtdEstacoes = rsMenorInfraestrutura.getInt("qtdEstacoes");
                 String prompt3 = String.format(
-                        "A cidade %s no estado %s possui infraestrutura de %s fornecida pela operadora %s.",
-                        cidade, estado, tecnologia, operadora
+                        "Dados identificados: Cidade: %s, Estado: %s, Tecnologia: %s, Quantidade de estações: %d.",
+                        cidade, estado, tecnologia, qtdEstacoes
                 );
                 prompts.add(prompt3);
-
-                // Prompt 4: Menor número de operadoras
-                Integer qtdOperadoras = rsEstacoesSMP.getInt("idEstacoesSMP");
-                String prompt4 = String.format(
-                        "A cidade %s no estado %s apresenta o menor número de operadoras atuantes, com apenas %d estações.",
-                        cidade, estado, qtdOperadoras
-                );
-                prompts.add(prompt4);
-
-                // Prompt 5: Decisão de investimento em estados com baixa conectividade
-                if (conectividade < 30) {
-                    String prompt5 = String.format(
-                            "O estado %s, cidade %s, com %.2f%% de conectividade, deve ser considerado para investimentos futuros.",
-                            estado, cidade, conectividade
-                    );
-                    prompts.add(prompt5);
-                }
             }
         }
 
         return prompts;
     }
-
 
     // Metodo para contar o número de linhas em um ResultSet
     private static Integer contarLinhas(ResultSet resultSet) throws SQLException {
