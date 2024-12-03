@@ -1,6 +1,7 @@
 import application.BaseDeDados;
 import config.Configuracoes;
 import config.NomeArquivo;
+import gemini.App;
 import infrastructure.database.BancoInsert;
 import infrastructure.database.BancoOperacoes;
 import infrastructure.database.BancoSetup;
@@ -27,6 +28,8 @@ public class Main {
     // Modo desenvolvimento e seleção do processo (defina o nome da base para teste)
     private static final boolean modoDev = false;
     private static final String nomeDaBaseDeDados = "CENSO"; // Use "CENSO", "ESTACOES", "MUNICIPIO" ou "PROJECAO"
+
+    static App gemini = new App();
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
         BancoOperacoes bancoDeDados = new BancoOperacoes();
@@ -63,7 +66,7 @@ public class Main {
                 bancoSetup.criarEstruturaBanco();
                 executarTodosProcessos(bancoDeDados, manipularArquivo, logger.getLoggerEventos());
             }
-            Performance performance = new Performance(); 
+            Performance performance = new Performance();
             performance.calcularQtdAntenasEBuscarMaiorOperadora(bancoDeDados);
 
         } catch (SQLException | ClassNotFoundException e) {
@@ -74,6 +77,9 @@ public class Main {
         } finally {
             bancoDeDados.fecharConexao();
         }
+
+        System.out.println("Executando o Gemini...");
+        gemini.executarGemini();
     }
 
     private static void executarTodosProcessos(BancoOperacoes bancoDeDados, ManipularArquivo manipularArquivo, Logger loggerEventos) throws Exception {
@@ -166,4 +172,6 @@ public class Main {
         projecaoPopulacional.inserirDadosComTratamento(dados, bancoDeDados.getConexao(), bancoDeDados);
         loggerEventos.gerarLog("✅ Dados de PROJEÇÃO POPULACIONAL Inseridos com Sucesso! ✅");
     }
+
+
 }
