@@ -1,0 +1,18 @@
+30/11/2024 23:03:53 - ⚠️ Cidade não encontrada no banco: Dona Euzébia 
+30/11/2024 23:04:06 - ⚠️ Cidade não encontrada no banco: Passa Vinte 
+30/11/2024 23:04:15 - ⚠️ Cidade não encontrada no banco: São Tomé das Letras 
+30/11/2024 23:04:35 - ⚠️ Cidade não encontrada no banco: Ângulo 
+30/11/2024 23:04:43 - ⚠️ Cidade não encontrada no banco: Grão-Pará 
+30/11/2024 23:04:51 - ⚠️ Cidade não encontrada no banco: Águas de Chapecó 
+30/11/2024 23:04:51 - ⚠️ Cidade não encontrada no banco: Águas Frias 
+30/11/2024 23:04:51 - ⚠️ Cidade não encontrada no banco: Águas Mornas 
+30/11/2024 23:04:52 - ⚠️ Cidade não encontrada no banco: Arco-Íris 
+30/11/2024 23:04:53 - ⚠️ Cidade não encontrada no banco: Biritiba Mirim 
+30/11/2024 23:05:02 - ⚠️ Cidade não encontrada no banco: Águas da Prata 
+30/11/2024 23:05:02 - ⚠️ Cidade não encontrada no banco: Águas de Lindóia 
+30/11/2024 23:05:02 - ⚠️ Cidade não encontrada no banco: Águas de Santa Bárbara 
+30/11/2024 23:05:02 - ⚠️ Cidade não encontrada no banco: Águas de São Pedro 
+30/11/2024 23:05:02 - ⚠️ Cidade não encontrada no banco: Álvares Florence 
+30/11/2024 23:05:03 - ⚠️ Cidade não encontrada no banco: Álvares Machado 
+30/11/2024 23:05:03 - ⚠️ Cidade não encontrada no banco: Álvaro de Carvalho 
+30/11/2024 23:05:03 - ⚠️ Cidade não encontrada no banco: Óleo 
