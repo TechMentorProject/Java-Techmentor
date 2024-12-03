@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class App {
-    public static void main(String[] args) {
+    public void executarGemini() {
         // Configura a saída padrão para mostrar caracteres especiais
         System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
 
