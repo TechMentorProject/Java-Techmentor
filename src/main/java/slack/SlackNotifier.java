@@ -93,8 +93,4 @@ public class SlackNotifier {
         System.out.println("Total de mensagens enviadas para empresas: " + qtdMensagemEmpresa);
         System.out.println("Total de mensagens enviadas para funcionários: " + qtdMensagemFunc);
     }
-
-    public static void main(String[] args) {
-        processNotifications();
-    }
 }

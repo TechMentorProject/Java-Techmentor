@@ -1,7 +1,6 @@
 import application.BaseDeDados;
 import config.Configuracoes;
 import config.NomeArquivo;
-import gemini.App;
 import infrastructure.database.BancoInsert;
 import infrastructure.database.BancoOperacoes;
 import infrastructure.database.BancoSetup;
@@ -16,6 +15,7 @@ import application.basedados.CensoIbge;
 import application.basedados.EstacoesSmp;
 import application.basedados.Municipio;
 import application.basedados.ProjecaoPopulacional;
+import slack.SlackNotifier;
 import software.amazon.awssdk.services.s3.S3Client;
 
 import java.io.File;
@@ -28,8 +28,6 @@ public class Main {
     // Modo desenvolvimento e seleção do processo (defina o nome da base para teste)
     private static final boolean modoDev = false;
     private static final String nomeDaBaseDeDados = "CENSO"; // Use "CENSO", "ESTACOES", "MUNICIPIO" ou "PROJECAO"
-
-    static App gemini = new App();
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
         BancoOperacoes bancoDeDados = new BancoOperacoes();
@@ -77,9 +75,6 @@ public class Main {
         } finally {
             bancoDeDados.fecharConexao();
         }
-
-        System.out.println("Executando o Gemini...");
-        gemini.executarGemini();
     }
 
     private static void executarTodosProcessos(BancoOperacoes bancoDeDados, ManipularArquivo manipularArquivo, Logger loggerEventos) throws Exception {
@@ -87,6 +82,8 @@ public class Main {
         processarEstacoes(bancoDeDados, manipularArquivo, loggerEventos);
         processarMunicipio(bancoDeDados, manipularArquivo, loggerEventos);
         processarProjecao(bancoDeDados, manipularArquivo, loggerEventos);
+
+        SlackNotifier.processNotifications();
     }
 
     private static void executarProcesso(String nomeDaBaseDeDados, BancoOperacoes bancoDeDados, ManipularArquivo manipularArquivo, Logger loggerEventos, Logger loggerErros) throws Exception {

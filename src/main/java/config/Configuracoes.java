@@ -7,11 +7,11 @@ public enum Configuracoes {
     PORTA_BANCO("3306"),
     DATABASE("techmentor"),
     USUARIO("root"),
-    SENHA("Kodol@te2403"),
+    SENHA("root"),
     NOME_BUCKET_S3("techmentor-bucket"),
-    CAMINHO_DIRETORIO_RAIZ("C:\\Users\\v8\\Documents\\Relatórios e Atividades SPTech\\PI\\Sem. Novo\\Projeto TechMentor\\base-de-dados\\base-de-dados"),
+    CAMINHO_DIRETORIO_RAIZ("C:\\Users\\mathe\\Documents\\Techmentor\\Base de dados"),
     DIRETORIO_LOGS("app/logs/LogsTechMentor"),
-    AMBIENTE("PROD");
+    AMBIENTE("DEV");
 
     // Propriedade para armazenar o valor
     private final String valor;
